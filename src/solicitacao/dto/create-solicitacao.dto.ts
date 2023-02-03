@@ -1,1 +1,4 @@
-export class CreateSolicitacaoDto {}
+export class CreateSolicitacaoDto {
+    datareg: Date;
+    justificativa: string;
+}

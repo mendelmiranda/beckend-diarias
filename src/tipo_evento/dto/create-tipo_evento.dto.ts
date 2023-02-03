@@ -1,1 +1,3 @@
-export class CreateTipoEventoDto {}
+export class CreateTipoEventoDto {
+    decricao: string;
+}
