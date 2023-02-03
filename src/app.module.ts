@@ -7,9 +7,10 @@ import { TipoEventoModule } from './tipo_evento/tipo_evento.module';
 import { EstadoModule } from './estado/estado.module';
 import { CidadeModule } from './cidade/cidade.module';
 import { ContasModule } from './contas/contas.module';
+import { SolicitacaoModule } from './solicitacao/solicitacao.module';
 
 @Module({
-  imports: [BancosModule, PaisModule, TipoEventoModule, EstadoModule, CidadeModule, ContasModule],
+  imports: [BancosModule, PaisModule, TipoEventoModule, EstadoModule, CidadeModule, ContasModule, SolicitacaoModule],
   controllers: [AppController],
   providers: [AppService],
 })
