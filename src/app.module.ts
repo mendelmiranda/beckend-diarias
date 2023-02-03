@@ -6,11 +6,25 @@ import { PaisModule } from './pais/pais.module';
 import { TipoEventoModule } from './tipo_evento/tipo_evento.module';
 import { EstadoModule } from './estado/estado.module';
 import { CidadeModule } from './cidade/cidade.module';
-import { ContasModule } from './contas/contas.module';
 import { SolicitacaoModule } from './solicitacao/solicitacao.module';
+import { ContaDiariaModule } from './conta_diaria/conta_diaria.module';
+import { EventoModule } from './evento/evento.module';
+import { ParticipanteModule } from './participante/participante.module';
+import { ViagemModule } from './viagem/viagem.module';
 
 @Module({
-  imports: [BancosModule, PaisModule, TipoEventoModule, EstadoModule, CidadeModule, ContasModule, SolicitacaoModule],
+  imports: [
+    BancosModule,
+    PaisModule,
+    TipoEventoModule,
+    EstadoModule,
+    CidadeModule,
+    SolicitacaoModule,
+    ContaDiariaModule,
+    EventoModule,
+    ParticipanteModule,
+    ViagemModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
