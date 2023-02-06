@@ -12,7 +12,9 @@ export class CidadeService {
   }
 
   findAll() {
-    return this.prisma.cidade.findMany();
+    return this.prisma.cidade.findMany({
+      orderBy: {descricao: 'asc'}
+    });
   }
 
   findOne(id: number) {

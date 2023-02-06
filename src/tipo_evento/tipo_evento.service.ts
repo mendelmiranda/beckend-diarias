@@ -12,7 +12,9 @@ export class TipoEventoService {
   }
 
   findAll() {
-    return this.prisma.tipo_evento.findMany();
+    return this.prisma.tipo_evento.findMany({
+      orderBy: {descricao: "asc"},
+    });
   }
 
   findOne(id: number) {

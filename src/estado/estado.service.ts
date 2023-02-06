@@ -12,7 +12,9 @@ export class EstadoService {
   }
 
   findAll() {
-    return this.prisma.estado.findMany();
+    return this.prisma.estado.findMany({
+      orderBy: {descricao: 'asc'}
+    });
   }
 
   findOne(id: number) {
