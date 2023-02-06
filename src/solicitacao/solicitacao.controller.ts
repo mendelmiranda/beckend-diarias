@@ -8,8 +8,16 @@ export class SolicitacaoController {
   constructor(private readonly solicitacaoService: SolicitacaoService) {}
 
   @Post()
-  create(@Body() createSolicitacaoDto: CreateSolicitacaoDto) {
-    return this.solicitacaoService.create(createSolicitacaoDto);
+  create(@Body() createSolicitacaoDto: CreateSolicitacaoDto) {    
+
+    let d = new Date();
+    d.setTime( d.getTime() - new Date().getTimezoneOffset()*60*1000 );
+
+    const solicitacao: CreateSolicitacaoDto = {
+      ...createSolicitacaoDto,
+      datareg: d,
+    }
+    return this.solicitacaoService.create(solicitacao);
   }
 
   @Get()
