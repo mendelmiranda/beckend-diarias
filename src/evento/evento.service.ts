@@ -10,9 +10,7 @@ export class EventoService {
   async create(dto: CreateEventoDto) {
 
     return this.prisma.evento.create({
-      data: {
-        ...dto,
-      },
+      data: dto,
     });
   }
 

@@ -1,5 +1,4 @@
 export class CreateEventoDto {
-
     tipo_evento_id: number;
     solicitacao_id: number;
     titulo: string;
@@ -10,5 +9,4 @@ export class CreateEventoDto {
     cidade_id: number;
     pais_id: number;
     informacoes: string;
-    
 }

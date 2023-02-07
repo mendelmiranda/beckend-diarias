@@ -7,8 +7,10 @@ import { UpdateCidadeDto } from './dto/update-cidade.dto';
 export class CidadeService {
   constructor(private prisma: PrismaService) {}
 
-  create(createCidadeDto: CreateCidadeDto) {
-    return 'This action adds a new cidade';
+  create(data: CreateCidadeDto) {
+    return this.prisma.cidade.create({
+      data,
+    });
   }
 
   findAll() {
