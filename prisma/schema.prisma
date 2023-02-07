@@ -22,11 +22,12 @@ model conta_diaria {
 }
 
 model pais {
-  id      Int     @id @default(autoincrement())
-  nome    String? @db.VarChar(60)
-  nome_pt String? @db.VarChar(60)
-  sigla   String? @db.VarChar(2)
+  id      Int      @id @default(autoincrement())
+  nome    String?  @db.VarChar(60)
+  nome_pt String?  @db.VarChar(60)
+  sigla   String?  @db.VarChar(2)
   bacen   Int?
+  evento  evento[]
 }
 
 model tipo_evento {
@@ -76,9 +77,12 @@ model evento {
   fim            DateTime
   exterior       String
   local_exterior String?
-  cidade_id      Int?
-  cidade         cidade?     @relation(fields: [cidade_id], references: [id])
+  cidade_id      Int
+  cidade         cidade     @relation(fields: [cidade_id], references: [id])
+  pais_id        Int
+  pais           pais       @relation(fields: [pais_id], references: [id])
   informacoes    String
+  datareg       DateTime @default(now())
 
   evento_participantes evento_participantes[]
 
@@ -94,10 +98,10 @@ model participante {
   lotacao         String?
   tipo            String   @db.Char(1)
 
-  estado_id Int?
-  estado    estado? @relation(fields: [estado_id], references: [id])
-  cep String?
-  endereco String?
+  estado_id                Int?
+  estado                   estado? @relation(fields: [estado_id], references: [id])
+  cep                      String?
+  endereco                 String?
   recebe_diarias_na_origem String? @db.Char(1)
 
   evento_participantes evento_participantes[]

@@ -7,17 +7,6 @@ import { UpdateSolicitacaoDto } from './dto/update-solicitacao.dto';
 export class SolicitacaoService {
   constructor(private prisma: PrismaService) {}
 
-  /* create(solicitacaoDto: CreateSolicitacaoDto) {
-    
-    const soli: CreateSolicitacaoDto = {
-      ...solicitacaoDto,
-      datareg: new Date(),
-    }
-
-    const solicitacao = this.prisma.solicitacao.create({soli});
-    return solicitacao;
-  } */
-
   async create(data: CreateSolicitacaoDto): Promise<CreateSolicitacaoDto> {
     return this.prisma.solicitacao.create({
       data,

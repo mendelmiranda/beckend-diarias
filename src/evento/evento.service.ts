@@ -3,13 +3,19 @@ import { PrismaService } from 'prisma/prisma.service';
 import { CreateEventoDto } from './dto/create-evento.dto';
 import { UpdateEventoDto } from './dto/update-evento.dto';
 
-@Injectable()
+@Injectable() 
 export class EventoService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  create(createEventoDto: CreateEventoDto) {
-    return 'This action adds a new evento';
+  async create(dto: CreateEventoDto) {
+
+    return this.prisma.evento.create({
+      data: {
+        ...dto,
+      },
+    });
   }
+
 
   findAll() {
     return `This action returns all evento`;
