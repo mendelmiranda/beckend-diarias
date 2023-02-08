@@ -4,9 +4,10 @@ export class CreateEventoDto {
     titulo: string;
     inicio: Date;
     fim: Date;
-    exterior?: string;
+    exterior: string;
     local_exterior?: string;
     cidade_id: number;
     pais_id: number;
     informacoes: string;
+    datareg: Date;
 }

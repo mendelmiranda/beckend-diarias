@@ -8,12 +8,10 @@ export class EventoService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(dto: CreateEventoDto) {
-
     return this.prisma.evento.create({
       data: dto,
     });
   }
-
 
   findAll() {
     return `This action returns all evento`;
