@@ -1,7 +1,7 @@
 
 
-function dataAtual() {
-    let d = new Date();
+function dataAtual(d: Date) {
+    
     return d.setTime( d.getTime() - new Date().getTimezoneOffset()*60*1000 );
 }
 

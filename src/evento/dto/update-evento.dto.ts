@@ -8,6 +8,7 @@ export class UpdateEventoDto extends PartialType(CreateEventoDto) {
     titulo: string;
     inicio: Date;
     fim: Date;
+    pais_id: number;
     exterior?: string;
     local_exterior?: string;
     cidade_id: number;

@@ -14,7 +14,21 @@ export class EventoService {
   }
 
   findAll() {
-    return `This action returns all evento`;
+    return this.prisma.evento.findMany();
+  }
+
+  findEventosDaSolicitacao(idSolicitacao: number) {
+    return this.prisma.evento.findMany({
+      where: {
+        solicitacao_id: idSolicitacao,
+      },
+      include: {
+        cidade: true,
+      },
+      orderBy: [
+       { id: "asc"}
+      ]
+    });
   }
 
   findOne(id: number) {
@@ -22,7 +36,10 @@ export class EventoService {
   }
 
   update(id: number, updateEventoDto: UpdateEventoDto) {
-    return `This action updates a #${id} evento`;
+    return this.prisma.evento.update({
+      where: { id },
+      data: updateEventoDto,
+    });
   }
 
   remove(id: number) {
