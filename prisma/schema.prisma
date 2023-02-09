@@ -75,8 +75,8 @@ model evento {
   fim            DateTime
   exterior       String
   local_exterior String?
-  cidade_id      Int
-  cidade         cidade     @relation(fields: [cidade_id], references: [id])
+  cidade_id      Int?
+  cidade         cidade?     @relation(fields: [cidade_id], references: [id])
   pais_id        Int
   pais           pais       @relation(fields: [pais_id], references: [id])
   informacoes    String

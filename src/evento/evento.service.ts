@@ -7,7 +7,7 @@ import { UpdateEventoDto } from './dto/update-evento.dto';
 export class EventoService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(dto: CreateEventoDto) {
+  async create(dto: CreateEventoDto) {   
     return this.prisma.evento.create({
       data: dto,
     });
@@ -23,7 +23,13 @@ export class EventoService {
         solicitacao_id: idSolicitacao,
       },
       include: {
-        cidade: true,
+        cidade: {
+          include: {
+            estado: true,
+          }
+        },
+        pais: true,
+        tipo_evento: true,
       },
       orderBy: [
        { id: "asc"}

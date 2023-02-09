@@ -13,9 +13,11 @@ export class EventoController {
     let d = new Date();
     d.setTime( d.getTime() - new Date().getTimezoneOffset()*60*1000 );
 
+    const cid = createEventoDto.cidade_id === 0 ? null : createEventoDto.cidade_id;
     const data: CreateEventoDto = {
       ...createEventoDto,
       datareg: d,
+      cidade_id: cid,
     }
     return this.eventoService.create(data);
   }
