@@ -48,7 +48,11 @@ export class EventoService {
     });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} evento`;
+  async remove(id: number) {
+    return await this.prisma.evento.delete({
+      where: {
+        id: id
+      }
+    })
   }
 }
