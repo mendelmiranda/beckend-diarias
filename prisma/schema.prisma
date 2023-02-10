@@ -17,6 +17,7 @@ model conta_diaria {
   nome    String @db.VarChar(20)
   cpf     String @db.VarChar(20)
   tipo    String @db.Char(1)
+  tipo_conta String
   agencia String @db.VarChar(20)
   conta   String @db.VarChar(20)
 }
@@ -52,18 +53,21 @@ model solicitacao {
 
   @@id([id])
 }
+
 model cidade {
   id        Int    @unique @default(autoincrement())
   estado_id Int
   descricao String @db.VarChar(50)
   estado    estado @relation(fields: [estado_id], references: [id])
 
-  eventos evento[]
-  origem  viagem[] @relation("ori")
-  destino viagem[] @relation("dest")
+  eventos      evento[]
+  origem       viagem[]       @relation("ori")
+  destino      viagem[]       @relation("dest")
+  participante participante[]
 
   @@id([id, estado_id])
 }
+
 model evento {
   id             Int         @default(autoincrement())
   tipo_evento_id Int
@@ -78,9 +82,9 @@ model evento {
   cidade_id      Int?
   cidade         cidade?     @relation(fields: [cidade_id], references: [id])
   pais_id        Int
-  pais           pais       @relation(fields: [pais_id], references: [id])
+  pais           pais        @relation(fields: [pais_id], references: [id])
   informacoes    String
-  datareg       DateTime @default(now())
+  datareg        DateTime    @default(now())
 
   evento_participantes evento_participantes[]
 
@@ -98,9 +102,12 @@ model participante {
 
   estado_id                Int?
   estado                   estado? @relation(fields: [estado_id], references: [id])
-  cep                      String?
+  cidade_id                Int?
+  cidade                   cidade? @relation(fields: [cidade_id], references: [id])
   endereco                 String?
   recebe_diarias_na_origem String? @db.Char(1)
+  profissao                String?
+  local_trabalho           String?
 
   evento_participantes evento_participantes[]
 }
