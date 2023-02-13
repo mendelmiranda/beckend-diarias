@@ -11,6 +11,7 @@ import { ContaDiariaModule } from './conta_diaria/conta_diaria.module';
 import { EventoModule } from './evento/evento.module';
 import { ParticipanteModule } from './participante/participante.module';
 import { ViagemModule } from './viagem/viagem.module';
+import { EventoParticipantesModule } from './evento_participantes/evento_participantes.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ViagemModule } from './viagem/viagem.module';
     EventoModule,
     ParticipanteModule,
     ViagemModule,
+    EventoParticipantesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
