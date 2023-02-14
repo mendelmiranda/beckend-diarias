@@ -1,3 +1,5 @@
+import { conta_diaria } from "@prisma/client";
+
 export class CreateParticipanteDto {
   nome: string;
   cpf: string;
@@ -11,4 +13,5 @@ export class CreateParticipanteDto {
   recebe_diarias_na_origem?: string;
   profissao?: string;
   local_trabalho?: string;
+  //contaDiariaModel?: conta_diaria;
 }

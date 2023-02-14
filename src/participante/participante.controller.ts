@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { ParticipanteService } from './participante.service';
 import { CreateParticipanteDto } from './dto/create-participante.dto';
 import { UpdateParticipanteDto } from './dto/update-participante.dto';
+import { participante } from '@prisma/client';
 
 @Controller('participante')
 export class ParticipanteController {
@@ -9,9 +10,12 @@ export class ParticipanteController {
 
   @Post()
   create(@Body() createParticipanteDto: CreateParticipanteDto) {
+
+    console.log(JSON.stringify(createParticipanteDto));
+    
     return this.participanteService.create(createParticipanteDto);
   }
-
+ok
   @Get()
   findAll() {
     return this.participanteService.findAll();

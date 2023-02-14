@@ -11,3 +11,4 @@ export class CreateEventoDto {
     informacoes: string;
     datareg: Date;
 }
+ 

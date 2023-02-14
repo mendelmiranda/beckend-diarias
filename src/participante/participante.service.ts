@@ -7,8 +7,10 @@ import { UpdateParticipanteDto } from './dto/update-participante.dto';
 export class ParticipanteService {
   constructor(private prisma: PrismaService) {}
 
-  create(createParticipanteDto: CreateParticipanteDto) {
-    return 'This action adds a new participante';
+  async create(dto: CreateParticipanteDto) {   
+    return this.prisma.participante.create({
+      data: dto,
+    });
   }
 
   findAll() {
