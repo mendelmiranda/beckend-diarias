@@ -8,18 +8,22 @@ datasource db {
 }
 
 model bancos {
-  cod   Int     @id @default(autoincrement())
-  banco String? @db.VarChar(120)
+  cod          Int            @id @default(autoincrement())
+  banco        String?        @db.VarChar(120)
+  conta_diaria conta_diaria[]
 }
 
 model conta_diaria {
-  id      Int    @id @default(autoincrement())
-  nome    String @db.VarChar(20)
-  cpf     String @db.VarChar(20)
-  tipo    String @db.Char(1)
+  id         Int    @id @default(autoincrement())
+  nome       String @db.VarChar(20)
+  cpf        String @db.VarChar(20)
+  tipo       String @db.Char(1)
   tipo_conta String
-  agencia String @db.VarChar(20)
-  conta   String @db.VarChar(20)
+  agencia    String @db.VarChar(20)
+  conta      String @db.VarChar(20)
+
+  banco_id Int
+  banco    bancos @relation(fields: [banco_id], references: [cod])
 }
 
 model pais {

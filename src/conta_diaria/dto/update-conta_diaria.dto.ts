@@ -8,4 +8,5 @@ export class UpdateContaDiariaDto extends PartialType(CreateContaDiariaDto) {
     tipo: string;
     agencia: string;
     conta: string;
+    banco_id: number;
 }

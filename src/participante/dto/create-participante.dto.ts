@@ -13,5 +13,5 @@ export class CreateParticipanteDto {
   recebe_diarias_na_origem?: string;
   profissao?: string;
   local_trabalho?: string;
-  //contaDiariaModel?: conta_diaria;
+  contaDiariaModel?:    conta_diaria;
 }

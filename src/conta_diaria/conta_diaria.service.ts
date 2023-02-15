@@ -7,8 +7,10 @@ import { UpdateContaDiariaDto } from './dto/update-conta_diaria.dto';
 export class ContaDiariaService {
   constructor(private prisma: PrismaService) {}
 
-  create(createContaDiariaDto: CreateContaDiariaDto) {
-    return 'This action adds a new contaDiaria';
+  async create(dto: CreateContaDiariaDto) {   
+    return this.prisma.conta_diaria.create({
+      data: dto,
+    });
   }
 
   findAll() {

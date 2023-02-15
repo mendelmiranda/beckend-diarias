@@ -5,4 +5,5 @@ export class CreateContaDiariaDto {
     tipo_conta: string;
     agencia: string;
     conta: string;
+    banco_id: number;
 }
