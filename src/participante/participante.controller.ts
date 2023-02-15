@@ -89,10 +89,15 @@ export class ParticipanteController {
     return this.participanteService.findAll();
   }
 
-  @Get(':id')
+  @Get('/cpf/:cpf')
+  pesquisarParticipantePorCpf(@Param('cpf') cpf: string) {
+    return this.participanteService.pesquisarParticipantePorCpf(cpf);
+  }
+
+  /* @Get(':id')
   findOne(@Param('id') id: string) {
     return this.participanteService.findOne(+id);
-  }
+  } */
 
   @Patch(':id')
   update(

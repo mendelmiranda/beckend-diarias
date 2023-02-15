@@ -17,6 +17,25 @@ export class ParticipanteService {
     return `This action returns all participante`;
   }
 
+  pesquisarParticipantePorCpf(cpf: string){
+    return this.prisma.participante.findFirst({
+      where: {
+        cpf: cpf,
+      },
+      include: {
+        cidade: {
+          include: {
+            estado: true,
+          }
+        },
+        
+      },
+      orderBy: [
+       { id: "asc"}
+      ]
+    });
+  }
+
   findOne(id: number) {
     return `This action returns a #${id} participante`;
   }
