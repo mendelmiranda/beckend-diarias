@@ -3,6 +3,9 @@ import { ParticipanteService } from './participante.service';
 import { CreateParticipanteDto } from './dto/create-participante.dto';
 import { UpdateParticipanteDto } from './dto/update-participante.dto';
 import { participante } from '@prisma/client';
+import { Util } from 'src/util/Util';
+import moment from 'moment';
+
 
 @Controller('participante')
 export class ParticipanteController {
@@ -10,12 +13,16 @@ export class ParticipanteController {
 
   @Post()
   create(@Body() createParticipanteDto: CreateParticipanteDto) {
+    const dateString = createParticipanteDto.data_nascimento as any;
 
-    console.log(JSON.stringify(createParticipanteDto));
+    const data: CreateParticipanteDto = {
+      ...createParticipanteDto,
+      data_nascimento: Util.convertToDate(dateString)
+    }
     
-    return this.participanteService.create(createParticipanteDto);
+    return this.participanteService.create(data);
   }
-ok
+
   @Get()
   findAll() {
     return this.participanteService.findAll();
@@ -36,3 +43,4 @@ ok
     return this.participanteService.remove(+id);
   }
 }
+

@@ -11,6 +11,6 @@ export class UpdateParticipanteDto extends PartialType(CreateParticipanteDto) {
     lotacao?: string;
     cep?: string;
     endereco?: string;
-    estatdo_id?: number;
+    estado_id?: number;
     recebe_diarias_na_origem: string;
 }

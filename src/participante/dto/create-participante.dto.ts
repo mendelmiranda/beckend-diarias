@@ -8,7 +8,7 @@ export class CreateParticipanteDto {
   matricula?: number;
   lotacao?: string;
   endereco?: string;
-  estatdo_id?: number;
+  estado_id?: number;
   cidade_id?: number;
   recebe_diarias_na_origem?: string;
   profissao?: string;

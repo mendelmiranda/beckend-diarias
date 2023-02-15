@@ -105,7 +105,7 @@ model participante {
   cidade_id                Int?
   cidade                   cidade? @relation(fields: [cidade_id], references: [id])
   endereco                 String?
-  recebe_diarias_na_origem String? @db.Char(1)
+  recebe_diarias_na_origem String? @db.Char(3)
   profissao                String?
   local_trabalho           String?
 
