@@ -52,7 +52,7 @@ model estado {
 model solicitacao {
   id            Int      @default(autoincrement())
   datareg       DateTime @default(now())
-  justificativa String   @db.VarChar(250)
+  justificativa String 
   eventos       evento[]
 
   @@id([id])
