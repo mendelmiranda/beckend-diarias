@@ -17,12 +17,27 @@ export class ContaDiariaService {
     return `This action returns all contaDiaria`;
   }
 
+  pesquisaContaDoParticipantePorCpf(cpf: string){
+    return this.prisma.conta_diaria.findFirst({
+      where: {
+        cpf: cpf,
+        tipo: 'C',
+      },
+      orderBy: [
+       { id: "desc"}
+      ]
+    });
+  }
+
   findOne(id: number) {
     return `This action returns a #${id} contaDiaria`;
   }
 
   update(id: number, updateContaDiariaDto: UpdateContaDiariaDto) {
-    return `This action updates a #${id} contaDiaria`;
+    return this.prisma.conta_diaria.update({
+      where: { id },
+      data: updateContaDiariaDto,
+    });
   }
 
   remove(id: number) {

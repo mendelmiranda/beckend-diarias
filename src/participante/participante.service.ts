@@ -21,17 +21,15 @@ export class ParticipanteService {
     return this.prisma.participante.findFirst({
       where: {
         cpf: cpf,
+        tipo: 'C',
       },
       include: {
-        cidade: {
-          include: {
-            estado: true,
-          }
-        },
+        cidade: true
+        ,
         
       },
       orderBy: [
-       { id: "asc"}
+       { id: "desc"}
       ]
     });
   }
@@ -41,7 +39,10 @@ export class ParticipanteService {
   }
 
   update(id: number, updateParticipanteDto: UpdateParticipanteDto) {
-    return `This action updates a #${id} participante`;
+    return this.prisma.participante.update({
+      where: { id },
+      data: updateParticipanteDto,
+    });
   }
 
   remove(id: number) {

@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Put,
 } from '@nestjs/common';
 import { ParticipanteService } from './participante.service';
 import { CreateParticipanteDto } from './dto/create-participante.dto';
@@ -31,6 +32,7 @@ export class ParticipanteController {
   async create(@Param('id') idEvento: number, @Body() createParticipanteDto: CreateParticipanteDto) {        
 
     const dateString = createParticipanteDto.data_nascimento as any;
+        
     let resultado;
 
     if (createParticipanteDto.tipo === 'C') {
@@ -56,7 +58,8 @@ export class ParticipanteController {
         ...createParticipanteDto,
         data_nascimento: Util.convertToDate(dateString),
       };
-      resultado = await (await this.participanteService.create(data)).id;
+      
+      resultado = (await this.participanteService.create(data)).id;
 
       const eventoPaticipanteDto: CreateEventoParticipanteDto = {
         evento_id: parseInt(idEvento+''),
@@ -99,12 +102,50 @@ export class ParticipanteController {
     return this.participanteService.findOne(+id);
   } */
 
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
+  @Put(':id')
+  async update(
+    @Param('id') id: number,
     @Body() updateParticipanteDto: UpdateParticipanteDto,
   ) {
-    return this.participanteService.update(+id, updateParticipanteDto);
+
+    console.log('caiu aqui');
+    
+
+    const dateString = updateParticipanteDto.data_nascimento as any;    
+    let resultado;
+
+    if (updateParticipanteDto.tipo === 'C' && id > 0) {
+      //const contaDto = updateParticipanteDto.contaDiariaModel;
+
+      /*ATUALIZAR CONTA if (contaDto !== undefined) {
+        const conta: CreateContaDiariaDto = {
+          nome: contaDto.nome,
+          cpf: contaDto.cpf,
+          tipo: contaDto.tipo,
+          tipo_conta: contaDto.tipo_conta,
+          agencia: contaDto.agencia,
+          conta: contaDto.conta,
+          banco_id: contaDto.banco_id,
+        };
+
+        this.contaDiariaService.update(conta);
+      } */
+
+      const prop = 'contaDiariaModel';
+      delete updateParticipanteDto[prop];
+
+      const data: CreateParticipanteDto = {
+        ...updateParticipanteDto,
+        data_nascimento: Util.convertToDate(dateString),
+      };
+      
+      resultado = this.participanteService.update(+id, updateParticipanteDto);
+     
+
+    }
+
+
+    return resultado;
   }
 
   @Delete(':id')

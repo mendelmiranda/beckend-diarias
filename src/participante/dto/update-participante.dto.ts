@@ -10,9 +10,11 @@ export class UpdateParticipanteDto extends PartialType(CreateParticipanteDto) {
   data_nascimento: Date;
   matricula?: number;
   lotacao?: string;
-  cep?: string;
   endereco?: string;
   estado_id?: number;
-  recebe_diarias_na_origem: string;
-  //contaDiariaModel?: conta_diaria;
+  cidade_id?: number;
+  recebe_diarias_na_origem?: string;
+  profissao?: string;
+  local_trabalho?: string;
+  contaDiariaModel?:    conta_diaria;
 }

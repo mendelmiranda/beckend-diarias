@@ -17,6 +17,11 @@ export class ContaDiariaController {
     return this.contaDiariaService.findAll();
   }
 
+  @Get('/participante/cpf/:cpf')
+  pesquisaContaDoParticipantePorCpf(@Param('cpf') cpf: string){
+    return this.contaDiariaService.pesquisaContaDoParticipantePorCpf(cpf)
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.contaDiariaService.findOne(+id);
