@@ -7,9 +7,9 @@ import { UpdateSolicitacaoDto } from './dto/update-solicitacao.dto';
 export class SolicitacaoService {
   constructor(private prisma: PrismaService) {}
 
-  async create(data: CreateSolicitacaoDto): Promise<CreateSolicitacaoDto> {
+  async create(dto: CreateSolicitacaoDto): Promise<CreateSolicitacaoDto> {
     return this.prisma.solicitacao.create({
-      data,
+      data: dto,
     });
   }
 
@@ -22,7 +22,10 @@ export class SolicitacaoService {
   }
 
   update(id: number, updateSolicitacaoDto: UpdateSolicitacaoDto) {
-    return `This action updates a #${id} solicitacao`;
+    return this.prisma.solicitacao.update({
+      where: { id },
+      data: updateSolicitacaoDto,
+    });
   }
 
   remove(id: number) {

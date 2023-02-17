@@ -51,8 +51,9 @@ model estado {
 
 model solicitacao {
   id            Int      @default(autoincrement())
-  datareg       DateTime @default(now())
-  justificativa String 
+  datareg       DateTime? @default(now())
+  justificativa String
+  status        String @db.Char(3) 
   eventos       evento[]
 
   @@id([id])

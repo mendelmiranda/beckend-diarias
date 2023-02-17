@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
 import { SolicitacaoService } from './solicitacao.service';
 import { CreateSolicitacaoDto } from './dto/create-solicitacao.dto';
 import { UpdateSolicitacaoDto } from './dto/update-solicitacao.dto';
@@ -16,6 +16,7 @@ export class SolicitacaoController {
     const solicitacao: CreateSolicitacaoDto = {
       ...createSolicitacaoDto,
       datareg: d,
+      status: 'NAO',
     }
     return this.solicitacaoService.create(solicitacao);
   }
@@ -30,7 +31,7 @@ export class SolicitacaoController {
     return this.solicitacaoService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateSolicitacaoDto: UpdateSolicitacaoDto) {
     return this.solicitacaoService.update(+id, updateSolicitacaoDto);
   }
