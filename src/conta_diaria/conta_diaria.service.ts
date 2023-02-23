@@ -33,7 +33,7 @@ export class ContaDiariaService {
     return `This action returns a #${id} contaDiaria`;
   }
 
-  update(id: number, updateContaDiariaDto: UpdateContaDiariaDto) {
+  update(id: number, updateContaDiariaDto: UpdateContaDiariaDto) {        
     return this.prisma.conta_diaria.update({
       where: { id },
       data: updateContaDiariaDto,

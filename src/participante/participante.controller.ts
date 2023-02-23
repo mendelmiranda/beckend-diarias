@@ -19,6 +19,7 @@ import { CreateContaDiariaDto } from '../conta_diaria/dto/create-conta_diaria.dt
 import { EventoParticipante } from '../evento_participantes/entities/evento_participante.entity';
 import { EventoParticipantesService } from '../evento_participantes/evento_participantes.service';
 import { CreateEventoParticipanteDto } from '../evento_participantes/dto/create-evento_participante.dto';
+import { UpdateContaDiariaDto } from 'src/conta_diaria/dto/update-conta_diaria.dto';
 
 @Controller('participante')
 export class ParticipanteController {
@@ -108,17 +109,16 @@ export class ParticipanteController {
     @Body() updateParticipanteDto: UpdateParticipanteDto,
   ) {
 
-    console.log('caiu aqui');
-    
-
     const dateString = updateParticipanteDto.data_nascimento as any;    
     let resultado;
+   
 
     if (updateParticipanteDto.tipo === 'C' && id > 0) {
-      //const contaDto = updateParticipanteDto.contaDiariaModel;
+      const contaDto = updateParticipanteDto.contaDiariaModel;
 
-      /*ATUALIZAR CONTA if (contaDto !== undefined) {
-        const conta: CreateContaDiariaDto = {
+      if (contaDto !== undefined) {
+        const conta: UpdateContaDiariaDto = {
+          id: contaDto.id,
           nome: contaDto.nome,
           cpf: contaDto.cpf,
           tipo: contaDto.tipo,
@@ -128,22 +128,20 @@ export class ParticipanteController {
           banco_id: contaDto.banco_id,
         };
 
-        this.contaDiariaService.update(conta);
-      } */
+        await this.contaDiariaService.update(contaDto.id, conta);
+      } /**/
 
       const prop = 'contaDiariaModel';
-      delete updateParticipanteDto[prop];
+      delete updateParticipanteDto[prop];      
 
-      const data: CreateParticipanteDto = {
+      const data: UpdateParticipanteDto = {
         ...updateParticipanteDto,
+        
         data_nascimento: Util.convertToDate(dateString),
       };
       
-      resultado = this.participanteService.update(+id, updateParticipanteDto);
-     
-
+      resultado = this.participanteService.update(+id, data);
     }
-
 
     return resultado;
   }

@@ -15,7 +15,7 @@ model bancos {
 
 model conta_diaria {
   id         Int    @id @default(autoincrement())
-  nome       String @db.VarChar(20)
+  nome       String @db.VarChar(200)
   cpf        String @db.VarChar(20)
   tipo       String @db.Char(1)
   tipo_conta String
