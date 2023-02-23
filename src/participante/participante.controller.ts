@@ -67,8 +67,7 @@ export class ParticipanteController {
         participante_id: resultado,
       }
 
-      this.eventoParticipanteService.create(eventoPaticipanteDto);      
-      
+      this.eventoParticipanteService.create(eventoPaticipanteDto);
 
     } else {
       const data: CreateParticipanteDto = {
@@ -103,9 +102,9 @@ export class ParticipanteController {
     return this.participanteService.findOne(+id);
   } */
 
-  @Put(':id')
+  @Put(':id/evento/:idEvento')
   async update(
-    @Param('id') id: number,
+    @Param('id') id: number, @Param('idEvento') idEvento: number,
     @Body() updateParticipanteDto: UpdateParticipanteDto,
   ) {
 
@@ -140,7 +139,14 @@ export class ParticipanteController {
         data_nascimento: Util.convertToDate(dateString),
       };
       
-      resultado = this.participanteService.update(+id, data);
+      resultado = (await this.participanteService.update(+id, data)).id;
+
+      const eventoPaticipanteDto: CreateEventoParticipanteDto = {
+        evento_id: parseInt(idEvento+''),
+        participante_id: resultado,
+      }
+
+      await this.eventoParticipanteService.create(eventoPaticipanteDto);
     }
 
     return resultado;

@@ -21,6 +21,17 @@ export class EventoParticipantesService {
     return `This action returns a #${id} eventoParticipante`;
   }
 
+  findParticipantesDoEvento(idEvento: number) {
+    return this.prisma.evento_participantes.findMany({
+      where: {
+        evento_id: idEvento
+      },
+      include: {
+        participante: true,        
+      }
+    })
+  }
+
   update(id: number, updateEventoParticipanteDto: UpdateEventoParticipanteDto) {
     return `This action updates a #${id} eventoParticipante`;
   }

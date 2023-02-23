@@ -17,6 +17,11 @@ export class EventoParticipantesController {
     return this.eventoParticipantesService.findAll();
   }
 
+  @Get('/evento/:id')
+  findParticipantesDoEvento(@Param('id') id: number) {
+    return this.eventoParticipantesService.findParticipantesDoEvento(+id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.eventoParticipantesService.findOne(+id);
