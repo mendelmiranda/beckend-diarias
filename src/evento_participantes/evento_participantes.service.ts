@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { CreateEventoParticipanteDto } from './dto/create-evento_participante.dto';
 import { UpdateEventoParticipanteDto } from './dto/update-evento_participante.dto';
+import { evento, participante } from '@prisma/client';
 
 @Injectable()
 export class EventoParticipantesService {
@@ -28,7 +29,7 @@ export class EventoParticipantesService {
       },
       include: {
         participante: true,        
-      }
+      },
     })
   }
 
@@ -36,7 +37,13 @@ export class EventoParticipantesService {
     return `This action updates a #${id} eventoParticipante`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} eventoParticipante`;
+  async remove(idEvento: number, idParticipante) {
+    return await this.prisma.evento_participantes.delete({
+      where: {
+        evento_id_participante_id: {
+          evento_id: idEvento, participante_id: idParticipante
+        }
+      }
+    })
   }
 }

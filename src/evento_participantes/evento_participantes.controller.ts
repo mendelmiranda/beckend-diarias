@@ -32,8 +32,8 @@ export class EventoParticipantesController {
     return this.eventoParticipantesService.update(+id, updateEventoParticipanteDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.eventoParticipantesService.remove(+id);
+  @Delete('/evento/:idEvento/participante/:idParticipante')
+  remove(@Param('idEvento') idEvento: number, @Param('idParticipante') idParticipante: number) {
+    return this.eventoParticipantesService.remove(+idEvento, +idParticipante);
   }
 }
