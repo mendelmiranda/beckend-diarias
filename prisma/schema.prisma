@@ -135,7 +135,7 @@ model evento_participantes {
 
   participante_id Int
   participante    participante @relation(fields: [participante_id], references: [id])
-  valor_diaria   String? //<======deve colocar obrigatório em produção
+  valor_diaria   Float? //<======deve colocar obrigatório em produção
 
   @@id([evento_id, participante_id])
 }
