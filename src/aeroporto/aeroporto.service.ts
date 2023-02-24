@@ -1,15 +1,18 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'prisma/prisma.service';
 import { CreateAeroportoDto } from './dto/create-aeroporto.dto';
 import { UpdateAeroportoDto } from './dto/update-aeroporto.dto';
 
 @Injectable()
 export class AeroportoService {
+  constructor(private prisma: PrismaService) {}
+  
   create(createAeroportoDto: CreateAeroportoDto) {
     return 'This action adds a new aeroporto';
   }
 
   findAll() {
-    return `This action returns all aeroporto`;
+    return this.prisma.aeroporto.findMany();
   }
 
   findOne(id: number) {
