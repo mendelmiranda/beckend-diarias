@@ -66,11 +66,21 @@ model cidade {
   estado    estado @relation(fields: [estado_id], references: [id])
 
   eventos      evento[]
-  origem       viagem[]       @relation("ori")
-  destino      viagem[]       @relation("dest")
   participante participante[]
 
   @@id([id, estado_id])
+}
+
+model aeroporto {
+  id             Int    @unique @default(autoincrement())
+  iata           String
+  icao           String
+  nome_aeroporto String
+  cidade         String
+  uf             String
+
+  origem       viagem[]       @relation("ori")
+  destino      viagem[]       @relation("dest")
 }
 
 model evento {
@@ -132,10 +142,10 @@ model evento_participantes {
 model viagem {
   id        Int    @id @default(autoincrement())
   origem_id Int
-  origem    cidade @relation("ori", fields: [origem_id], references: [id])
+  origem    aeroporto @relation("ori", fields: [origem_id], references: [id])
 
   destino_id Int
-  destino    cidade @relation("dest", fields: [destino_id], references: [id])
+  destino    aeroporto @relation("dest", fields: [destino_id], references: [id])
 
   trecho        String
   data_ida      DateTime
