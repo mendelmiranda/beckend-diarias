@@ -73,8 +73,8 @@ model cidade {
 
 model aeroporto {
   id             Int    @unique @default(autoincrement())
-  iata           String
-  icao           String
+  iata           String?
+  icao           String?
   nome_aeroporto String
   cidade         String
   uf             String
