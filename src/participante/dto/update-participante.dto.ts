@@ -10,6 +10,8 @@ export class UpdateParticipanteDto extends PartialType(CreateParticipanteDto) {
   data_nascimento: Date;
   matricula?: number;
   lotacao?: string;
+  cargo?: string;
+  classe?: string;
   endereco?: string;
   estado_id?: number;
   cidade_id?: number;

@@ -50,10 +50,10 @@ model estado {
 }
 
 model solicitacao {
-  id            Int      @default(autoincrement())
+  id            Int       @default(autoincrement())
   datareg       DateTime? @default(now())
   justificativa String
-  status        String @db.Char(3) 
+  status        String    @db.Char(3)
   eventos       evento[]
 
   @@id([id])
@@ -103,6 +103,8 @@ model participante {
   data_nascimento DateTime
   matricula       Int?
   lotacao         String?
+  cargo           String?
+  classe          String?
   tipo            String   @db.Char(1)
 
   estado_id                Int?
