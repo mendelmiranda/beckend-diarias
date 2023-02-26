@@ -1,11 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { EventoParticipantesService } from './evento_participantes.service';
 import { CreateEventoParticipanteDto } from './dto/create-evento_participante.dto';
 import { UpdateEventoParticipanteDto } from './dto/update-evento_participante.dto';
 
 @Controller('evento-participantes')
 export class EventoParticipantesController {
-  constructor(private readonly eventoParticipantesService: EventoParticipantesService) {}
+  constructor(
+    private readonly eventoParticipantesService: EventoParticipantesService,
+  ) {}
 
   @Post()
   create(@Body() createEventoParticipanteDto: CreateEventoParticipanteDto) {
@@ -28,12 +38,23 @@ export class EventoParticipantesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEventoParticipanteDto: UpdateEventoParticipanteDto) {
-    return this.eventoParticipantesService.update(+id, updateEventoParticipanteDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateEventoParticipanteDto: UpdateEventoParticipanteDto,
+  ) {
+    return this.eventoParticipantesService.update(
+      +id,
+      updateEventoParticipanteDto,
+    );
   }
 
-  @Delete('/evento/:idEvento/participante/:idParticipante')
+  /* @Delete('/evento/:idEvento/participante/:idParticipante')
   remove(@Param('idEvento') idEvento: number, @Param('idParticipante') idParticipante: number) {
     return this.eventoParticipantesService.remove(+idEvento, +idParticipante);
+  } */
+
+  @Delete('/evento/:id')
+  remove(@Param('id') id: number) {
+    return this.eventoParticipantesService.remove(+id);
   }
 }

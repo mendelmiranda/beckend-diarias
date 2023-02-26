@@ -7,8 +7,8 @@ import { evento, participante } from '@prisma/client';
 @Injectable()
 export class EventoParticipantesService {
   constructor(private readonly prisma: PrismaService) {}
-  
-  async create(dto: CreateEventoParticipanteDto) {   
+
+  async create(dto: CreateEventoParticipanteDto) {
     return this.prisma.evento_participantes.create({
       data: dto,
     });
@@ -25,19 +25,28 @@ export class EventoParticipantesService {
   findParticipantesDoEvento(idEvento: number) {
     return this.prisma.evento_participantes.findMany({
       where: {
-        evento_id: idEvento
+        evento_id: idEvento,
       },
       include: {
-        participante: true,        
+        participante: true,
       },
-    })
+    });
   }
 
   update(id: number, updateEventoParticipanteDto: UpdateEventoParticipanteDto) {
     return `This action updates a #${id} eventoParticipante`;
   }
 
-  async remove(idEvento: number, idParticipante) {
+  //rever para excluir pelo ID del
+  async remove(id: number) {
+    return await this.prisma.evento_participantes.delete({
+      where: {
+        id: id,
+      },
+    });
+  }
+
+  /* async remove(idEvento: number, idParticipante) {
     return await this.prisma.evento_participantes.delete({
       where: {
         evento_id_participante_id: {
@@ -45,5 +54,5 @@ export class EventoParticipantesService {
         }
       }
     })
-  }
+  } */
 }

@@ -13,6 +13,7 @@ import { ParticipanteModule } from './participante/participante.module';
 import { ViagemModule } from './viagem/viagem.module';
 import { EventoParticipantesModule } from './evento_participantes/evento_participantes.module';
 import { AeroportoModule } from './aeroporto/aeroporto.module';
+import { ViagemParticipantesModule } from './viagem_participantes/viagem_participantes.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { AeroportoModule } from './aeroporto/aeroporto.module';
     ViagemModule,
     EventoParticipantesModule,
     AeroportoModule,
+    ViagemParticipantesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
