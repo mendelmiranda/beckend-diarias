@@ -7,7 +7,7 @@ import { UpdateParticipanteDto } from './dto/update-participante.dto';
 export class ParticipanteService {
   constructor(private prisma: PrismaService) {}
 
-  async create(dto: CreateParticipanteDto) {   
+  async create(dto: CreateParticipanteDto) {
     return this.prisma.participante.create({
       data: dto,
     });
@@ -17,20 +17,16 @@ export class ParticipanteService {
     return `This action returns all participante`;
   }
 
-  pesquisarParticipantePorCpf(cpf: string){
+  pesquisarParticipantePorCpf(cpf: string) {
     return this.prisma.participante.findFirst({
       where: {
         cpf: cpf,
         tipo: 'C',
       },
       include: {
-        cidade: true
-        ,
-        
+        cidade: true,
       },
-      orderBy: [
-       { id: "desc"}
-      ]
+      orderBy: [{ id: 'desc' }],
     });
   }
 

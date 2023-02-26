@@ -33,6 +33,7 @@ model pais {
   sigla   String?  @db.VarChar(2)
   bacen   Int?
   evento  evento[]
+  viagem  viagem[]
 }
 
 model tipo_evento {
@@ -130,14 +131,17 @@ model participante {
 }
 
 model evento_participantes {
+  id        Int    @unique @default(autoincrement())
   evento_id Int
   evento    evento @relation(fields: [evento_id], references: [id])
 
   participante_id Int
   participante    participante @relation(fields: [participante_id], references: [id])
-  valor_diaria   Float? //<======deve colocar obrigatório em produção
+  valor_diaria    Float? //<======deve colocar obrigatório em produção
 
-  @@id([evento_id, participante_id])
+  viagem_participantes viagem_participantes[]
+
+  @@id([id, evento_id, participante_id])
 }
 
 model viagem {
@@ -148,9 +152,30 @@ model viagem {
   destino_id Int
   destino    aeroporto @relation("dest", fields: [destino_id], references: [id])
 
-  trecho        String
-  data_ida      DateTime
-  data_volta    DateTime?
-  justificativa String?
-  datareg       DateTime  @default(now())
+  exterior       String
+  local_exterior String?
+  pais_id        Int
+  pais           pais    @relation(fields: [pais_id], references: [id])
+
+  trecho               String
+  data_ida             DateTime
+  data_volta           DateTime?
+  justificativa        String?
+  datareg              DateTime               @default(now())
+
+  viagem_participantes viagem_participantes[]
+}
+
+model viagem_participantes {
+  id Int @unique @default(autoincrement())
+
+  evento_participantes_id Int
+  evento_participantes    evento_participantes @relation(fields: [evento_participantes_id], references: [id])
+
+  viagem_id Int
+  viagem    viagem @relation(fields: [viagem_id], references: [id])
+
+  datareg              DateTime               @default(now())
+
+  @@id([id, evento_participantes_id, viagem_id])
 }
