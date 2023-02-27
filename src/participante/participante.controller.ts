@@ -128,7 +128,7 @@ export class ParticipanteController {
         };
 
         if (contaDto.id > 0 || contaDto.id === undefined) {
-          return this.contaDiariaService.create(conta);
+          await this.contaDiariaService.create(conta);
         } else {
           await this.contaDiariaService.update(contaDto.id, conta);
         }
@@ -147,6 +147,7 @@ export class ParticipanteController {
       
       resultado = (await this.participanteService.update(+id, data)).id;
 
+            
       const eventoPaticipanteDto: CreateEventoParticipanteDto = {
         evento_id: parseInt(idEvento+''),
         participante_id: resultado,
@@ -157,21 +158,6 @@ export class ParticipanteController {
 
     return resultado;
   }
-
- /* if (updateContaDiariaDto.id > 0 || updateContaDiariaDto.id === undefined) {
-    const data: CreateContaDiariaDto = {
-      nome: updateContaDiariaDto.nome,
-      cpf: updateContaDiariaDto.cpf,
-      tipo: updateContaDiariaDto.tipo,
-      tipo_conta: updateContaDiariaDto.tipo_conta,
-      agencia: updateContaDiariaDto.agencia,
-      conta: updateContaDiariaDto.conta,
-      banco_id: updateContaDiariaDto.banco_id,
-    };
-    return this.contaDiariaService.create(data);
-  } else {
-    return this.contaDiariaService.update(+id, updateContaDiariaDto);
-  } */
 
   @Delete(':id')
   remove(@Param('id') id: string) {

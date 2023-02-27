@@ -37,7 +37,6 @@ export class EventoParticipantesService {
     return `This action updates a #${id} eventoParticipante`;
   }
 
-  //rever para excluir pelo ID del
   async remove(id: number) {
     return await this.prisma.evento_participantes.delete({
       where: {

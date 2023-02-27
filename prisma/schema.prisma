@@ -136,7 +136,7 @@ model evento_participantes {
   evento    evento @relation(fields: [evento_id], references: [id])
 
   participante_id Int
-  participante    participante @relation(fields: [participante_id], references: [id])
+  participante    participante @relation(fields: [participante_id], references: [id], onDelete: Cascade)
   valor_diaria    Float? //<======deve colocar obrigatório em produção
 
   viagem_participantes viagem_participantes[]
@@ -170,7 +170,7 @@ model viagem_participantes {
   id Int @unique @default(autoincrement())
 
   evento_participantes_id Int
-  evento_participantes    evento_participantes @relation(fields: [evento_participantes_id], references: [id])
+  evento_participantes    evento_participantes @relation(fields: [evento_participantes_id], references: [id], onDelete: Cascade)
 
   viagem_id Int
   viagem    viagem @relation(fields: [viagem_id], references: [id])
