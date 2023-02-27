@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
 import { CreateAeroportoDto } from './dto/create-aeroporto.dto';
 import { UpdateAeroportoDto } from './dto/update-aeroporto.dto';
@@ -12,7 +13,9 @@ export class AeroportoService {
   }
 
   findAll() {
-    return this.prisma.aeroporto.findMany();
+    return this.prisma.$queryRaw(
+      Prisma.sql`SELECT a.id, cidade || ' ' ||uf as cidade FROM aeroporto a`
+    )
   }
 
   findOne(id: number) {
