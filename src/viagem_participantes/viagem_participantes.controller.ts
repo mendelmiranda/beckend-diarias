@@ -17,6 +17,11 @@ export class ViagemParticipantesController {
     return this.viagemParticipantesService.findAll();
   }
 
+  @Get('/evento/:id')
+  carregarViagemPorEvento(@Param('id') id: number) {
+    return this.viagemParticipantesService.findParticipantesViagemDoEvento(+id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.viagemParticipantesService.findOne(+id);

@@ -17,6 +17,17 @@ export class ViagemParticipantesService {
     return `This action returns all viagemParticipantes`;
   }
 
+  findParticipantesViagemDoEvento(idEvento: number) {
+    return this.prisma.viagem_participantes.findMany({
+      where: {
+        evento_participantes: {
+          id: idEvento
+        },
+      },
+    });
+  }
+
+
   findOne(id: number) {
     return `This action returns a #${id} viagemParticipante`;
   }

@@ -7,10 +7,12 @@ import { UpdateViagemDto } from './dto/update-viagem.dto';
 export class ViagemService {
   constructor(private prisma: PrismaService) {}
 
-  create(createViagemDto: CreateViagemDto) {
-    return 'This action adds a new viagem';
+  async create(dto: CreateViagemDto) {
+    return this.prisma.viagem.create({
+      data: dto,
+    });
   }
-
+  
   findAll() {
     return `This action returns all viagem`;
   }
