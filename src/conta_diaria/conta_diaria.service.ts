@@ -8,9 +8,29 @@ export class ContaDiariaService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateContaDiariaDto) {   
+
+    console.log('ID', dto.id);
+    
+    
+    if(dto.id === 0 || dto.id === undefined){
+
     return this.prisma.conta_diaria.create({
       data: dto,
     });
+    } else {
+      const data: UpdateContaDiariaDto = {
+        id: dto.id,
+        nome: dto.nome,
+        cpf: dto.cpf,
+        tipo: dto.tipo,
+        tipo_conta: dto.tipo_conta,
+        agencia: dto.agencia,
+        conta: dto.conta,
+        banco_id: dto.banco_id,
+      };
+
+      await this.update(dto.id,data )
+    }
   }
 
   findAll() {
@@ -34,6 +54,8 @@ export class ContaDiariaService {
   }
 
   update(id: number, updateContaDiariaDto: UpdateContaDiariaDto) {        
+    console.log('chamouuuu');
+    
     return this.prisma.conta_diaria.update({
       where: { id },
       data: updateContaDiariaDto,

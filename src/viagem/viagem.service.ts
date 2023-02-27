@@ -12,7 +12,7 @@ export class ViagemService {
       data: dto,
     });
   }
-  
+
   findAll() {
     return `This action returns all viagem`;
   }

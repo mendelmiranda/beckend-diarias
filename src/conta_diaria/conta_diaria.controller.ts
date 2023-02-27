@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Put,
+} from '@nestjs/common';
 import { ContaDiariaService } from './conta_diaria.service';
 import { CreateContaDiariaDto } from './dto/create-conta_diaria.dto';
 import { UpdateContaDiariaDto } from './dto/update-conta_diaria.dto';
@@ -18,8 +27,8 @@ export class ContaDiariaController {
   }
 
   @Get('/participante/cpf/:cpf')
-  pesquisaContaDoParticipantePorCpf(@Param('cpf') cpf: string){
-    return this.contaDiariaService.pesquisaContaDoParticipantePorCpf(cpf)
+  pesquisaContaDoParticipantePorCpf(@Param('cpf') cpf: string) {
+    return this.contaDiariaService.pesquisaContaDoParticipantePorCpf(cpf);
   }
 
   @Get(':id')
@@ -27,9 +36,30 @@ export class ContaDiariaController {
     return this.contaDiariaService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateContaDiariaDto: UpdateContaDiariaDto) {
-    return this.contaDiariaService.update(+id, updateContaDiariaDto);
+  @Put(':id')
+  update(
+    @Param('id') id: string,
+    @Body() updateContaDiariaDto: UpdateContaDiariaDto,
+  ) {
+    
+    console.log(updateContaDiariaDto.id);
+    
+
+    /* if (updateContaDiariaDto.id > 0 || updateContaDiariaDto.id === undefined) {
+      const data: CreateContaDiariaDto = {
+        nome: updateContaDiariaDto.nome,
+        cpf: updateContaDiariaDto.cpf,
+        tipo: updateContaDiariaDto.tipo,
+        tipo_conta: updateContaDiariaDto.tipo_conta,
+        agencia: updateContaDiariaDto.agencia,
+        conta: updateContaDiariaDto.conta,
+        banco_id: updateContaDiariaDto.banco_id,
+      };
+      return this.contaDiariaService.create(data);
+    } else {
+      return this.contaDiariaService.update(+id, updateContaDiariaDto);
+    } */
+    
   }
 
   @Delete(':id')

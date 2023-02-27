@@ -23,6 +23,11 @@ export class ViagemController {
     return this.viagemParticipanteService.create(viagem_participante);    
   }
 
+  @Get('/evento/:id')
+  findViagemEvento(@Param('id') id: number) {   
+    return this.viagemParticipanteService.findParticipantesViagemDoEvento(+id);
+  }
+
   @Get()
   findAll() {
     return this.viagemService.findAll();

@@ -1,4 +1,5 @@
 export class CreateContaDiariaDto {
+    id?: number;
     nome: string;
     cpf: string;
     tipo: string;

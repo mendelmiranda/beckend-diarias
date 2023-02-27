@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateViagemParticipanteDto } from './dto/create-viagem_participante.dto';
 import { UpdateViagemParticipanteDto } from './dto/update-viagem_participante.dto';
 import { PrismaService } from 'prisma/prisma.service';
+import { participante } from '@prisma/client';
 
 @Injectable()
 export class ViagemParticipantesService {
@@ -21,9 +22,23 @@ export class ViagemParticipantesService {
     return this.prisma.viagem_participantes.findMany({
       where: {
         evento_participantes: {
-          id: idEvento
-        },
+          evento: {id: idEvento}
+        },       
+        
       },
+
+      include: {
+        viagem: {
+          include: {
+            origem: true,
+            destino: true,
+          }
+        },
+        
+        evento_participantes: {
+          include: {participante: true},          
+        },        
+      }
     });
   }
 
