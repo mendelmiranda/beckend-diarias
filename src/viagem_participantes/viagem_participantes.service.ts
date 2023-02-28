@@ -22,9 +22,8 @@ export class ViagemParticipantesService {
     return this.prisma.viagem_participantes.findMany({
       where: {
         evento_participantes: {
-          evento: {id: idEvento}
-        },       
-        
+          evento: { id: idEvento },
+        },
       },
 
       include: {
@@ -32,16 +31,15 @@ export class ViagemParticipantesService {
           include: {
             origem: true,
             destino: true,
-          }
+          },
         },
-        
+
         evento_participantes: {
-          include: {participante: true},          
-        },        
-      }
+          include: { participante: true },
+        },
+      },
     });
   }
-
 
   findOne(id: number) {
     return `This action returns a #${id} viagemParticipante`;
