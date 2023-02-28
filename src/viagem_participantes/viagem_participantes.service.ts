@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { CreateViagemParticipanteDto } from './dto/create-viagem_participante.dto';
 import { UpdateViagemParticipanteDto } from './dto/update-viagem_participante.dto';
 import { PrismaService } from 'prisma/prisma.service';
-import { participante } from '@prisma/client';
 
 @Injectable()
 export class ViagemParticipantesService {
