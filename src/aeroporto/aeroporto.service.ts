@@ -14,7 +14,7 @@ export class AeroportoService {
 
   findAll() {
     return this.prisma.$queryRaw(
-      Prisma.sql`SELECT a.id, cidade || ' ' ||uf as cidade FROM aeroporto a`
+      Prisma.sql`SELECT a.id, cidade || ' ' ||uf as cidade FROM aeroporto a ORDER BY a.cidade`
     )
   }
 
