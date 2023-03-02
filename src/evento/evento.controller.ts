@@ -40,12 +40,15 @@ export class EventoController {
   @Put(':id')
   update(@Param('id') id: string, @Body() updateEventoDto: UpdateEventoDto) {
 
-    if(updateEventoDto.cidade_id === 0 ){
+    console.log('evento', updateEventoDto);
+    
+    console.log('cidade', updateEventoDto.cidade_id);
+    
 
+    if(updateEventoDto.cidade_id === 0){
       const prop = 'cidade_id';
       delete updateEventoDto[prop];
       this.eventoService.update(+id, updateEventoDto);
-
     }
 
     return this.eventoService.update(+id, updateEventoDto);
@@ -56,3 +59,11 @@ export class EventoController {
     return this.eventoService.remove(+id);
   }
 }
+
+//visita técnica
+//unificar as solicitações(separadas via gabinetes) para enviar para a daof
+//controle de tramite interno
+//só no final gerar protocolo
+//tem passagem area? colocar no Evento
+
+//arcar com custo de passagem ex ida do participante

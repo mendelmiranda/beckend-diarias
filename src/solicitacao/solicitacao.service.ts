@@ -38,7 +38,12 @@ export class SolicitacaoService {
                 participante: true,
                 viagem_participantes: {
                   include: {
-                    viagem: true
+                    viagem: {
+                      include: {
+                        origem: true,
+                        destino: true,
+                      }
+                    }
                   }
                 }
               }
@@ -48,7 +53,8 @@ export class SolicitacaoService {
               include:{
                 estado: true,
               }
-            }
+            },
+            pais: true,
           }
         }
       }
