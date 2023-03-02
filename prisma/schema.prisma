@@ -173,7 +173,7 @@ model viagem_participantes {
   evento_participantes    evento_participantes @relation(fields: [evento_participantes_id], references: [id], onDelete: Cascade)
 
   viagem_id Int
-  viagem    viagem @relation(fields: [viagem_id], references: [id])
+  viagem    viagem @relation(fields: [viagem_id], references: [id], onDelete: Cascade)
 
   datareg              DateTime               @default(now())
 

@@ -26,6 +26,11 @@ export class SolicitacaoController {
     return this.solicitacaoService.findAll();
   }
 
+  @Get('/detalhes/:id')
+  detalhes(@Param('id') id: string) {
+    return this.solicitacaoService.detalhesDaSolicitacao(+id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.solicitacaoService.findOne(+id);

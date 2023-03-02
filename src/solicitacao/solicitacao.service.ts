@@ -18,7 +18,41 @@ export class SolicitacaoService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} solicitacao`;
+    return this.prisma.solicitacao.findUnique({
+      where: {
+        id: id,
+      }
+    })
+  }
+
+  detalhesDaSolicitacao(id: number) {
+    return this.prisma.solicitacao.findUnique({
+      where: {
+        id: id,
+      },
+      include: {
+        eventos: {
+          include: {
+            evento_participantes: {
+              include: {
+                participante: true,
+                viagem_participantes: {
+                  include: {
+                    viagem: true
+                  }
+                }
+              }
+            },
+            tipo_evento: true,
+            cidade: {
+              include:{
+                estado: true,
+              }
+            }
+          }
+        }
+      }
+    })
   }
 
   update(id: number, updateSolicitacaoDto: UpdateSolicitacaoDto) {

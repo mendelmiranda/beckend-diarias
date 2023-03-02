@@ -39,6 +39,15 @@ export class EventoController {
 
   @Put(':id')
   update(@Param('id') id: string, @Body() updateEventoDto: UpdateEventoDto) {
+
+    if(updateEventoDto.cidade_id === 0 ){
+
+      const prop = 'cidade_id';
+      delete updateEventoDto[prop];
+      this.eventoService.update(+id, updateEventoDto);
+
+    }
+
     return this.eventoService.update(+id, updateEventoDto);
   }
 
