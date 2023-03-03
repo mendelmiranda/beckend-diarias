@@ -163,6 +163,7 @@ model viagem {
   data_volta    DateTime?
   justificativa String?
   datareg       DateTime  @default(now())
+  arcar_passagem String? @db.Char(3)
 
   viagem_participantes viagem_participantes[]
 }

@@ -18,4 +18,5 @@ export class CreateViagemDto {
     data_volta?:           Date
     justificativa?:       string;
     datareg?:              Date;             
+    arcar_passagem?: string;
 }
