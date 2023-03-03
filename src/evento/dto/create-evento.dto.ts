@@ -10,5 +10,6 @@ export class CreateEventoDto {
     pais_id: number;
     informacoes: string;
     datareg: Date;
+    tem_passagem?: string;
 }
  
