@@ -11,4 +11,5 @@ export class UpdateViagemDto extends PartialType(CreateViagemDto) {
     datareg: Date;
     justificativa?: string;
     arcar_passagem?: string;
+    custos: string[]
 }

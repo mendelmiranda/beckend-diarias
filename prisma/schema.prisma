@@ -158,12 +158,13 @@ model viagem {
   pais_id        Int
   pais           pais    @relation(fields: [pais_id], references: [id])
 
-  trecho        String
-  data_ida      DateTime
-  data_volta    DateTime?
-  justificativa String?
-  datareg       DateTime  @default(now())
-  arcar_passagem String? @db.Char(3)
+  trecho         String
+  data_ida       DateTime
+  data_volta     DateTime?
+  justificativa  String?
+  datareg        DateTime  @default(now())
+  arcar_passagem String?   @db.Char(3)
+  custos         String[]
 
   viagem_participantes viagem_participantes[]
 }

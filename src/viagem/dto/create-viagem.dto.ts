@@ -19,4 +19,5 @@ export class CreateViagemDto {
     justificativa?:       string;
     datareg?:              Date;             
     arcar_passagem?: string;
+    custos: string[]
 }

@@ -38,12 +38,7 @@ export class EventoController {
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateEventoDto: UpdateEventoDto) {
-
-    console.log('evento', updateEventoDto);
-    
-    console.log('cidade', updateEventoDto.cidade_id);
-    
+  update(@Param('id') id: string, @Body() updateEventoDto: UpdateEventoDto) {   
 
     if(updateEventoDto.cidade_id === 0){
       const prop = 'cidade_id';
