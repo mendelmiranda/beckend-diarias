@@ -14,6 +14,7 @@ import { ViagemModule } from './viagem/viagem.module';
 import { EventoParticipantesModule } from './evento_participantes/evento_participantes.module';
 import { AeroportoModule } from './aeroporto/aeroporto.module';
 import { ViagemParticipantesModule } from './viagem_participantes/viagem_participantes.module';
+import { TramiteSolicitacaoModule } from './tramite_solicitacao/tramite_solicitacao.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { ViagemParticipantesModule } from './viagem_participantes/viagem_partici
     EventoParticipantesModule,
     AeroportoModule,
     ViagemParticipantesModule,
+    TramiteSolicitacaoModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -51,13 +51,30 @@ model estado {
 }
 
 model solicitacao {
-  id            Int       @default(autoincrement())
-  datareg       DateTime? @default(now())
-  justificativa String
-  status        String    @db.Char(3)
-  eventos       evento[]
+  id                  Int                   @default(autoincrement())
+  datareg             DateTime?             @default(now())
+  justificativa       String
+  status              String                
+  cpf_responsavel String?
+  nome_responsavel String?
+  eventos             evento[]
+  tramite_solicitacao tramite_solicitacao[]
 
   @@id([id])
+}
+
+model tramite_solicitacao {
+  id Int @unique @default(autoincrement())
+
+  solicitacao_id Int
+  solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id])
+
+  cod_lotacao Int
+  lotacao     String
+
+  datareg DateTime @default(now())
+
+  @@id([id, solicitacao_id])
 }
 
 model cidade {
