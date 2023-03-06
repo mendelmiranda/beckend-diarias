@@ -43,6 +43,23 @@ export class ContaDiariaService {
         cpf: cpf,
         tipo: 'C',
       },
+      include: {
+        banco: true,
+      },
+      orderBy: [
+       { id: "desc"}
+      ]
+    });
+  }
+
+  pesquisaContaDoParticipanteGeralPorCpf(cpf: string){
+    return this.prisma.conta_diaria.findFirst({
+      where: {
+        cpf: cpf,
+      },
+      include: {
+        banco: true,
+      },
       orderBy: [
        { id: "desc"}
       ]
@@ -53,9 +70,7 @@ export class ContaDiariaService {
     return `This action returns a #${id} contaDiaria`;
   }
 
-  update(id: number, updateContaDiariaDto: UpdateContaDiariaDto) {        
-    console.log('chamouuuu');
-    
+  update(id: number, updateContaDiariaDto: UpdateContaDiariaDto) {            
     return this.prisma.conta_diaria.update({
       where: { id },
       data: updateContaDiariaDto,

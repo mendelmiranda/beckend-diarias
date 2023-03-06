@@ -31,6 +31,11 @@ export class ContaDiariaController {
     return this.contaDiariaService.pesquisaContaDoParticipantePorCpf(cpf);
   }
 
+  @Get('/geral/participante/cpf/:cpf')
+  pesquisaContaDoParticipanteGeralPorCpf(@Param('cpf') cpf: string) {
+    return this.contaDiariaService.pesquisaContaDoParticipanteGeralPorCpf(cpf);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.contaDiariaService.findOne(+id);
@@ -41,9 +46,7 @@ export class ContaDiariaController {
     @Param('id') id: string,
     @Body() updateContaDiariaDto: UpdateContaDiariaDto,
   ) {
-    
     console.log(updateContaDiariaDto.id);
-    
 
     /* if (updateContaDiariaDto.id > 0 || updateContaDiariaDto.id === undefined) {
       const data: CreateContaDiariaDto = {
@@ -59,7 +62,6 @@ export class ContaDiariaController {
     } else {
       return this.contaDiariaService.update(+id, updateContaDiariaDto);
     } */
-    
   }
 
   @Delete(':id')
