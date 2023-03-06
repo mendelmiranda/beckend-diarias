@@ -54,9 +54,11 @@ model solicitacao {
   id                  Int                   @default(autoincrement())
   datareg             DateTime?             @default(now())
   justificativa       String
-  status              String                
-  cpf_responsavel String?
-  nome_responsavel String?
+  status              String
+  cpf_responsavel     String?
+  nome_responsavel    String?
+  cod_lotacao         Int?
+  lotacao             String?
   eventos             evento[]
   tramite_solicitacao tramite_solicitacao[]
 

@@ -14,7 +14,11 @@ export class SolicitacaoService {
   }
 
   findAll() {
-    return `This action returns all solicitacao`;
+    return this.prisma.solicitacao.findMany({
+      orderBy: [
+        {id: 'desc'}
+      ]
+    });
   }
 
   findOne(id: number) {
