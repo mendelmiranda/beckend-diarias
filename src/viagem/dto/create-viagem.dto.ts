@@ -14,7 +14,7 @@ export class CreateViagemDto {
     pais_id: number;
       
     trecho: string;
-    data_ida:            Date;
+    data_ida?:            Date;
     data_volta?:           Date
     justificativa?:       string;
     datareg?:              Date;             
