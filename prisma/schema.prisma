@@ -157,8 +157,7 @@ model evento_participantes {
 
   participante_id Int
   participante    participante @relation(fields: [participante_id], references: [id], onDelete: Cascade)
-  valor_diaria    Float? //<======deve colocar obrigatório em produção
-
+  
   viagem_participantes viagem_participantes[]
 
   @@id([id, evento_id, participante_id])
@@ -185,6 +184,7 @@ model viagem {
   data_ida_diferente   DateTime?
   data_volta_diferente DateTime?
   justificativa_diferente String?
+  valor_diaria    Float? //<======deve colocar obrigatório em produção
 
   datareg        DateTime @default(now())
   arcar_passagem String?  @db.Char(3)

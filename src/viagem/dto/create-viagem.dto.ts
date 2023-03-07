@@ -21,6 +21,8 @@ export class CreateViagemDto {
   data_ida_diferente?: Date;
   data_volta_diferente?: Date;
   justificativa_diferente?: string;
+  valor_diaria?: number; //<======deve colocar obrigatório em produção
+
 
   datareg?: Date;
   arcar_passagem?: string;
