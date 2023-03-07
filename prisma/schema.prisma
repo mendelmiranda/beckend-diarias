@@ -88,6 +88,9 @@ model cidade {
   eventos      evento[]
   participante participante[]
 
+  origem  viagem[] @relation("cidori")
+  destino viagem[] @relation("ciddest")
+
   @@id([id, estado_id])
 }
 
@@ -157,7 +160,7 @@ model evento_participantes {
 
   participante_id Int
   participante    participante @relation(fields: [participante_id], references: [id], onDelete: Cascade)
-  
+
   viagem_participantes viagem_participantes[]
 
   @@id([id, evento_id, participante_id])
@@ -165,11 +168,18 @@ model evento_participantes {
 
 model viagem {
   id        Int       @id @default(autoincrement())
-  origem_id Int
-  origem    aeroporto @relation("ori", fields: [origem_id], references: [id])
+  origem_id Int?
+  origem    aeroporto? @relation("ori", fields: [origem_id], references: [id])
 
-  destino_id Int
-  destino    aeroporto @relation("dest", fields: [destino_id], references: [id])
+  destino_id Int?
+  destino    aeroporto? @relation("dest", fields: [destino_id], references: [id])
+  
+  cidade_origem_id Int?
+  cidade_origem    cidade? @relation("cidori", fields: [cidade_origem_id], references: [id])
+
+  cidade_destino_id Int?
+  cidade_destino    cidade? @relation("ciddest", fields: [cidade_destino_id], references: [id])
+
 
   exterior       String
   local_exterior String?
@@ -180,11 +190,11 @@ model viagem {
   data_volta    DateTime
   justificativa String?
 
-  viagem_diferente String?  @db.Char(3)
-  data_ida_diferente   DateTime?
-  data_volta_diferente DateTime?
+  viagem_diferente        String?   @db.Char(3)
+  data_ida_diferente      DateTime?
+  data_volta_diferente    DateTime?
   justificativa_diferente String?
-  valor_diaria    Float? //<======deve colocar obrigatório em produção
+  valor_diaria            Float? //<======deve colocar obrigatório em produção
 
   datareg        DateTime @default(now())
   arcar_passagem String?  @db.Char(3)
