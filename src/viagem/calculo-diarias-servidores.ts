@@ -10,8 +10,7 @@ export default class CalculoDiariasServidores {
 
     if (uf === 'AP') {
       const meiaDiaria = this.valorServidoresDentroAP(cargo) / 2;
-      const totalInterno =
-        diarias * this.valorServidoresDentroAP(cargo) + meiaDiaria;
+      const totalInterno = diarias * this.valorServidoresDentroAP(cargo) + meiaDiaria;
 
       console.log(
         'interno',
