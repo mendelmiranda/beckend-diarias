@@ -1,7 +1,7 @@
 export class CreateViagemDto {
 
-  origem_id: number;
-  destino_id: number;
+  origem_id?: number;
+  destino_id?: number;
 
   cidade_origem_id: number;
   cidade_destino_id: number;
@@ -19,7 +19,6 @@ export class CreateViagemDto {
   data_volta_diferente?: Date;
   justificativa_diferente?: string;
   valor_diaria?: number; //<======deve colocar obrigatório em produção
-
 
   datareg?: Date;
   arcar_passagem?: string;

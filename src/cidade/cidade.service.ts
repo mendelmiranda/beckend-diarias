@@ -20,7 +20,14 @@ export class CidadeService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} cidade`;
+    return this.prisma.cidade.findFirst({
+      where: {
+        id: id
+      }, 
+      include: {
+        estado: true,
+      }
+    });
   }
 
   update(id: number, updateCidadeDto: UpdateCidadeDto) {

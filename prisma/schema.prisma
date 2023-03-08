@@ -50,6 +50,21 @@ model estado {
   participante participante[]
 }
 
+model cidade {
+  id        Int    @unique @default(autoincrement())
+  estado_id Int
+  descricao String @db.VarChar(50)
+  estado    estado @relation(fields: [estado_id], references: [id])
+
+  eventos      evento[]
+  participante participante[]
+
+  origem  viagem[] @relation("cidori")
+  destino viagem[] @relation("ciddest")
+
+  @@id([id, estado_id])
+}
+
 model solicitacao {
   id                  Int                   @default(autoincrement())
   datareg             DateTime?             @default(now())
@@ -79,20 +94,6 @@ model tramite_solicitacao {
   @@id([id, solicitacao_id])
 }
 
-model cidade {
-  id        Int    @unique @default(autoincrement())
-  estado_id Int
-  descricao String @db.VarChar(50)
-  estado    estado @relation(fields: [estado_id], references: [id])
-
-  eventos      evento[]
-  participante participante[]
-
-  origem  viagem[] @relation("cidori")
-  destino viagem[] @relation("ciddest")
-
-  @@id([id, estado_id])
-}
 
 model aeroporto {
   id             Int     @unique @default(autoincrement())
@@ -179,7 +180,6 @@ model viagem {
 
   cidade_destino_id Int?
   cidade_destino    cidade? @relation("ciddest", fields: [cidade_destino_id], references: [id])
-
 
   exterior       String
   local_exterior String?
