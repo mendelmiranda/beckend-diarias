@@ -6,13 +6,12 @@ import { UpdateViagemDto } from './dto/update-viagem.dto';
 import { ParticipanteService } from '../participante/participante.service';
 import { ViagemParticipantesService } from '../viagem_participantes/viagem_participantes.service';
 import { EventoParticipantesService } from '../evento_participantes/evento_participantes.service';
-import CalculoDiaria from './calculo-diarias';
+import CalculoDiaria from './calculo-diarias-membros';
 
 @Injectable()
 export class ViagemService {
   constructor(private prisma: PrismaService, 
     private cidadeService: CidadeService,
-    private participanteService: ParticipanteService,
     private eventoParticipanteService: EventoParticipantesService,) {}
 
   async create(dto: CreateViagemDto) {    
@@ -24,20 +23,11 @@ export class ViagemService {
   async calculaDiaria(idViagem: number, idEventoParticipante){            
 
     const localizaViagem = await this.findOne(idViagem);    
-    const localizaCidade = this.cidadeService.findOne((await localizaViagem).cidade_destino_id);
-    const uf = (await localizaCidade).estado.uf;
+    const localizaCidade = await this.cidadeService.findOne(localizaViagem.cidade_destino_id);
+    const uf = localizaCidade.estado.uf;
 
     const localizaEventoParticipante = await this.eventoParticipanteService.findOne(+idEventoParticipante);
-    const cargo = localizaEventoParticipante.participante.cargo
-
-    
-
-    /* const participante = this.participanteService.findOne(+idParticipante);
-    const cargo = (await participante).cargo; */
-    
-    
-    //console.log('parti ',cargo);
-    
+    const cargo = localizaEventoParticipante.participante.cargo    
 
     const calcula = new CalculoDiaria();
     return calcula.membros(localizaViagem, uf, cargo);

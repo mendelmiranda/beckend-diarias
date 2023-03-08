@@ -94,7 +94,6 @@ model tramite_solicitacao {
   @@id([id, solicitacao_id])
 }
 
-
 model aeroporto {
   id             Int     @unique @default(autoincrement())
   iata           String?
@@ -168,13 +167,13 @@ model evento_participantes {
 }
 
 model viagem {
-  id        Int       @id @default(autoincrement())
+  id        Int        @id @default(autoincrement())
   origem_id Int?
   origem    aeroporto? @relation("ori", fields: [origem_id], references: [id])
 
   destino_id Int?
   destino    aeroporto? @relation("dest", fields: [destino_id], references: [id])
-  
+
   cidade_origem_id Int?
   cidade_origem    cidade? @relation("cidori", fields: [cidade_origem_id], references: [id])
 
@@ -196,9 +195,10 @@ model viagem {
   justificativa_diferente String?
   valor_diaria            Float? //<======deve colocar obrigatório em produção
 
-  datareg        DateTime @default(now())
-  arcar_passagem String?  @db.Char(3)
-  custos         String[]
+  datareg               DateTime @default(now())
+  arcar_passagem        String?  @db.Char(3)
+  custos                String[]
+  servidor_acompanhando String? @db.Char(3)
 
   viagem_participantes viagem_participantes[]
 }

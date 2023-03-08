@@ -23,4 +23,5 @@ export class CreateViagemDto {
   datareg?: Date;
   arcar_passagem?: string;
   custos: string[];
+  servidor_acompanhando?: string;
 }

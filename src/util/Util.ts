@@ -1,4 +1,5 @@
-import moment from "moment";
+import * as moment from 'moment';
+
 
 
 function dataAtual(d: Date) {
@@ -12,6 +13,10 @@ function convertToDate(dateString: string) {
     return dat;     
 }
 
+function totalDeDias(inicio: Date, fim: Date) {
+    return moment(fim).diff(moment(inicio), 'days') + 1;
+}
+
 export const Util = {
-    dataAtual, convertToDate,
+    dataAtual, convertToDate,totalDeDias
 }
