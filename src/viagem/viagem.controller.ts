@@ -12,9 +12,6 @@ export class ViagemController {
 
   @Post('/evento_participantes/:id')
   async create(@Param('id') id: number, @Body() createViagemDto: CreateViagemDto) {
-
-    console.log('viagem', createViagemDto);
-    
     
     const viagem = (await this.viagemService.create(createViagemDto)).id;
 
@@ -24,7 +21,11 @@ export class ViagemController {
       datareg: new Date(),      
     }
 
-    return this.viagemParticipanteService.create(viagem_participante);    
+    this.viagemService.calculaDiaria(viagem, id);
+
+    await this.viagemParticipanteService.create(viagem_participante);    
+
+    return;
   }
 
   @Get('/evento/:id')

@@ -19,7 +19,14 @@ export class EventoParticipantesService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} eventoParticipante`;
+    return this.prisma.evento_participantes.findFirst({
+      where: {
+        id: id
+      },
+      include: {
+        participante: true,
+      }
+    });
   }
 
   findParticipantesDoEvento(idEvento: number) {

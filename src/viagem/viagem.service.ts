@@ -1,33 +1,47 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { CidadeService } from 'src/cidade/cidade.service';
-import CalculoDiaria, { ServidoresCalculo } from './calculo-diarias';
 import { CreateViagemDto } from './dto/create-viagem.dto';
 import { UpdateViagemDto } from './dto/update-viagem.dto';
 import { ParticipanteService } from '../participante/participante.service';
+import { ViagemParticipantesService } from '../viagem_participantes/viagem_participantes.service';
+import { EventoParticipantesService } from '../evento_participantes/evento_participantes.service';
+import CalculoDiaria from './calculo-diarias';
 
 @Injectable()
 export class ViagemService {
   constructor(private prisma: PrismaService, 
     private cidadeService: CidadeService,
-    private participanteService: ParticipanteService) {}
+    private participanteService: ParticipanteService,
+    private eventoParticipanteService: EventoParticipantesService,) {}
 
   async create(dto: CreateViagemDto) {    
-    const localizaCidade = this.cidadeService.findOne(dto.cidade_destino_id);
-    const uf = (await localizaCidade).estado.uf;
-
-    //const localizaParticipante = this.participanteService.pesquisarParticipantePorCpf(dto.ev)
-    
-
-    const calcula = new CalculoDiaria();
-    calcula.membros(uf);
-
-    return;   
-
-
     return this.prisma.viagem.create({
       data: dto,
     });
+  }
+
+  async calculaDiaria(idViagem: number, idEventoParticipante){            
+
+    const localizaViagem = await this.findOne(idViagem);    
+    const localizaCidade = this.cidadeService.findOne((await localizaViagem).cidade_destino_id);
+    const uf = (await localizaCidade).estado.uf;
+
+    const localizaEventoParticipante = await this.eventoParticipanteService.findOne(+idEventoParticipante);
+    const cargo = localizaEventoParticipante.participante.cargo
+
+    
+
+    /* const participante = this.participanteService.findOne(+idParticipante);
+    const cargo = (await participante).cargo; */
+    
+    
+    //console.log('parti ',cargo);
+    
+
+    const calcula = new CalculoDiaria();
+    return calcula.membros(localizaViagem, uf, cargo);
+    
   }
 
   findAll() {
@@ -35,7 +49,11 @@ export class ViagemService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} viagem`;
+    return this.prisma.viagem.findFirst({
+      where: {
+        id: id
+      }
+    });
   }
 
   update(id: number, updateViagemDto: UpdateViagemDto) {

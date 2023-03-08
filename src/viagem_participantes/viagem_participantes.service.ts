@@ -40,6 +40,23 @@ export class ViagemParticipantesService {
     });
   }
 
+  findParticipanteDaViagem(id: number){
+    return this.prisma.viagem_participantes.findFirst(
+      {
+        where: {
+          viagem_id: id
+        },
+        include: {
+          evento_participantes: {
+            include: {
+              participante: true,
+            }
+          }
+        }
+      }
+    )
+  }
+
   findOne(id: number) {
     return `This action returns a #${id} viagemParticipante`;
   }

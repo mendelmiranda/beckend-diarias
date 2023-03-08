@@ -31,7 +31,11 @@ export class ParticipanteService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} participante`;
+    return this.prisma.participante.findFirst({
+      where: {
+        id: id,
+      }
+    })
   }
 
   update(id: number, updateParticipanteDto: UpdateParticipanteDto) {

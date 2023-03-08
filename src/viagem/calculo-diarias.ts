@@ -5,12 +5,14 @@ export default class CalculoDiaria {
 
     //verificar se é internacional
 
-    membros(uf: string){
+    membros(viagem: viagem | never, uf: string, cargo: string){
 
         //uf ap - 4
         //mcp - 131
         if(uf === "AP"){
-            console.log('dentro de macapá');            
+            console.log('dentro de macapá');    
+            console.log('cargo', cargo);
+                    
         }
 
 
@@ -20,19 +22,21 @@ export default class CalculoDiaria {
 
 
         /* if(servidor.cargo?.trim() === "CONSELHEIRO" || servidor.cargo?.trim() === "PROCURADOR GERAL DE CONTAS"){
-            return "1.178,80";
+            return "1178.80";
         }
 
         if(servidor.cargo?.trim() === "CONSELHEIRO-SUBSTITUTO" || servidor.cargo?.trim() === "PROCURADOR DE CONTAS"){
-            return "1.119,86";
+            return "1119.86";
         } */
+
+        
         return ""
     }
 
    
 }
 
-export interface ServidoresCalculo {
+/* export interface ServidoresCalculo {
     cargo?: string;
     viagem: CreateViagemDto;
 }
@@ -43,4 +47,4 @@ enum Membros {
     CONSELHEIRO_SUBSTITUTO = 3,
     PROCURADORES_DE_CONTAS = 4,
     SERVIDORES = 5
-}
+} */
