@@ -4,7 +4,7 @@ import { CreateViagemDto } from './dto/create-viagem.dto';
 
 export default class CalculoDiariaMembros {
 
-  membros(viagem: viagem, uf: string, cargo: string) {
+  membros(viagem: viagem, uf: string, cargo: string, classe: string) {
     const totalDias = Util.totalDeDias(viagem.data_ida, viagem.data_volta);
     const diarias = totalDias - 1;
 

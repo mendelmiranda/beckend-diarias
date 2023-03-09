@@ -7,6 +7,7 @@ import { ParticipanteService } from '../participante/participante.service';
 import { ViagemParticipantesService } from '../viagem_participantes/viagem_participantes.service';
 import { EventoParticipantesService } from '../evento_participantes/evento_participantes.service';
 import CalculoDiaria from './calculo-diarias-membros';
+import CalculoDiariasServidores from './calculo-diarias-servidores';
 
 @Injectable()
 export class ViagemService {
@@ -27,10 +28,17 @@ export class ViagemService {
     const uf = localizaCidade.estado.uf;
 
     const localizaEventoParticipante = await this.eventoParticipanteService.findOne(+idEventoParticipante);
-    const cargo = localizaEventoParticipante.participante.cargo    
+    const cargo = localizaEventoParticipante.participante.cargo; 
+    const classe = localizaEventoParticipante.participante.classe;  
+    
+    console.log('classe', classe);
+    
 
-    const calcula = new CalculoDiaria();
-    return calcula.membros(localizaViagem, uf, cargo);
+    /* const calcula = new CalculoDiaria();
+    return calcula.membros(localizaViagem, uf, cargo, classe); */
+
+    const calcula = new CalculoDiariasServidores();
+    return calcula.servidores(localizaViagem, uf, cargo, classe);
     
   }
 
