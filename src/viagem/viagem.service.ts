@@ -8,11 +8,13 @@ import { ViagemParticipantesService } from '../viagem_participantes/viagem_parti
 import { EventoParticipantesService } from '../evento_participantes/evento_participantes.service';
 import CalculoDiaria from './calculo-diarias-membros';
 import CalculoDiariasServidores from './calculo-diarias-servidores';
+import { AeroportoService } from '../aeroporto/aeroporto.service';
 
 @Injectable()
 export class ViagemService {
   constructor(private prisma: PrismaService, 
     private cidadeService: CidadeService,
+    private aeroportoService: AeroportoService,
     private eventoParticipanteService: EventoParticipantesService,) {}
 
   async create(dto: CreateViagemDto) {    
@@ -23,16 +25,26 @@ export class ViagemService {
 
   async calculaDiaria(idViagem: number, idEventoParticipante){            
 
-    const localizaViagem = await this.findOne(idViagem);    
-    const localizaCidade = await this.cidadeService.findOne(localizaViagem.cidade_destino_id);
-    const uf = localizaCidade.estado.uf;
-
     const localizaEventoParticipante = await this.eventoParticipanteService.findOne(+idEventoParticipante);
     const cargo = localizaEventoParticipante.participante.cargo; 
     const classe = localizaEventoParticipante.participante.classe;  
+    const temViagem = localizaEventoParticipante.evento.tem_passagem;
     
-    console.log('classe', classe);
-    
+
+    let localizaViagem;
+    let uf;
+    if(temViagem === "NAO"){
+      localizaViagem = await this.findOne(idViagem);   
+      const localizaCidade = await this.cidadeService.findOne(localizaViagem.cidade_destino_id);
+      uf = localizaCidade.estado.uf;
+    } else {
+      localizaViagem = await this.findOne(idViagem);   
+      const aeroporto = await this.aeroportoService.findOne(localizaViagem.destino_id);
+
+      console.log(aeroporto);
+      
+      uf = aeroporto.uf;
+    }
 
     /* const calcula = new CalculoDiaria();
     return calcula.membros(localizaViagem, uf, cargo, classe); */
@@ -50,6 +62,11 @@ export class ViagemService {
     return this.prisma.viagem.findFirst({
       where: {
         id: id
+      }, include: {
+        cidade_origem: true,
+        cidade_destino: true,
+        origem: true,
+        destino: true,
       }
     });
   }

@@ -6,10 +6,11 @@ import { ViagemParticipantesService } from '../viagem_participantes/viagem_parti
 import { CidadeService } from '../cidade/cidade.service';
 import { ParticipanteService } from '../participante/participante.service';
 import { EventoParticipantesService } from '../evento_participantes/evento_participantes.service';
+import { AeroportoService } from '../aeroporto/aeroporto.service';
 
 @Module({
   controllers: [ViagemController],
   providers: [ViagemService, PrismaService, ViagemParticipantesService, 
-    CidadeService, ParticipanteService, EventoParticipantesService],
+    CidadeService, ParticipanteService, EventoParticipantesService, AeroportoService,],
 })
 export class ViagemModule {}

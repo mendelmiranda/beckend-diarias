@@ -15,10 +15,10 @@ export default class CalculoDiariasServidores {
       console.log('interno', Intl.NumberFormat('pt-BR', {style: 'currency', currency: 'BRL'}).format(totalInterno));
     }
 
-    /* if (uf !== 'AP' && viagem.exterior === "NAO") {
-        const meiaDiaria = this.valorMembrosForaAP(cargo) / 2;
+    if (uf !== 'AP' && viagem.exterior === "NAO") {
+        const meiaDiaria = this.valorServidoresForaAP(cargo, classe, viagem.servidor_acompanhando) / 2;
         const totalInterno =
-          diarias * this.valorMembrosForaAP(cargo) + meiaDiaria;
+          diarias * this.valorServidoresForaAP(cargo, classe, viagem.servidor_acompanhando) + meiaDiaria;
   
         console.log(
           'fora de macapa',
@@ -29,7 +29,7 @@ export default class CalculoDiariasServidores {
         );
     }
 
-    if (viagem.exterior === "SIM") {
+    /*if (viagem.exterior === "SIM") {
         const meiaDiaria = this.valorMembrosInternacional(cargo) / 2;
         const internacional =
           diarias * this.valorMembrosInternacional(cargo) + meiaDiaria;
@@ -47,12 +47,6 @@ export default class CalculoDiariasServidores {
   }
 
   valorServidoresDentroAP(cargo: string, classe: string, acompanha: string): number {
-    //tcds estão na classe
-
-    console.log('cargo', cargo);
-    console.log('classe', classe);  
-    
-
     const cargoServidores  =  ["TCDAS 07", "TCDAS 06", "TCDAS 05", "TCDAS 04", "TCDAS 03", "AUDITOR"];
     const cargoComum       =  ["ASSISTENTE DE CONTROLE EXTERNO","TECNICO DE CONTROLE EXTERNO", "TCDAS 02", "TCDAS 01"];
 
@@ -60,64 +54,45 @@ export default class CalculoDiariasServidores {
     //contains analista ou auditor (quando estiverem acompanhando, não recebem nada)
     //só recebe valor acompanhando conselheiro: Técnico de controle externo, Assistente de Controle Externo, TCDAS 02 e TCDAS 01.
 
-    /* if(cargoComum.find(carg => carg === cargo.trim())){
-      if(acompanha === "SIM"){
-        return 766.22;
-      } else {
-        return 648.34
-      }
+
+    if (acompanha === "SIM" && cargoComum.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
+      return 766.22;
+    } else if (acompanha === "NAO" && cargoComum.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
+      return 530.46;
     }
 
     if(cargo.trim() === "TECNICO DE CONTROLE EXTERNO"){
       return 648.34;
-    } */  
+    }  
 
-    cargoServidores.forEach(serv => {
-      return cargo.includes(serv.trim()) || classe.includes(serv.trim()) ?  766.22 : 0;
-    })
+    if (cargoServidores.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
+      return 766.22;
+    }
+      
     
-
-    /* if(cargoServidores.includes(cargo.trim()) || cargoServidores.includes(classe.trim())){
-      return 766.22
-    } */
-    
-    
-
     return 0;
   }
 
 
+  valorServidoresForaAP(cargo: string, classe: string, acompanha: string): number {
+    const cargoServidores  =  ["TCDAS 07", "TCDAS 06", "TCDAS 05", "TCDAS 04", "TCDAS 03", "AUDITOR"];
+    const cargoComum       =  ["ASSISTENTE DE CONTROLE EXTERNO","TECNICO DE CONTROLE EXTERNO", "TCDAS 02", "TCDAS 01"];
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  valorMembrosForaAP(cargo: string): number {
-    if (
-      cargo?.trim() === 'CONSELHEIRO' ||
-      cargo?.trim() === 'PROCURADOR GERAL DE CONTAS'
-    ) {
-      return 1309.78;
+    if (acompanha === "SIM" && cargoComum.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
+      return 851.36;
+    } else if (acompanha === "NAO" && cargoComum.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
+      return 589.40;
     }
 
-    if (
-      cargo?.trim() === 'CONSELHEIRO-SUBSTITUTO' ||
-      cargo?.trim() === 'PROCURADOR DE CONTAS'
-    ) {
-      return 1244.29;
+    if(cargo.trim() === "TECNICO DE CONTROLE EXTERNO"){
+      return 720.38;
+    }  
+
+    if (cargoServidores.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
+      return 851.36;
     }
+      
+    
     return 0;
   }
 

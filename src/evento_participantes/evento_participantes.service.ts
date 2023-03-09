@@ -25,6 +25,7 @@ export class EventoParticipantesService {
       },
       include: {
         participante: true,
+        evento: true,
       }
     });
   }

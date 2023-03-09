@@ -19,7 +19,11 @@ export class AeroportoService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} aeroporto`;
+    return this.prisma.aeroporto.findFirst({
+      where: {
+        id: +id
+      }
+    })
   }
 
   update(id: number, updateAeroportoDto: UpdateAeroportoDto) {
