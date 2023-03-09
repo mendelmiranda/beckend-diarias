@@ -21,7 +21,7 @@ export class ParticipanteService {
     return this.prisma.participante.findFirst({
       where: {
         cpf: cpf,
-        tipo: 'C',
+        tipo: {not:'S'},
       },
       include: {
         cidade: true,

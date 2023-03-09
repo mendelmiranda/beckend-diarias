@@ -41,7 +41,7 @@ export class ContaDiariaService {
     return this.prisma.conta_diaria.findFirst({
       where: {
         cpf: cpf,
-        tipo: 'C',
+        tipo: {not:'S'},
       },
       include: {
         banco: true,

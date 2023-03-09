@@ -36,7 +36,7 @@ export class ParticipanteController {
         
     let resultado;
 
-    if (createParticipanteDto.tipo === 'C') {
+    if (createParticipanteDto.tipo !== 'S') {
       const contaDto = createParticipanteDto.contaDiariaModel;
 
       if (contaDto !== undefined) {
@@ -112,7 +112,7 @@ export class ParticipanteController {
     let resultado;
    
 
-    if (updateParticipanteDto.tipo === 'C' && id > 0) {
+    if (updateParticipanteDto.tipo !== 'S' && id > 0) {
       const contaDto = updateParticipanteDto.contaDiariaModel;
 
       if (contaDto !== undefined) {
