@@ -50,11 +50,6 @@ export default class CalculoDiariasServidores {
     const cargoServidores  =  ["TCDAS 07", "TCDAS 06", "TCDAS 05", "TCDAS 04", "TCDAS 03", "AUDITOR"];
     const cargoComum       =  ["ASSISTENTE DE CONTROLE EXTERNO","TECNICO DE CONTROLE EXTERNO", "TCDAS 02", "TCDAS 01"];
 
-
-    //contains analista ou auditor (quando estiverem acompanhando, não recebem nada)
-    //só recebe valor acompanhando conselheiro: Técnico de controle externo, Assistente de Controle Externo, TCDAS 02 e TCDAS 01.
-
-
     if (acompanha === "SIM" && cargoComum.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
       return 766.22;
     } else if (acompanha === "NAO" && cargoComum.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
@@ -67,8 +62,7 @@ export default class CalculoDiariasServidores {
 
     if (cargoServidores.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
       return 766.22;
-    }
-      
+    }      
     
     return 0;
   }
@@ -116,19 +110,3 @@ export default class CalculoDiariasServidores {
 
 
 }
-
-/* export interface ServidoresCalculo {
-    cargo?: string;
-    viagem: CreateViagemDto;
-}
-
-    uf ap - 4
-    mcp - 131
-
-enum Membros {
-    CONSELHEIROS = 1,
-    PROCURADOR_GERAL_DE_CONTAS = 2,
-    CONSELHEIRO_SUBSTITUTO = 3,
-    PROCURADORES_DE_CONTAS = 4,
-    SERVIDORES = 5
-} */
