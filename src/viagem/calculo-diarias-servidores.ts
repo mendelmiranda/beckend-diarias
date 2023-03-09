@@ -17,8 +17,7 @@ export default class CalculoDiariasServidores {
 
     if (uf !== 'AP' && viagem.exterior === "NAO") {
         const meiaDiaria = this.valorServidoresForaAP(cargo, classe, viagem.servidor_acompanhando) / 2;
-        const totalInterno =
-          diarias * this.valorServidoresForaAP(cargo, classe, viagem.servidor_acompanhando) + meiaDiaria;
+        const totalInterno = diarias * this.valorServidoresForaAP(cargo, classe, viagem.servidor_acompanhando) + meiaDiaria;
   
         console.log(
           'fora de macapa',
