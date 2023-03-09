@@ -28,8 +28,7 @@ export class ViagemService {
     const localizaEventoParticipante = await this.eventoParticipanteService.findOne(+idEventoParticipante);
     const cargo = localizaEventoParticipante.participante.cargo; 
     const classe = localizaEventoParticipante.participante.classe;  
-    const temViagem = localizaEventoParticipante.evento.tem_passagem;
-    
+    const temViagem = localizaEventoParticipante.evento.tem_passagem;    
 
     let localizaViagem;
     let uf;
@@ -39,12 +38,11 @@ export class ViagemService {
       uf = localizaCidade.estado.uf;
     } else {
       localizaViagem = await this.findOne(idViagem);   
-      const aeroporto = await this.aeroportoService.findOne(localizaViagem.destino_id);
-
-      console.log(aeroporto);
-      
+      const aeroporto = await this.aeroportoService.findOne(localizaViagem.destino_id);      
       uf = aeroporto.uf;
     }
+
+    //verificar o cargo para identificar se é membro
 
     /* const calcula = new CalculoDiaria();
     return calcula.membros(localizaViagem, uf, cargo, classe); */
