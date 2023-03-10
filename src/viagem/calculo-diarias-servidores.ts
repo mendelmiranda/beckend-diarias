@@ -3,6 +3,8 @@ import { Util } from 'src/util/Util';
 import { CreateViagemDto } from './dto/create-viagem.dto';
 
 export default class CalculoDiariasServidores {
+  cargoServidores  =  ["TCDAS 07", "TCDAS 06", "TCDAS 05", "TCDAS 04", "TCDAS 03", "AUDITOR"];
+  cargoComum       =  ["ASSISTENTE DE CONTROLE EXTERNO","TECNICO DE CONTROLE EXTERNO", "TCDAS 02", "TCDAS 01"];
 
   servidores(viagem: viagem, uf: string, cargo: string, classe: string) {
     const totalDias = Util.totalDeDias(viagem.data_ida, viagem.data_volta);
@@ -47,13 +49,11 @@ export default class CalculoDiariasServidores {
     return '';
   }
 
-  valorServidoresDentroAP(cargo: string, classe: string, acompanha: string): number {
-    const cargoServidores  =  ["TCDAS 07", "TCDAS 06", "TCDAS 05", "TCDAS 04", "TCDAS 03", "AUDITOR"];
-    const cargoComum       =  ["ASSISTENTE DE CONTROLE EXTERNO","TECNICO DE CONTROLE EXTERNO", "TCDAS 02", "TCDAS 01"];
+  valorServidoresDentroAP(cargo: string, classe: string, acompanha: string): number {    
 
-    if (acompanha === "SIM" && cargoComum.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
+    if (acompanha === "SIM" && this.cargoComum.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
       return 766.22;
-    } else if (acompanha === "NAO" && cargoComum.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
+    } else if (acompanha === "NAO" && this.cargoComum.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
       return 530.46;
     }
 
@@ -61,7 +61,7 @@ export default class CalculoDiariasServidores {
       return 648.34;
     }  
 
-    if (cargoServidores.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
+    if (this.cargoServidores.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
       return 766.22;
     }      
     
@@ -70,12 +70,10 @@ export default class CalculoDiariasServidores {
 
 
   valorServidoresForaAP(cargo: string, classe: string, acompanha: string): number {
-    const cargoServidores  =  ["TCDAS 07", "TCDAS 06", "TCDAS 05", "TCDAS 04", "TCDAS 03", "AUDITOR"];
-    const cargoComum       =  ["ASSISTENTE DE CONTROLE EXTERNO","TECNICO DE CONTROLE EXTERNO", "TCDAS 02", "TCDAS 01"];
 
-    if (acompanha === "SIM" && cargoComum.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
+    if (acompanha === "SIM" && this.cargoComum.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
       return 851.36;
-    } else if (acompanha === "NAO" && cargoComum.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
+    } else if (acompanha === "NAO" && this.cargoComum.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
       return 589.40;
     }
 
@@ -83,7 +81,7 @@ export default class CalculoDiariasServidores {
       return 720.38;
     }  
 
-    if (cargoServidores.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
+    if (this.cargoServidores.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
       return 851.36;
     }
       
@@ -92,12 +90,10 @@ export default class CalculoDiariasServidores {
   }
 
   valorServidoresInternacional(cargo: string, classe: string, acompanha: string): number {
-    const cargoServidores  =  ["TCDAS 07", "TCDAS 06", "TCDAS 05", "TCDAS 04", "TCDAS 03", "AUDITOR"];
-    const cargoComum       =  ["ASSISTENTE DE CONTROLE EXTERNO","TECNICO DE CONTROLE EXTERNO", "TCDAS 02", "TCDAS 01"];
 
-    if (acompanha === "SIM" && cargoComum.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
+    if (acompanha === "SIM" && this.cargoComum.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
       return 472.55;
-    } else if (acompanha === "NAO" && cargoComum.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
+    } else if (acompanha === "NAO" && this.cargoComum.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
       return 327.00;
     }
 
@@ -105,7 +101,7 @@ export default class CalculoDiariasServidores {
       return 400;
     }  
 
-    if (cargoServidores.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
+    if (this.cargoServidores.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
       return 472.55;
     }
       
@@ -113,6 +109,5 @@ export default class CalculoDiariasServidores {
     return 0;
   }
 
-
-
 }
+
