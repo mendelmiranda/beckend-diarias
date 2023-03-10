@@ -13,19 +13,30 @@ export class ViagemController {
   @Post('/evento_participantes/:id')
   async create(@Param('id') id: number, @Body() createViagemDto: CreateViagemDto) {
     
-    const viagem = (await this.viagemService.create(createViagemDto)).id;
+    const viagem = await this.viagemService.create(createViagemDto);
 
+        
     const viagem_participante: CreateViagemParticipanteDto = {
       evento_participantes_id: +id,
-      viagem_id: viagem,
+      viagem_id: viagem.id,
       datareg: new Date(),      
     }
 
-    this.viagemService.calculaDiaria(viagem, id);
-
     await this.viagemParticipanteService.create(viagem_participante);    
 
-    return;
+    return await this.atualizarDiaria(viagem.id, id);
+  }
+
+  async atualizarDiaria(idViagem: number, idEventoParticipante: number){
+    const totalDiaria = await this.viagemService.calculaDiaria(idViagem, idEventoParticipante);
+    const findViagem = (await this.viagemService.findOne(idViagem));  
+    const updateViagem: UpdateViagemDto = {
+      ...findViagem,
+      valor_diaria: totalDiaria,
+    }
+
+    return this.viagemService.update(idViagem, updateViagem);    
+
   }
 
   @Get('/evento/:id')

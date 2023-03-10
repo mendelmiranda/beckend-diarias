@@ -6,7 +6,7 @@ export default class CalculoDiariasServidores {
   cargoServidores  =  ["TCDAS 07", "TCDAS 06", "TCDAS 05", "TCDAS 04", "TCDAS 03", "AUDITOR"];
   cargoComum       =  ["ASSISTENTE DE CONTROLE EXTERNO","TECNICO DE CONTROLE EXTERNO", "TCDAS 02", "TCDAS 01"];
 
-  servidores(viagem: viagem, uf: string, cargo: string, classe: string) {
+  servidores(viagem: viagem, uf: string, cargo: string, classe: string): number {
     const totalDias = Util.totalDeDias(viagem.data_ida, viagem.data_volta);
     const diarias = totalDias - 1;
 
@@ -16,37 +16,35 @@ export default class CalculoDiariasServidores {
       const totalInterno = diarias * this.valorServidoresDentroAP(cargo, classe, viagem.servidor_acompanhando) + meiaDiaria;
 
       if(viagem.viagem_superior === "SIM"){
-        console.log('interno - superior a 6h', Intl.NumberFormat('pt-BR', {style: 'currency', currency: 'BRL'}).format(meiaDiaria));  
+        //console.log('interno - superior a 6h', Intl.NumberFormat('pt-BR', {style: 'currency', currency: 'BRL'}).format(meiaDiaria));  
+        return meiaDiaria;
       } else if (viagem.viagem_pernoite === "SIM"){
-        const pernoite = this.valorServidoresDentroAP(cargo, classe, viagem.servidor_acompanhando);
-        console.log('interno - pernoite', Intl.NumberFormat('pt-BR', {style: 'currency', currency: 'BRL'}).format(pernoite));  
+        const pernoite = diarias * this.valorServidoresDentroAP(cargo, classe, viagem.servidor_acompanhando);
+        return pernoite;
+        //console.log('interno - pernoite', Intl.NumberFormat('pt-BR', {style: 'currency', currency: 'BRL'}).format(pernoite));  
       }
       //verificar 
-      console.log('interno', Intl.NumberFormat('pt-BR', {style: 'currency', currency: 'BRL'}).format(totalInterno));
+      //console.log('interno', Intl.NumberFormat('pt-BR', {style: 'currency', currency: 'BRL'}).format(totalInterno));
+      return totalInterno;
     }
 
     if (uf !== 'AP' && viagem.exterior === "NAO") {
         const meiaDiaria = this.valorServidoresForaAP(cargo, classe, viagem.servidor_acompanhando) / 2;
         const totalInterno = diarias * this.valorServidoresForaAP(cargo, classe, viagem.servidor_acompanhando) + meiaDiaria;
-  
-        console.log('fora de macapa', Intl.NumberFormat('pt-BR', {style: 'currency',currency: 'BRL',}).format(totalInterno),);
+
+        return totalInterno;
+       // console.log('fora de macapa', Intl.NumberFormat('pt-BR', {style: 'currency',currency: 'BRL',}).format(totalInterno),);
     }
 
     if (viagem.exterior === "SIM") {
         const meiaDiaria = this.valorServidoresInternacional(cargo, classe, viagem.servidor_acompanhando) / 2;
-        const internacional =
-          diarias * this.valorServidoresInternacional(cargo, classe, viagem.servidor_acompanhando) + meiaDiaria;
+        const internacional = diarias * this.valorServidoresInternacional(cargo, classe, viagem.servidor_acompanhando) + meiaDiaria;
   
-        console.log(
-          'exterior',
-          Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-          }).format(internacional),
-        );
+        //console.log(  'exterior', Intl.NumberFormat('en-US', {style: 'currency',currency: 'USD',}).format(internacional),);
+        return internacional;
     }
 
-    return '';
+    return 0;
   }
 
   valorServidoresDentroAP(cargo: string, classe: string, acompanha: string): number {    
