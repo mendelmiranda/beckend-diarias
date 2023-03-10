@@ -198,7 +198,10 @@ model viagem {
   datareg               DateTime @default(now())
   arcar_passagem        String?  @db.Char(3)
   custos                String[]
-  servidor_acompanhando String? @db.Char(3)
+  servidor_acompanhando String?  @db.Char(3)
+
+  viagem_superior String? @db.Char(3)
+  viagem_pernoite String? @db.Char(3)
 
   viagem_participantes viagem_participantes[]
 }

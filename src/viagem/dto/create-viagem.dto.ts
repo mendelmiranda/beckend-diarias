@@ -24,4 +24,6 @@ export class CreateViagemDto {
   arcar_passagem?: string;
   custos: string[];
   servidor_acompanhando?: string;
+  viagem_superior?: string;
+  viagem_pernoite?: string;
 }
