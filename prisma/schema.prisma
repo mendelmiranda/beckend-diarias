@@ -180,7 +180,7 @@ model viagem {
   cidade_destino_id Int?
   cidade_destino    cidade? @relation("ciddest", fields: [cidade_destino_id], references: [id])
 
-  exterior       String
+  exterior       String?
   local_exterior String?
   pais_id        Int
   pais           pais    @relation(fields: [pais_id], references: [id])

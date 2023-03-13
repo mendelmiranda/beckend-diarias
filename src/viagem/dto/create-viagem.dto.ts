@@ -6,7 +6,7 @@ export class CreateViagemDto {
   cidade_origem_id: number;
   cidade_destino_id: number;
 
-  exterior: string;
+  exterior?: string;
   local_exterior: string;
   pais_id: number;
 

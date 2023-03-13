@@ -30,6 +30,8 @@ export class ViagemParticipantesService {
           include: {
             origem: true,
             destino: true,
+            cidade_origem: true,
+            cidade_destino: true,
           },
         },
 

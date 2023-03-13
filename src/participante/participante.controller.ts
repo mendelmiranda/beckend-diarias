@@ -140,8 +140,7 @@ export class ParticipanteController {
       delete updateParticipanteDto[prop];      
 
       const data: UpdateParticipanteDto = {
-        ...updateParticipanteDto,
-        
+        ...updateParticipanteDto,        
         data_nascimento: Util.convertToDate(dateString),
       };
       

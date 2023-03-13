@@ -70,7 +70,11 @@ export class ViagemService {
   }
 
   update(id: number, updateViagemDto: UpdateViagemDto) {
-    return this.prisma.evento.update({
+
+    const prop = 'id';
+    delete updateViagemDto[prop];    
+
+    return this.prisma.viagem.update({
       where: { id },
       data: updateViagemDto,
     });
