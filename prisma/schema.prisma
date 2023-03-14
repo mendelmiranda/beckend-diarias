@@ -202,6 +202,7 @@ model viagem {
 
   viagem_superior String? @db.Char(3)
   viagem_pernoite String? @db.Char(3)
+  justificativa_municipios String?
 
   viagem_participantes viagem_participantes[]
 }
