@@ -26,4 +26,5 @@ export class CreateViagemDto {
   servidor_acompanhando?: string;
   viagem_superior?: string;
   viagem_pernoite?: string;
+  justificativa_municipios?: string;
 }

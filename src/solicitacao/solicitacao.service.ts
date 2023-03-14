@@ -46,6 +46,8 @@ export class SolicitacaoService {
                       include: {
                         origem: true,
                         destino: true,
+                        cidade_origem: true,
+                        cidade_destino: true,
                       }
                     }
                   }
