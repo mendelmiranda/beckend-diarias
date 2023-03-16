@@ -9,6 +9,12 @@ export class TramiteSolicitacaoController {
 
   @Post()
   create(@Body() createTramiteSolicitacaoDto: CreateTramiteSolicitacaoDto) {
+
+    const data: CreateTramiteSolicitacaoDto = {
+      ...createTramiteSolicitacaoDto,
+      datareg: new Date(),
+    }
+
     return this.tramiteSolicitacaoService.create(createTramiteSolicitacaoDto);
   }
 
