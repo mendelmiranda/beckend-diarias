@@ -89,6 +89,8 @@ model tramite_solicitacao {
   cod_lotacao Int
   lotacao     String
 
+  status String
+
   datareg DateTime @default(now())
 
   @@id([id, solicitacao_id])
@@ -200,8 +202,8 @@ model viagem {
   custos                String[]
   servidor_acompanhando String?  @db.Char(3)
 
-  viagem_superior String? @db.Char(3)
-  viagem_pernoite String? @db.Char(3)
+  viagem_superior          String? @db.Char(3)
+  viagem_pernoite          String? @db.Char(3)
   justificativa_municipios String?
 
   viagem_participantes viagem_participantes[]

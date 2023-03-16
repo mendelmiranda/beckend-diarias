@@ -7,12 +7,21 @@ import { PrismaService } from 'prisma/prisma.service';
 export class TramiteSolicitacaoService {
   constructor(private prisma: PrismaService) {}
 
-  create(createTramiteSolicitacaoDto: CreateTramiteSolicitacaoDto) {
-    return 'This action adds a new tramiteSolicitacao';
+  async create(dto: CreateTramiteSolicitacaoDto) {
+    return this.prisma.tramite_solicitacao.create({
+      data: dto,
+    });
   }
 
   findAll() {
-    return `This action returns all tramiteSolicitacao`;
+    return this.prisma.tramite_solicitacao.findMany({
+      include: {
+        solicitacao: true,
+      },
+      orderBy: {
+        id: "desc"
+      }
+    })
   }
 
   findOne(id: number) {
@@ -20,7 +29,10 @@ export class TramiteSolicitacaoService {
   }
 
   update(id: number, updateTramiteSolicitacaoDto: UpdateTramiteSolicitacaoDto) {
-    return `This action updates a #${id} tramiteSolicitacao`;
+    return this.prisma.tramite_solicitacao.update({
+      where: { id },
+      data: updateTramiteSolicitacaoDto,
+    });
   }
 
   remove(id: number) {
