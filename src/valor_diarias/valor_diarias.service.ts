@@ -7,12 +7,14 @@ import { UpdateValorDiariaDto } from './dto/update-valor_diaria.dto';
 export class ValorDiariasService {
   constructor(private prisma: PrismaService) {}
   
-  create(createValorDiariaDto: CreateValorDiariaDto) {
-    return 'This action adds a new valorDiaria';
+  async create(dto: CreateValorDiariaDto) {   
+    return this.prisma.valor_diarias.create({
+      data: dto,
+    });
   }
 
   findAll() {
-    return `This action returns all valorDiarias`;
+    return this.prisma.valor_diarias.findMany();
   }
 
   findOne(id: number) {
