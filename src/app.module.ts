@@ -15,6 +15,8 @@ import { EventoParticipantesModule } from './evento_participantes/evento_partici
 import { AeroportoModule } from './aeroporto/aeroporto.module';
 import { ViagemParticipantesModule } from './viagem_participantes/viagem_participantes.module';
 import { TramiteSolicitacaoModule } from './tramite_solicitacao/tramite_solicitacao.module';
+import { ValorDiariasModule } from './valor_diarias/valor_diarias.module';
+import { CargoDiariasModule } from './cargo_diarias/cargo_diarias.module';
 
 @Module({
   imports: [
@@ -32,6 +34,8 @@ import { TramiteSolicitacaoModule } from './tramite_solicitacao/tramite_solicita
     AeroportoModule,
     ViagemParticipantesModule,
     TramiteSolicitacaoModule,
+    ValorDiariasModule,
+    CargoDiariasModule,
   ],
   controllers: [AppController],
   providers: [AppService],

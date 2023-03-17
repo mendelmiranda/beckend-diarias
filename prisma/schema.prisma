@@ -222,3 +222,27 @@ model viagem_participantes {
 
   @@id([id, evento_participantes_id, viagem_id])
 }
+
+model valor_diarias {
+  id Int @unique @default(autoincrement())
+
+  dentro        Float
+  fora          Float
+  internacional Float?
+  datareg       DateTime        @default(now())
+  cargo_diarias cargo_diarias[]
+
+  @@id([id])
+}
+
+model cargo_diarias {
+  id Int @unique @default(autoincrement())
+
+  cargo  String
+  classe String
+
+  valor_diarias_id Int
+  valor_diarias    valor_diarias @relation(fields: [valor_diarias_id], references: [id], onDelete: Cascade)
+
+  @@id([id])
+}
