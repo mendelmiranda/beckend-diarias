@@ -14,12 +14,16 @@ export default class CalculoDiariasServidores {
       const meiaDiaria = this.valorServidoresDentroAP(cargo, viagem.servidor_acompanhando) / 2;
       const totalInterno = diarias * this.valorServidoresDentroAP(cargo,  viagem.servidor_acompanhando) + meiaDiaria;
 
-      if(viagem.viagem_superior === "SIM"){
+      
+
+      //const calc = this.calcula(viagem.servidor_acompanhando, Local.DENTRO);
+
+      /* if(viagem.viagem_superior === "SIM"){
         return meiaDiaria;
       } else if (viagem.viagem_pernoite === "SIM"){
         const pernoite = diarias * this.valorServidoresDentroAP(cargo,  viagem.servidor_acompanhando);
         return pernoite;
-      }
+      } */
       return totalInterno;
     }
 
@@ -98,5 +102,34 @@ export default class CalculoDiariasServidores {
     return 0;
   }
 
+  /* calcula(acompanha: string, local: string): number {
+
+    if (acompanha === "SIM" && local === Local.DENTRO ) {
+      return Acompanha.DENTRO;
+    } 
+
+    if (acompanha === "SIM" && local === Local.FORA ) {
+      return Acompanha.FORA;
+    } 
+
+    if (acompanha === "SIM" && local === Local.INTERNACIONAL ) {
+      return Acompanha.INTERNACIONAL;
+    } 
+
+    return 0;
+  } */
+
 }
 
+
+enum Acompanha {
+  DENTRO = 766.22,
+  FORA = 851.36,
+  INTERNACIONAL = 472.55,
+} 
+
+enum Local {
+  DENTRO = 'dentro',
+  FORA = 'fora',
+  INTERNACIONAL = 'internacional',
+}
