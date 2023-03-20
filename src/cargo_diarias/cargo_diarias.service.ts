@@ -17,8 +17,8 @@ export class CargoDiariasService {
     return this.prisma.cargo_diarias.findMany();
   }
 
-  findDiariasPorCargo(cargo: string){
-    return this.prisma.cargo_diarias.findMany({
+async findDiariasPorCargo(cargo: string){
+    return this.prisma.cargo_diarias.findFirst({
       where: {
         cargo: cargo.trim(),
       }, include: {

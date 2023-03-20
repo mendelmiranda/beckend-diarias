@@ -9,13 +9,15 @@ import { EventoParticipantesService } from '../evento_participantes/evento_parti
 import CalculoDiaria from './calculo-diarias-membros';
 import CalculoDiariasServidores from './calculo-diarias-servidores';
 import { AeroportoService } from '../aeroporto/aeroporto.service';
+import { CargoDiariasService } from '../cargo_diarias/cargo_diarias.service';
 
 @Injectable()
 export class ViagemService {
   constructor(private prisma: PrismaService, 
     private cidadeService: CidadeService,
     private aeroportoService: AeroportoService,
-    private eventoParticipanteService: EventoParticipantesService,) {}
+    private eventoParticipanteService: EventoParticipantesService,
+    private cargoDiariaService: CargoDiariasService) {}
 
   async create(dto: CreateViagemDto) {    
     return this.prisma.viagem.create({
@@ -47,8 +49,13 @@ export class ViagemService {
     /* const calcula = new CalculoDiaria();
     return calcula.membros(localizaViagem, uf, cargo, classe); */
 
-    const calcula = new CalculoDiariasServidores();
-    return calcula.servidores(localizaViagem, uf, cargo, classe);
+    /* const calcula = new CalculoDiariasServidores();
+    return calcula.servidores(localizaViagem, uf, cargo, classe); */
+
+    const calculo = await this.cargoDiariaService.findDiariasPorCargo(cargo);
+    
+
+    return calculo.valor_diarias.dentro
     
   }
 

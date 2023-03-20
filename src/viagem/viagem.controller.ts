@@ -31,11 +31,16 @@ export class ViagemController {
     const totalDiaria = await this.viagemService.calculaDiaria(idViagem, idEventoParticipante);
     const findViagem = (await this.viagemService.findOne(idViagem));  
 
-    const updateViagem: UpdateViagemDto = {
+    console.log('total diaria', totalDiaria);
+    
+
+   /*  const updateViagem: UpdateViagemDto = {
       valor_diaria: totalDiaria,
     }    
 
-    return this.viagemService.update(idViagem, updateViagem);    
+  return this.viagemService.update(idViagem, updateViagem);   */  
+
+  return totalDiaria;
   }
 
   @Get('/evento/:id')
