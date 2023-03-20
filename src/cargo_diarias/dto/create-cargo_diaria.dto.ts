@@ -3,6 +3,6 @@ import { valor_diarias } from "@prisma/client";
 export class CreateCargoDiariaDto {
 
     cargo: string;
-    classe: string;
+    funcao?: string;
     valor_diarias_id: number; 
 }

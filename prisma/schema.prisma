@@ -239,7 +239,7 @@ model cargo_diarias {
   id Int @unique @default(autoincrement())
 
   cargo  String
-  classe String
+  funcao String?
 
   valor_diarias_id Int
   valor_diarias    valor_diarias @relation(fields: [valor_diarias_id], references: [id], onDelete: Cascade)

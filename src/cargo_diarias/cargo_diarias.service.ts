@@ -17,6 +17,16 @@ export class CargoDiariasService {
     return this.prisma.cargo_diarias.findMany();
   }
 
+  findDiariasPorCargo(cargo: string){
+    return this.prisma.cargo_diarias.findMany({
+      where: {
+        cargo: cargo.trim(),
+      }, include: {
+        valor_diarias: true
+      }
+    });
+  }
+
   findCargoDasDiarias(id: number) {
     return this.prisma.cargo_diarias.findMany({
       where: {
