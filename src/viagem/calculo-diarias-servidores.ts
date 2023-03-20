@@ -11,13 +11,13 @@ export default class CalculoDiariasServidores {
 
 
     if (uf === 'AP') {
-      const meiaDiaria = this.valorServidoresDentroAP(cargo, classe, viagem.servidor_acompanhando) / 2;
-      const totalInterno = diarias * this.valorServidoresDentroAP(cargo, classe, viagem.servidor_acompanhando) + meiaDiaria;
+      const meiaDiaria = this.valorServidoresDentroAP(cargo, viagem.servidor_acompanhando) / 2;
+      const totalInterno = diarias * this.valorServidoresDentroAP(cargo,  viagem.servidor_acompanhando) + meiaDiaria;
 
       if(viagem.viagem_superior === "SIM"){
         return meiaDiaria;
       } else if (viagem.viagem_pernoite === "SIM"){
-        const pernoite = diarias * this.valorServidoresDentroAP(cargo, classe, viagem.servidor_acompanhando);
+        const pernoite = diarias * this.valorServidoresDentroAP(cargo,  viagem.servidor_acompanhando);
         return pernoite;
       }
       return totalInterno;
@@ -40,24 +40,19 @@ export default class CalculoDiariasServidores {
     return 0;
   }
 
-  valorServidoresDentroAP(cargo: string, classe: string, acompanha: string): number {    
+  valorServidoresDentroAP(cargo: string, acompanha: string): number {    
 
-    if (acompanha === "SIM" && this.cargoComum.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
+    if (acompanha === "SIM" && this.cargoComum.some(serv => cargo.trim().includes(serv.trim()) )) {
       return 766.22;
-    } else if (acompanha === "NAO" && this.cargoComum.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
+    } else if (acompanha === "NAO" && this.cargoComum.some(serv => cargo.trim().includes(serv.trim()) )) {
       return 530.46;
     }
 
     if(cargo.trim() === "TECNICO DE CONTROLE EXTERNO"){
       return 648.34;
-    }  
-    
-    console.log('classe', classe);
-    console.log('cargo', cargo);
-    
-    
+    }      
 
-    if (this.cargoServidores.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
+    if (this.cargoServidores.some(serv => cargo.trim().includes(serv.trim()) )) {
       return 766.22;
     }      
     
