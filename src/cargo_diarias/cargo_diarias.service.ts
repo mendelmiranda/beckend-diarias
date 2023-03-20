@@ -17,6 +17,14 @@ export class CargoDiariasService {
     return this.prisma.cargo_diarias.findMany();
   }
 
+  findCargoDasDiarias(id: number) {
+    return this.prisma.cargo_diarias.findMany({
+      where: {
+        valor_diarias_id: id,
+      }
+    });
+  }
+
   findOne(id: number) {
     return `This action returns a #${id} cargoDiaria`;
   }

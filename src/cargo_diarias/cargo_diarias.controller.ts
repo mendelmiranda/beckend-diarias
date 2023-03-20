@@ -17,6 +17,12 @@ export class CargoDiariasController {
     return this.cargoDiariasService.findAll();
   }
 
+  @Get('/diaria/:id')
+  findCargoDasDiarias(@Param('id') id: string) {
+    return this.cargoDiariasService.findCargoDasDiarias(+id);
+  }
+
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.cargoDiariasService.findOne(+id);
