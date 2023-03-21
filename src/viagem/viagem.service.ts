@@ -29,7 +29,6 @@ export class ViagemService {
 
     const localizaEventoParticipante = await this.eventoParticipanteService.findOne(+idEventoParticipante);
     const cargo = localizaEventoParticipante.participante.cargo; 
-    const classe = localizaEventoParticipante.participante.classe;  
     const temViagem = localizaEventoParticipante.evento.tem_passagem;    
 
     let localizaViagem;
@@ -44,19 +43,11 @@ export class ViagemService {
       uf = aeroporto.uf;
     }
 
-    //verificar o cargo para identificar se é membro
-
-    /* const calcula = new CalculoDiaria();
-    return calcula.membros(localizaViagem, uf, cargo, classe); */
-
-    /* const calcula = new CalculoDiariasServidores();
-    return calcula.servidores(localizaViagem, uf, cargo, classe); */
 
     const calculo = await this.cargoDiariaService.findDiariasPorCargo(cargo);
-    
 
-    return calculo.valor_diarias.dentro
-    
+    const calcula = new CalculoDiariasServidores();
+    return calcula.servidores(localizaViagem, uf, calculo.valor_diarias);    
   }
 
   findAll() {

@@ -1,108 +1,56 @@
+import { valor_diarias } from '@prisma/client';
 import { viagem } from '@prisma/client';
 import { Util } from 'src/util/Util';
 
 export default class CalculoDiariasServidores {
-  cargoServidores  =  ["TCDAS 07", "TCDAS 06", "TCDAS 05", "TCDAS 04", "TCDAS 03", "AUDITOR, ANALISTA DE CONT EXT"];
-  cargoComum       =  ["ASSISTENTE DE CONTROLE EXTERNO","TECNICO DE CONTROLE EXTERNO", "TCDAS 02", "TCDAS 01"];
 
-  servidores(viagem: viagem, uf: string, cargo: string, classe: string): number {
+  servidores(viagem: viagem, uf: string, valorDiaria: valor_diarias): number {
     const totalDias = Util.totalDeDias(viagem.data_ida, viagem.data_volta);
     const diarias = totalDias - 1;
 
-
     if (uf === 'AP') {
-      const meiaDiaria = this.valorServidoresDentroAP(cargo, viagem.servidor_acompanhando) / 2;
-      const totalInterno = diarias * this.valorServidoresDentroAP(cargo,  viagem.servidor_acompanhando) + meiaDiaria;
-
-      
-
-      //const calc = this.calcula(viagem.servidor_acompanhando, Local.DENTRO);
-
-      /* if(viagem.viagem_superior === "SIM"){
-        return meiaDiaria;
-      } else if (viagem.viagem_pernoite === "SIM"){
-        const pernoite = diarias * this.valorServidoresDentroAP(cargo,  viagem.servidor_acompanhando);
-        return pernoite;
-      } */
-      return totalInterno;
+      const meiaDiaria = this.valorServidoresDentroAP(valorDiaria.dentro, viagem.servidor_acompanhando) / 2;
+      return diarias * this.valorServidoresDentroAP(valorDiaria.dentro,  viagem.servidor_acompanhando) + meiaDiaria;
     }
 
     if (uf !== 'AP' && viagem.exterior === "NAO") {
-        const meiaDiaria = this.valorServidoresForaAP(cargo, classe, viagem.servidor_acompanhando) / 2;
-        const totalInterno = diarias * this.valorServidoresForaAP(cargo, classe, viagem.servidor_acompanhando) + meiaDiaria;
-
-        return totalInterno;
+        const meiaDiaria = this.valorServidoresForaAP(valorDiaria.fora, viagem.servidor_acompanhando) / 2;
+        return diarias * this.valorServidoresForaAP(valorDiaria.fora, viagem.servidor_acompanhando) + meiaDiaria;
     }
 
     if (viagem.exterior === "SIM") {
-        const meiaDiaria = this.valorServidoresInternacional(cargo, classe, viagem.servidor_acompanhando) / 2;
-        const internacional = diarias * this.valorServidoresInternacional(cargo, classe, viagem.servidor_acompanhando) + meiaDiaria;
-  
-        return internacional;
-    }
+        const meiaDiaria = this.valorServidoresInternacional(valorDiaria.internacional, viagem.servidor_acompanhando) / 2;
+        return diarias * this.valorServidoresInternacional(valorDiaria.internacional, viagem.servidor_acompanhando) + meiaDiaria;
+    } 
 
     return 0;
   }
 
-  valorServidoresDentroAP(cargo: string, acompanha: string): number {    
-
-    if (acompanha === "SIM" && this.cargoComum.some(serv => cargo.trim().includes(serv.trim()) )) {
-      return 766.22;
-    } else if (acompanha === "NAO" && this.cargoComum.some(serv => cargo.trim().includes(serv.trim()) )) {
-      return 530.46;
+  valorServidoresDentroAP(valorDiaria: number, acompanha: string): number {    
+    if(acompanha === "SIM"){
+      return this.valorAcompanhando("SIM", Local.DENTRO);
     }
-
-    if(cargo.trim() === "TECNICO DE CONTROLE EXTERNO"){
-      return 648.34;
-    }      
-
-    if (this.cargoServidores.some(serv => cargo.trim().includes(serv.trim()) )) {
-      return 766.22;
-    }      
-    
-    return 0;
+   
+    return valorDiaria;
   }
 
-
-  valorServidoresForaAP(cargo: string, classe: string, acompanha: string): number {
-
-    if (acompanha === "SIM" && this.cargoComum.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
-      return 851.36;
-    } else if (acompanha === "NAO" && this.cargoComum.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
-      return 589.40;
+  valorServidoresForaAP(valorDiaria: number, acompanha: string): number {    
+    if(acompanha === "SIM"){
+      return this.valorAcompanhando("SIM", Local.FORA);
     }
-
-    if(cargo.trim() === "TECNICO DE CONTROLE EXTERNO"){
-      return 720.38;
-    }  
-
-    if (this.cargoServidores.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
-      return 851.36;
-    }
-      
-    
-    return 0;
+   
+    return valorDiaria;
   }
 
-  valorServidoresInternacional(cargo: string, classe: string, acompanha: string): number {
-
-    if (acompanha === "SIM" && this.cargoComum.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
-      return 472.55;
-    } else if (acompanha === "NAO" && this.cargoComum.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
-      return 327.00;
+  valorServidoresInternacional(valorDiaria: number, acompanha: string): number {    
+    if(acompanha === "SIM"){
+      return this.valorAcompanhando("SIM", Local.INTERNACIONAL);
     }
-
-    if(cargo.trim() === "TECNICO DE CONTROLE EXTERNO"){
-      return 400;
-    }  
-
-    if (this.cargoServidores.some(serv => cargo.trim().includes(serv.trim()) || classe.includes(serv.trim()))) {
-      return 472.55;
-    }
-    return 0;
+   
+    return valorDiaria;
   }
 
-  /* calcula(acompanha: string, local: string): number {
+  valorAcompanhando(acompanha: string, local: string): number {
 
     if (acompanha === "SIM" && local === Local.DENTRO ) {
       return Acompanha.DENTRO;
@@ -117,7 +65,7 @@ export default class CalculoDiariasServidores {
     } 
 
     return 0;
-  } */
+  }
 
 }
 
