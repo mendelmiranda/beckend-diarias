@@ -80,17 +80,25 @@ model solicitacao {
   @@id([id])
 }
 
+model tramite {
+  id Int @unique @default(autoincrement())
+
+  cod_lotacao Int
+  lotacao     String
+  status String
+  datareg             DateTime              @default(now())
+  tramite_solicitacao tramite_solicitacao[]
+
+  @@id([id])
+}
+
 model tramite_solicitacao {
   id Int @unique @default(autoincrement())
 
   solicitacao_id Int
   solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id])
-
-  cod_lotacao Int
-  lotacao     String
-
-  status String
-
+  tramite_id Int
+  tramite    tramite @relation(fields: [tramite_id], references: [id], onDelete: Cascade)
   datareg DateTime @default(now())
 
   @@id([id, solicitacao_id])

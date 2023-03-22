@@ -1,18 +1,27 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'prisma/prisma.service';
 import { CreateTramiteSolicitacaoDto } from './dto/create-tramite_solicitacao.dto';
 import { UpdateTramiteSolicitacaoDto } from './dto/update-tramite_solicitacao.dto';
+import { PrismaService } from 'prisma/prisma.service';
 
 @Injectable()
 export class TramiteSolicitacaoService {
   constructor(private prisma: PrismaService) {}
-  
-  create(createTramiteSolicitacaoDto: CreateTramiteSolicitacaoDto) {
-    return 'This action adds a new tramiteSolicitacao';
+
+  async create(dto: CreateTramiteSolicitacaoDto) {
+    return this.prisma.tramite.create({
+      data: dto,
+    });
   }
 
   findAll() {
-    return `This action returns all tramiteSolicitacao`;
+    return this.prisma.tramite.findMany({
+      include: {
+        tramite_solicitacao: true
+      },
+      orderBy: {
+        id: "desc"
+      }
+    })
   }
 
   findOne(id: number) {
@@ -20,7 +29,10 @@ export class TramiteSolicitacaoService {
   }
 
   update(id: number, updateTramiteSolicitacaoDto: UpdateTramiteSolicitacaoDto) {
-    return `This action updates a #${id} tramiteSolicitacao`;
+    return this.prisma.tramite_solicitacao.update({
+      where: { id },
+      data: updateTramiteSolicitacaoDto,
+    });
   }
 
   remove(id: number) {

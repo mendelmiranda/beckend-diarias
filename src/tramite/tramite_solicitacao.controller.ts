@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
 import { TramiteSolicitacaoService } from './tramite_solicitacao.service';
 import { CreateTramiteSolicitacaoDto } from './dto/create-tramite_solicitacao.dto';
 import { UpdateTramiteSolicitacaoDto } from './dto/update-tramite_solicitacao.dto';
@@ -9,6 +9,12 @@ export class TramiteSolicitacaoController {
 
   @Post()
   create(@Body() createTramiteSolicitacaoDto: CreateTramiteSolicitacaoDto) {
+
+    const data: CreateTramiteSolicitacaoDto = {
+      ...createTramiteSolicitacaoDto,
+      datareg: new Date(),
+    }
+
     return this.tramiteSolicitacaoService.create(createTramiteSolicitacaoDto);
   }
 
@@ -22,7 +28,7 @@ export class TramiteSolicitacaoController {
     return this.tramiteSolicitacaoService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateTramiteSolicitacaoDto: UpdateTramiteSolicitacaoDto) {
     return this.tramiteSolicitacaoService.update(+id, updateTramiteSolicitacaoDto);
   }
