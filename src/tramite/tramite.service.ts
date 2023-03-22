@@ -2,15 +2,24 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { CreateTramiteDto } from './dto/create-tramite.dto';
 import { UpdateTramiteDto } from './dto/update-tramite.dto';
+import { CreateTramiteSolicitacaoDto } from '../tramite_solicitacao/dto/create-tramite_solicitacao.dto';
+import { TramiteSolicitacaoService } from 'src/tramite_solicitacao/tramite_solicitacao.service';
+
 
 @Injectable()
-export class TramiteSolicitacaoService {
+export class TramiteService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateTramiteDto) {
-    return this.prisma.tramite.create({
+
+    const prop = 'solicitacao';
+    delete dto[prop];    
+
+    const resultado = this.prisma.tramite.create({
       data: dto,
     });
+
+    return resultado;
   }
 
   findAll() {
@@ -29,7 +38,7 @@ export class TramiteSolicitacaoService {
   }
 
   update(id: number, updateTramiteSolicitacaoDto: UpdateTramiteDto) {
-    return this.prisma.tramite_solicitacao.update({
+    return this.prisma.tramite.update({
       where: { id },
       data: updateTramiteSolicitacaoDto,
     });

@@ -1,40 +1,58 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
+import { CreateTramiteSolicitacaoDto } from 'src/tramite_solicitacao/dto/create-tramite_solicitacao.dto';
+import { TramiteSolicitacaoService } from 'src/tramite_solicitacao/tramite_solicitacao.service';
 import { CreateTramiteDto } from './dto/create-tramite.dto';
 import { UpdateTramiteDto } from './dto/update-tramite.dto';
-import { TramiteSolicitacaoService } from './tramite.service';
+import { TramiteService } from './tramite.service';
 
-@Controller('tramite-solicitacao')
-export class TramiteSolicitacaoController {
-  constructor(private readonly tramiteSolicitacaoService: TramiteSolicitacaoService) {}
+@Controller('tramite')
+export class TramiteController {
+  constructor(private readonly tramiteService: TramiteService, private tramiteSolicitacaoService: TramiteSolicitacaoService) {}
 
   @Post()
-  create(@Body() createTramiteSolicitacaoDto: CreateTramiteDto) {
-
+  async create(@Body() createTramiteDto: CreateTramiteDto) {
+    
     const data: CreateTramiteDto = {
-      ...createTramiteSolicitacaoDto,
+      ...createTramiteDto,
       datareg: new Date(),
     }
 
-    return this.tramiteSolicitacaoService.create(createTramiteSolicitacaoDto);
+    const solici = createTramiteDto.solicitacao;
+
+    const resultado = this.tramiteService.create(createTramiteDto);
+
+     const idTramite = (await resultado).id;
+
+     solici.forEach(async sol => {   
+
+      const tramite_solicitacao: CreateTramiteSolicitacaoDto = {
+        solicitacao_id: sol.id,
+        tramite_id: idTramite,
+      }
+      await this.tramiteSolicitacaoService.create(tramite_solicitacao);
+    });
+
+
+     return 0;
   }
 
   @Get()
   findAll() {
-    return this.tramiteSolicitacaoService.findAll();
+    return this.tramiteService.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.tramiteSolicitacaoService.findOne(+id);
+    return this.tramiteService.findOne(+id);
   }
 
   @Put(':id')
   update(@Param('id') id: string, @Body() updateTramiteSolicitacaoDto: UpdateTramiteDto) {
-    return this.tramiteSolicitacaoService.update(+id, updateTramiteSolicitacaoDto);
+    return this.tramiteService.update(+id, updateTramiteSolicitacaoDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.tramiteSolicitacaoService.remove(+id);
+    return this.tramiteService.remove(+id);
   }
 }
