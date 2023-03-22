@@ -14,10 +14,11 @@ import { ViagemModule } from './viagem/viagem.module';
 import { EventoParticipantesModule } from './evento_participantes/evento_participantes.module';
 import { AeroportoModule } from './aeroporto/aeroporto.module';
 import { ViagemParticipantesModule } from './viagem_participantes/viagem_participantes.module';
-import { TramiteSolicitacaoModule } from './tramite/tramite_solicitacao.module';
+import { TramiteModule } from './tramite/tramite.module';
 import { ValorDiariasModule } from './valor_diarias/valor_diarias.module';
 import { CargoDiariasModule } from './cargo_diarias/cargo_diarias.module';
 import { TramiteSolicitacaoModule } from './tramite_solicitacao/tramite_solicitacao.module';
+
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { TramiteSolicitacaoModule } from './tramite_solicitacao/tramite_solicita
     AeroportoModule,
     ViagemParticipantesModule,
     TramiteSolicitacaoModule,
+    TramiteModule,
     ValorDiariasModule,
     CargoDiariasModule,
   ],
