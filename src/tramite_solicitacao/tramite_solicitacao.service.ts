@@ -12,7 +12,12 @@ export class TramiteSolicitacaoService {
   }
 
   findAll() {
-    return `This action returns all tramiteSolicitacao`;
+    return this.prisma.tramite_solicitacao.findMany({
+      include: {
+        solicitacao: true,
+        tramite: true,
+      }
+    })
   }
 
   findOne(id: number) {
