@@ -7,8 +7,10 @@ import { UpdateTramiteSolicitacaoDto } from './dto/update-tramite_solicitacao.dt
 export class TramiteSolicitacaoService {
   constructor(private prisma: PrismaService) {}
   
-  create(createTramiteSolicitacaoDto: CreateTramiteSolicitacaoDto) {
-    return 'This action adds a new tramiteSolicitacao';
+  create(dto: CreateTramiteSolicitacaoDto) {
+    return this.prisma.tramite_solicitacao.create({
+      data: dto,
+    });
   }
 
   findAll() {
