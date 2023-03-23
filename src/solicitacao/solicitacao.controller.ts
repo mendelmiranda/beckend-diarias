@@ -26,6 +26,11 @@ export class SolicitacaoController {
     return this.solicitacaoService.findAll();
   }
 
+  @Get('/lotacao/:id')
+  findSolicitacaoPorLotacao(@Param('id') id: string) {
+    return this.solicitacaoService.findAllByLotacao(+id);
+  }
+
   @Get('/detalhes/:id')
   detalhes(@Param('id') id: string) {
     return this.solicitacaoService.detalhesDaSolicitacao(+id);

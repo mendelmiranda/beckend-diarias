@@ -29,6 +29,17 @@ export class SolicitacaoService {
     })
   }
 
+  findAllByLotacao(codLotacao: number) {
+    return this.prisma.solicitacao.findMany({
+      where: {
+        cod_lotacao: codLotacao
+      },
+      orderBy: [
+        {id: 'desc'}
+      ]
+    });
+  }
+
   detalhesDaSolicitacao(id: number) {
     return this.prisma.solicitacao.findUnique({
       where: {

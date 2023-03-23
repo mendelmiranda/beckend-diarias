@@ -33,6 +33,56 @@ export class TramiteService {
     })
   }
 
+  findTramitePorLotacao(codLotacao: number){
+    return this.prisma.tramite.findMany({
+      where: {
+        cod_lotacao: codLotacao
+      },
+      include: {
+        tramite_solicitacao: {
+          include: {
+            solicitacao: {
+              include: {
+                eventos: {
+                  include: {
+                    evento_participantes: {
+                      include: {
+                        participante: true,
+                        viagem_participantes: {
+                          include: {
+                            viagem: {
+                              include: {
+                                origem: true,
+                                destino: true,
+                                cidade_origem: true,
+                                cidade_destino: true,
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    tipo_evento: true,
+                    cidade: {
+                      include:{
+                        estado: true,
+                      }
+                    },
+                    pais: true,
+                  }
+                }
+              }
+            },
+
+          }
+        }
+      },
+      orderBy: {
+        id: "desc"
+      }
+    })
+  }
+
   findOne(id: number) {
     return `This action returns a #${id} tramiteSolicitacao`;
   }
