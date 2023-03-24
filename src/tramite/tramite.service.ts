@@ -83,6 +83,24 @@ export class TramiteService {
     })
   }
 
+  findTramitePorLotacaoPaginando(params: {
+    skip?: number;
+    take?: number;
+}){
+    const { skip, take } = params;
+
+    if(isNaN(skip)){
+      return this.prisma.tramite_solicitacao.findMany({
+        take
+      });
+    } else {
+      return this.prisma.tramite_solicitacao.findMany({
+        skip,
+        take
+      });
+    }
+  }
+
   findOne(id: number) {
     return `This action returns a #${id} tramiteSolicitacao`;
   }

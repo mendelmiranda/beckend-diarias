@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, Query } from '@nestjs/common';
 import { CreateTramiteSolicitacaoDto } from 'src/tramite_solicitacao/dto/create-tramite_solicitacao.dto';
 import { TramiteSolicitacaoService } from 'src/tramite_solicitacao/tramite_solicitacao.service';
 import { CreateTramiteDto } from './dto/create-tramite.dto';
@@ -60,4 +60,9 @@ export class TramiteController {
   remove(@Param('id') id: string) {
     return this.tramiteService.remove(+id);
   }
+
+  @Get('offset')
+async getBookListWithOffset(@Query('skip') skip: string, @Query('take') take: string) {
+    return this.tramiteService.findTramitePorLotacaoPaginando({skip: Number(skip), take: Number(take)});
+}
 }
