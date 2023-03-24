@@ -250,7 +250,7 @@ model cargo_diarias {
   funcao String?
 
   valor_diarias_id Int
-  valor_diarias    valor_diarias @relation(fields: [valor_diarias_id], references: [id], onDelete: Cascade)
+  valor_diarias    valor_diarias @relation(fields: [valor_diarias_id], references: [id])
 
   @@id([id])
 }
