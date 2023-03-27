@@ -75,7 +75,7 @@ model solicitacao {
   cod_lotacao         Int?
   lotacao             String?
   eventos             evento[]
-  tramite_solicitacao tramite_solicitacao[] 
+  tramite_solicitacao tramite_solicitacao[]
 
   @@id([id])
 }
@@ -83,9 +83,9 @@ model solicitacao {
 model tramite {
   id Int @unique @default(autoincrement())
 
-  cod_lotacao Int
-  lotacao     String
-  status String
+  cod_lotacao         Int
+  lotacao             String
+  status              String
   datareg             DateTime              @default(now())
   tramite_solicitacao tramite_solicitacao[]
 
@@ -97,9 +97,9 @@ model tramite_solicitacao {
 
   solicitacao_id Int
   solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id])
-  tramite_id Int
-  tramite    tramite @relation(fields: [tramite_id], references: [id], onDelete: Cascade)
-  datareg DateTime @default(now())
+  tramite_id     Int
+  tramite        tramite     @relation(fields: [tramite_id], references: [id], onDelete: Cascade)
+  datareg        DateTime    @default(now())
 
   @@id([id, solicitacao_id])
 }
@@ -136,6 +136,7 @@ model evento {
   tem_passagem   String?     @db.Char(3)
 
   evento_participantes evento_participantes[]
+  valor_passgem_evento valor_passgem_evento[]
 
   @@id([id])
 }
@@ -251,6 +252,18 @@ model cargo_diarias {
 
   valor_diarias_id Int
   valor_diarias    valor_diarias @relation(fields: [valor_diarias_id], references: [id])
+
+  @@id([id])
+}
+
+model valor_passgem_evento {
+  id Int @unique @default(autoincrement())
+
+  evento_id Int
+  evento    evento @relation(fields: [evento_id], references: [id])
+
+  valor_passagem Float?
+  datareg       DateTime        @default(now())
 
   @@id([id])
 }
