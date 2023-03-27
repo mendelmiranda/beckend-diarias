@@ -18,6 +18,15 @@ export class AeroportoService {
     )
   }
 
+  async findCidadePais(descricao: string) {
+    const resultado = this.prisma.$queryRaw(
+      Prisma.sql`SELECT descricao as descricao FROM cidade WHERE UPPER(descricao) LIKE '%${descricao}%'
+                        UNION
+                        SELECT nome_pt as descricao FROM pais WHERE UPPER(nome_pt) LIKE '%${descricao}%'`);
+
+    return await resultado;
+  }
+
   findOne(id: number) {
     return this.prisma.aeroporto.findFirst({
       where: {

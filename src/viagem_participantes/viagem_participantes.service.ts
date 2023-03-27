@@ -32,6 +32,7 @@ export class ViagemParticipantesService {
             destino: true,
             cidade_origem: true,
             cidade_destino: true,
+            pais: true,
           },
         },
 

@@ -75,7 +75,7 @@ model solicitacao {
   cod_lotacao         Int?
   lotacao             String?
   eventos             evento[]
-  tramite_solicitacao tramite_solicitacao[]
+  tramite_solicitacao tramite_solicitacao[] 
 
   @@id([id])
 }
