@@ -136,7 +136,6 @@ model evento {
   tem_passagem   String?     @db.Char(3)
 
   evento_participantes evento_participantes[]
-  valor_passgem_evento valor_passgem_evento[]
 
   @@id([id])
 }
@@ -215,6 +214,8 @@ model viagem {
   viagem_pernoite          String? @db.Char(3)
   justificativa_municipios String?
 
+  valor_passagem Float?
+
   viagem_participantes viagem_participantes[]
 }
 
@@ -252,18 +253,6 @@ model cargo_diarias {
 
   valor_diarias_id Int
   valor_diarias    valor_diarias @relation(fields: [valor_diarias_id], references: [id])
-
-  @@id([id])
-}
-
-model valor_passgem_evento {
-  id Int @unique @default(autoincrement())
-
-  evento_id Int
-  evento    evento @relation(fields: [evento_id], references: [id])
-
-  valor_passagem Float?
-  datareg       DateTime        @default(now())
 
   @@id([id])
 }

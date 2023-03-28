@@ -27,4 +27,5 @@ export class CreateViagemDto {
   viagem_superior?: string;
   viagem_pernoite?: string;
   justificativa_municipios?: string;
+  valor_passagem?: number;
 }

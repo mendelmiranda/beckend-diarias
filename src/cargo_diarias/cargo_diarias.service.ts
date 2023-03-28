@@ -43,7 +43,11 @@ async findDiariasPorCargo(cargo: string){
     return `This action updates a #${id} cargoDiaria`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} cargoDiaria`;
+  async remove(id: number) {
+    return await this.prisma.cargo_diarias.delete({
+      where: {
+        id: id
+      }
+    })
   }
 }
