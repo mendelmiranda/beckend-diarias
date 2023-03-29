@@ -217,6 +217,15 @@ model viagem {
   valor_passagem Float?
 
   viagem_participantes viagem_participantes[]
+  valor_viagem         valor_viagem[]
+}
+
+model valor_viagem {
+  id        Int    @id @default(autoincrement())
+  viagem_id Int
+  viagem    viagem @relation(fields: [viagem_id], references: [id])
+  valor_individual     Float?
+  valor_grupo Float?
 }
 
 model viagem_participantes {
