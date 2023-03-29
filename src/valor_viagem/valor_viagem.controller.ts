@@ -17,6 +17,11 @@ export class ValorViagemController {
     return this.valorViagemService.findAll();
   }
 
+  @Get('/viagem/:id')
+  findValorViagem(@Param('id') id: string) {
+    return this.valorViagemService.findValorDaViagem(+id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.valorViagemService.findOne(+id);

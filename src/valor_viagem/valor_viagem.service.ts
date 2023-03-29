@@ -17,6 +17,14 @@ export class ValorViagemService {
     return `This action returns all valorViagem`;
   }
 
+  findValorDaViagem(id: number) {
+    return this.prisma.valor_viagem.findFirst({
+      where: {
+        viagem_id: id
+      }
+    });
+  }
+
   findOne(id: number) {
     return `This action returns a #${id} valorViagem`;
   }
