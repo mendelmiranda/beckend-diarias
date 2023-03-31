@@ -31,16 +31,25 @@ export class ViagemService {
     const cargo = localizaEventoParticipante.participante.cargo; 
     const temViagem = localizaEventoParticipante.evento.tem_passagem;    
 
+    //REFATORAR ESSA PARTE
     let localizaViagem;
     let uf;
     if(temViagem === "NAO"){
       localizaViagem = await this.findOne(idViagem);   
       const localizaCidade = await this.cidadeService.findOne(localizaViagem.cidade_destino_id);
       uf = localizaCidade.estado.uf;
-    } else {
+    } 
+    
+    if(temViagem === "SIM" && localizaEventoParticipante.evento.exterior === "NAO"){
       localizaViagem = await this.findOne(idViagem);   
-      const aeroporto = await this.aeroportoService.findOne(localizaViagem.destino_id);      
+      const aeroporto = await this.aeroportoService.findOne(localizaViagem.destino_id);            
       uf = aeroporto.uf;
+    }
+
+    if(temViagem === "SIM" && localizaEventoParticipante.evento.exterior === "SIM"){
+      localizaViagem = await this.findOne(idViagem);   
+      const aeroporto = await this.aeroportoService.findOne(localizaViagem.destino_id);            
+      uf = "SP";
     }
 
 

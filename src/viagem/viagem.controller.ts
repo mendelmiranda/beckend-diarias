@@ -14,8 +14,7 @@ export class ViagemController {
   async create(@Param('id') id: number, @Body() createViagemDto: CreateViagemDto) {
     
     const viagem = await this.viagemService.create(createViagemDto);
-
-        
+            
     const viagem_participante: CreateViagemParticipanteDto = {
       evento_participantes_id: +id,
       viagem_id: viagem.id,
