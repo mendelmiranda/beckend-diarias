@@ -28,35 +28,41 @@ export class ViagemService {
   async calculaDiaria(idViagem: number, idEventoParticipante){            
 
     const localizaEventoParticipante = await this.eventoParticipanteService.findOne(+idEventoParticipante);
-    const cargo = localizaEventoParticipante.participante.cargo; 
-    const temViagem = localizaEventoParticipante.evento.tem_passagem;    
 
-    //REFATORAR ESSA PARTE
-    let localizaViagem;
-    let uf;
-    if(temViagem === "NAO"){
-      localizaViagem = await this.findOne(idViagem);   
-      const localizaCidade = await this.cidadeService.findOne(localizaViagem.cidade_destino_id);
-      uf = localizaCidade.estado.uf;
-    } 
-    
-    if(temViagem === "SIM" && localizaEventoParticipante.evento.exterior === "NAO"){
-      localizaViagem = await this.findOne(idViagem);   
-      const aeroporto = await this.aeroportoService.findOne(localizaViagem.destino_id);            
-      uf = aeroporto.uf;
+    //testar ESSA PARTE
+    if(localizaEventoParticipante.participante.tipo === "S"){
+      const cargo = localizaEventoParticipante.participante.cargo; 
+      const temViagem = localizaEventoParticipante.evento.tem_passagem;    
+  
+      //REFATORAR ESSA PARTE
+      let localizaViagem;
+      let uf;
+      if(temViagem === "NAO"){
+        localizaViagem = await this.findOne(idViagem);   
+        const localizaCidade = await this.cidadeService.findOne(localizaViagem.cidade_destino_id);
+        uf = localizaCidade.estado.uf;
+      } 
+      
+      if(temViagem === "SIM" && localizaEventoParticipante.evento.exterior === "NAO"){
+        localizaViagem = await this.findOne(idViagem);   
+        const aeroporto = await this.aeroportoService.findOne(localizaViagem.destino_id);            
+        uf = aeroporto.uf;
+      }
+  
+      if(temViagem === "SIM" && localizaEventoParticipante.evento.exterior === "SIM"){
+        localizaViagem = await this.findOne(idViagem);   
+        const aeroporto = await this.aeroportoService.findOne(localizaViagem.destino_id);            
+        uf = "SP";
+      }
+  
+  
+      const calculo = await this.cargoDiariaService.findDiariasPorCargo(cargo);
+  
+      const calcula = new CalculoDiariasServidores();
+      return calcula.servidores(localizaViagem, uf, calculo.valor_diarias);    
     }
 
-    if(temViagem === "SIM" && localizaEventoParticipante.evento.exterior === "SIM"){
-      localizaViagem = await this.findOne(idViagem);   
-      const aeroporto = await this.aeroportoService.findOne(localizaViagem.destino_id);            
-      uf = "SP";
-    }
-
-
-    const calculo = await this.cargoDiariaService.findDiariasPorCargo(cargo);
-
-    const calcula = new CalculoDiariasServidores();
-    return calcula.servidores(localizaViagem, uf, calculo.valor_diarias);    
+    return null;
   }
 
   findAll() {
