@@ -203,7 +203,7 @@ model viagem {
   data_ida_diferente      DateTime?
   data_volta_diferente    DateTime?
   justificativa_diferente String?
-  valor_diaria            Float? //<======deve colocar obrigatório em produção
+  valor_diaria            Float?
 
   datareg               DateTime @default(now())
   arcar_passagem        String?  @db.Char(3)

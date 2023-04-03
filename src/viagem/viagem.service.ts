@@ -96,4 +96,14 @@ export class ViagemService {
   remove(id: number) {
     return `This action removes a #${id} viagem`;
   }
+
+  atualizarDiariaColaborador(id: number, updateViagemDto: UpdateViagemDto) {
+    return this.prisma.viagem.update({
+      where: { id },
+      data: {
+        valor_diaria: updateViagemDto.valor_diaria
+      },
+    });
+  }
+
 }
