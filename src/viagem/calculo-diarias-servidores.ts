@@ -36,21 +36,21 @@ export default class CalculoDiariasServidores {
     return 0;
   }
 
-  valorServidoresDentroAP(valorDiaria: number, acompanha: string): number {    
+  private valorServidoresDentroAP(valorDiaria: number, acompanha: string): number {    
     if(acompanha === "SIM"){
       return this.valorAcompanhando( Local.DENTRO);
     }   
     return valorDiaria;
   }
 
-  valorServidoresForaAP(valorDiaria: number, acompanha: string): number {    
+  private valorServidoresForaAP(valorDiaria: number, acompanha: string): number {    
     if(acompanha === "SIM"){
       return this.valorAcompanhando(Local.FORA);
     }   
     return valorDiaria;
   }
 
-  valorServidoresInternacional(valorDiaria: number, acompanha: string): number {    
+  private valorServidoresInternacional(valorDiaria: number, acompanha: string): number {    
     if(acompanha === "SIM"){
       return this.valorAcompanhando(Local.INTERNACIONAL);
     }   
