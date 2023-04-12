@@ -2,6 +2,17 @@ import { valor_diarias } from '@prisma/client';
 import { viagem } from '@prisma/client';
 import { Util } from 'src/util/Util';
 
+enum Acompanha {
+  DENTRO = 766.22,
+  FORA = 851.36,
+  INTERNACIONAL = 472.55,
+} 
+
+enum Local {
+  DENTRO = 'dentro',
+  FORA = 'fora',
+  INTERNACIONAL = 'internacional',
+}
 export default class CalculoDiariasServidores {
 
   servidores(viagem: viagem, uf: string, valorDiaria: valor_diarias): number {
@@ -22,62 +33,41 @@ export default class CalculoDiariasServidores {
         const meiaDiaria = this.valorServidoresInternacional(valorDiaria.internacional, viagem.servidor_acompanhando) / 2;
         return diarias * this.valorServidoresInternacional(valorDiaria.internacional, viagem.servidor_acompanhando) + meiaDiaria;
     } 
-
     return 0;
   }
 
   valorServidoresDentroAP(valorDiaria: number, acompanha: string): number {    
     if(acompanha === "SIM"){
-      return this.valorAcompanhando("SIM", Local.DENTRO);
-    }
-   
+      return this.valorAcompanhando( Local.DENTRO);
+    }   
     return valorDiaria;
   }
 
   valorServidoresForaAP(valorDiaria: number, acompanha: string): number {    
     if(acompanha === "SIM"){
-      return this.valorAcompanhando("SIM", Local.FORA);
-    }
-   
+      return this.valorAcompanhando(Local.FORA);
+    }   
     return valorDiaria;
   }
 
   valorServidoresInternacional(valorDiaria: number, acompanha: string): number {    
     if(acompanha === "SIM"){
-      return this.valorAcompanhando("SIM", Local.INTERNACIONAL);
-    }
-   
+      return this.valorAcompanhando(Local.INTERNACIONAL);
+    }   
     return valorDiaria;
   }
 
-  valorAcompanhando(acompanha: string, local: string): number {
-
-    if (acompanha === "SIM" && local === Local.DENTRO ) {
-      return Acompanha.DENTRO;
-    } 
-
-    if (acompanha === "SIM" && local === Local.FORA ) {
-      return Acompanha.FORA;
-    } 
-
-    if (acompanha === "SIM" && local === Local.INTERNACIONAL ) {
-      return Acompanha.INTERNACIONAL;
-    } 
-
-    return 0;
+  private valorAcompanhando(local: Local): number {
+    switch (local) {
+      case Local.DENTRO:
+        return Acompanha.DENTRO;
+      case Local.FORA:
+        return Acompanha.FORA;
+      case Local.INTERNACIONAL:
+        return Acompanha.INTERNACIONAL;
+      default:
+        return 0;
+    }
   }
 
-}
-
-
-enum Acompanha {
-  DENTRO = 766.22,
-  FORA = 851.36,
-  INTERNACIONAL = 472.55,
-} 
-
-enum Local {
-  DENTRO = 'dentro',
-  FORA = 'fora',
-  INTERNACIONAL = 'internacional',
 }
