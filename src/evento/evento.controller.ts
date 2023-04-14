@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/
 import { EventoService } from './evento.service';
 import { CreateEventoDto } from './dto/create-evento.dto';
 import { UpdateEventoDto } from './dto/update-evento.dto';
+import { evento } from '@prisma/client';
 
 @Controller('evento')
 export class EventoController {
@@ -47,6 +48,11 @@ export class EventoController {
     }
 
     return this.eventoService.update(+id, updateEventoDto);
+  }
+
+  @Put('/:id/custos')
+  updateValores(@Param('id') id: string, @Body() updateEventoDto: UpdateEventoDto) {   
+    return this.eventoService.updateValores(+id, updateEventoDto);
   }
 
   @Delete(':id')

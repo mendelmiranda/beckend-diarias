@@ -22,6 +22,20 @@ export class TramiteSolicitacaoService {
     })
   }
 
+  findAllTramitePeloSetor(codLotacao: number) {
+    return this.prisma.tramite_solicitacao.findMany({
+      where: {
+        tramite: {
+          cod_lotacao: codLotacao
+        }
+      },
+      include: {
+        solicitacao: true,
+        tramite: true,
+      }
+    })
+  }
+
   findOne(id: number) {
     return `This action returns a #${id} tramiteSolicitacao`;
   }

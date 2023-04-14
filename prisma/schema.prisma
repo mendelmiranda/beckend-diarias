@@ -134,6 +134,8 @@ model evento {
   informacoes    String
   datareg        DateTime    @default(now())
   tem_passagem   String?     @db.Char(3)
+  valor_total_inscricao Float?
+  valor_evento Float?
 
   evento_participantes evento_participantes[]
 

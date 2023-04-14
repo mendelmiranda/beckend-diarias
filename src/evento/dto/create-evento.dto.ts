@@ -11,5 +11,7 @@ export class CreateEventoDto {
     informacoes: string;
     datareg: Date;
     tem_passagem?: string;
+    valor_total_inscricao?: number;
+    valor_evento?: number;
 }
  

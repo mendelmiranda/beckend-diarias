@@ -38,13 +38,25 @@ export class EventoService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} evento`;
+    return this.prisma.evento.findFirst({where: {
+      id: id
+    }})
   }
 
   update(id: number, updateEventoDto: UpdateEventoDto) {
     return this.prisma.evento.update({
       where: { id },
       data: updateEventoDto,
+    });
+  }
+
+  updateValores(id: number, updateEventoDto: UpdateEventoDto) {
+    return this.prisma.evento.update({
+      where: { id },
+      data: {
+        valor_evento: updateEventoDto.valor_evento,
+        valor_total_inscricao: updateEventoDto.valor_total_inscricao
+      },
     });
   }
 

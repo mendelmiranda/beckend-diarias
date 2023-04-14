@@ -34,6 +34,13 @@ export class SolicitacaoService {
       where: {
         cod_lotacao: codLotacao
       },
+      include: {
+        eventos: {
+          include: {
+            tipo_evento: true
+          }
+        }
+      },
       orderBy: [
         {id: 'desc'}
       ]

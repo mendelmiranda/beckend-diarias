@@ -14,4 +14,6 @@ export class UpdateEventoDto extends PartialType(CreateEventoDto) {
     cidade_id: number;
     informacoes: string;
     tem_passagem?: string;
+    valor_total_inscricao?: number;
+    valor_evento?: number;
 }

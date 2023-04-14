@@ -22,6 +22,11 @@ export class TramiteSolicitacaoController {
     return this.tramiteSolicitacaoService.findOne(+id);
   }
 
+  @Get('/lotacao/:id')
+  findSolicitacaoPorLotacao(@Param('id') id: string) {
+    return this.tramiteSolicitacaoService.findAllTramitePeloSetor(+id);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateTramiteSolicitacaoDto: UpdateTramiteSolicitacaoDto) {
     return this.tramiteSolicitacaoService.update(+id, updateTramiteSolicitacaoDto);
