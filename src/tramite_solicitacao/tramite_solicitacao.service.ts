@@ -22,16 +22,14 @@ export class TramiteSolicitacaoService {
     })
   }
 
+  //organizar código
   findAllTramitePeloSetor(codLotacao: number) {
-    return this.prisma.tramite_solicitacao.findMany({
+    return this.prisma.tramite.findMany({
       where: {
-        tramite: {
-          cod_lotacao: codLotacao
-        }
+        cod_lotacao: codLotacao
       },
       include: {
-        solicitacao: true,
-        tramite: true,
+        tramite_solicitacao: true
       }
     })
   }
