@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { TramiteSolicitacaoService } from './tramite_solicitacao.service';
 import { CreateTramiteSolicitacaoDto } from './dto/create-tramite_solicitacao.dto';
 import { UpdateTramiteSolicitacaoDto } from './dto/update-tramite_solicitacao.dto';
+import { log } from 'console';
 
 @Controller('tramite-solicitacao')
 export class TramiteSolicitacaoController {

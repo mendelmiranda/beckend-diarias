@@ -29,9 +29,25 @@ export class TramiteSolicitacaoService {
         cod_lotacao: codLotacao
       },
       include: {
-        tramite_solicitacao: true
+        tramite_solicitacao: {
+          include: {
+            solicitacao: true,
+          }
+        }
       }
     })
+
+    /* return this.prisma.tramite_solicitacao.findMany({
+      where: {
+        tramite: {
+          cod_lotacao: codLotacao,
+        }
+      },
+      include: {
+        solicitacao: true,
+        tramite: true,
+      }
+    }); */
   }
 
   findOne(id: number) {
