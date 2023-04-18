@@ -17,7 +17,6 @@ import { ViagemParticipantesModule } from './viagem_participantes/viagem_partici
 import { TramiteModule } from './tramite/tramite.module';
 import { ValorDiariasModule } from './valor_diarias/valor_diarias.module';
 import { CargoDiariasModule } from './cargo_diarias/cargo_diarias.module';
-import { TramiteSolicitacaoModule } from './tramite_solicitacao/tramite_solicitacao.module';
 import { ValorViagemModule } from './valor_viagem/valor_viagem.module';
 
 
@@ -36,7 +35,6 @@ import { ValorViagemModule } from './valor_viagem/valor_viagem.module';
     EventoParticipantesModule,
     AeroportoModule,
     ViagemParticipantesModule,
-    TramiteSolicitacaoModule,
     TramiteModule,
     ValorDiariasModule,
     CargoDiariasModule,

@@ -2,8 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { CreateTramiteDto } from './dto/create-tramite.dto';
 import { UpdateTramiteDto } from './dto/update-tramite.dto';
-import { CreateTramiteSolicitacaoDto } from '../tramite_solicitacao/dto/create-tramite_solicitacao.dto';
-import { TramiteSolicitacaoService } from 'src/tramite_solicitacao/tramite_solicitacao.service';
 
 
 @Injectable()
@@ -11,12 +9,10 @@ export class TramiteService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateTramiteDto) {
-
-    const prop = 'solicitacao';
-    delete dto[prop];    
+    const { solicitacao, ...dtoSemSolicitacao } = dto;
 
     const resultado = this.prisma.tramite.create({
-      data: dto,
+      data: dtoSemSolicitacao,      
     });
 
     return resultado;
@@ -25,7 +21,7 @@ export class TramiteService {
   findAll() {
     return this.prisma.tramite.findMany({
       include: {
-        tramite_solicitacao: true
+        solicitacao: true
       },
       orderBy: {
         id: "desc"
@@ -39,43 +35,38 @@ export class TramiteService {
         cod_lotacao: codLotacao
       },
       include: {
-        tramite_solicitacao: {
+        solicitacao: {
           include: {
-            solicitacao: {
+            eventos: {
               include: {
-                eventos: {
+                evento_participantes: {
                   include: {
-                    evento_participantes: {
+                    participante: true,
+                    viagem_participantes: {
                       include: {
-                        participante: true,
-                        viagem_participantes: {
+                        viagem: {
                           include: {
-                            viagem: {
-                              include: {
-                                origem: true,
-                                destino: true,
-                                cidade_origem: true,
-                                cidade_destino: true,
-                              }
-                            }
+                            origem: true,
+                            destino: true,
+                            cidade_origem: true,
+                            cidade_destino: true,
                           }
                         }
                       }
-                    },
-                    tipo_evento: true,
-                    cidade: {
-                      include:{
-                        estado: true,
-                      }
-                    },
-                    pais: true,
+                    }
                   }
-                }
+                },
+                tipo_evento: true,
+                cidade: {
+                  include:{
+                    estado: true,
+                  }
+                },
+                pais: true,
               }
-            },
-
+            }
           }
-        }
+        },
       },
       orderBy: {
         id: "desc"
@@ -83,32 +74,16 @@ export class TramiteService {
     })
   }
 
-  findTramitePorLotacaoPaginando(params: {
-    skip?: number;
-    take?: number;
-}){
-    const { skip, take } = params;
-
-    if(isNaN(skip)){
-      return this.prisma.tramite_solicitacao.findMany({
-        take
-      });
-    } else {
-      return this.prisma.tramite_solicitacao.findMany({
-        skip,
-        take
-      });
-    }
-  }
-
   findOne(id: number) {
     return `This action returns a #${id} tramiteSolicitacao`;
   }
 
-  update(id: number, updateTramiteSolicitacaoDto: UpdateTramiteDto) {
+  update(id: number, dto: UpdateTramiteDto) {
+    const { solicitacao, ...dtoSemSolicitacao } = dto;
+
     return this.prisma.tramite.update({
       where: { id },
-      data: updateTramiteSolicitacaoDto,
+      data: dtoSemSolicitacao,
     });
   }
 

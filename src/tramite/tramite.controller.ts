@@ -9,8 +9,6 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { CreateTramiteSolicitacaoDto } from 'src/tramite_solicitacao/dto/create-tramite_solicitacao.dto';
-import { TramiteSolicitacaoService } from 'src/tramite_solicitacao/tramite_solicitacao.service';
 import { CreateTramiteDto } from './dto/create-tramite.dto';
 import { UpdateTramiteDto } from './dto/update-tramite.dto';
 import { TramiteService } from './tramite.service';
@@ -19,7 +17,6 @@ import { TramiteService } from './tramite.service';
 export class TramiteController {
   constructor(
     private readonly tramiteService: TramiteService,
-    private tramiteSolicitacaoService: TramiteSolicitacaoService,
   ) {}
 
   @Post()
@@ -33,13 +30,13 @@ export class TramiteController {
     const resultado = this.tramiteService.create(createTramiteDto);
     const idTramite = (await resultado).id;
 
-    solici.forEach(async (sol) => {
+    /* solici.forEach(async (sol) => {
       const tramite_solicitacao: CreateTramiteSolicitacaoDto = {
         solicitacao_id: sol.id,
         tramite_id: idTramite,
       };
       await this.tramiteSolicitacaoService.create(tramite_solicitacao);
-    });
+    }); */
 
     return 0;
   }
@@ -77,14 +74,5 @@ export class TramiteController {
     return this.tramiteService.updateStatus(+id);
   }
 
-  @Get('offset')
-  async getBookListWithOffset(
-    @Query('skip') skip: string,
-    @Query('take') take: string,
-  ) {
-    return this.tramiteService.findTramitePorLotacaoPaginando({
-      skip: Number(skip),
-      take: Number(take),
-    });
-  }
+ 
 }
