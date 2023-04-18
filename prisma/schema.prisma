@@ -66,42 +66,30 @@ model cidade {
 }
 
 model solicitacao {
-  id                  Int                   @default(autoincrement())
-  datareg             DateTime?             @default(now())
-  justificativa       String
-  status              String
-  cpf_responsavel     String?
-  nome_responsavel    String?
-  cod_lotacao         Int?
-  lotacao             String?
-  eventos             evento[]
-  tramite_solicitacao tramite_solicitacao[]
+  id               Int       @default(autoincrement())
+  datareg          DateTime? @default(now())
+  justificativa    String
+  status           String
+  cpf_responsavel  String?
+  nome_responsavel String?
+  cod_lotacao      Int?
+  lotacao          String?
+  eventos          evento[]
+  tramite          tramite[]
 
   @@id([id])
 }
 
 model tramite {
-  id Int @unique @default(autoincrement())
-
-  cod_lotacao         Int
-  lotacao             String
-  status              String
-  datareg             DateTime              @default(now())
-  tramite_solicitacao tramite_solicitacao[]
-
-  @@id([id])
-}
-
-model tramite_solicitacao {
-  id Int @unique @default(autoincrement())
-
+  id             Int         @unique @default(autoincrement())
+  cod_lotacao    Int
+  lotacao        String
+  status         String
+  datareg        DateTime    @default(now())
   solicitacao_id Int
   solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id])
-  tramite_id     Int
-  tramite        tramite     @relation(fields: [tramite_id], references: [id], onDelete: Cascade)
-  datareg        DateTime    @default(now())
 
-  @@id([id, solicitacao_id])
+  @@id([id])
 }
 
 model aeroporto {
@@ -117,25 +105,25 @@ model aeroporto {
 }
 
 model evento {
-  id             Int         @default(autoincrement())
-  tipo_evento_id Int
-  tipo_evento    tipo_evento @relation(fields: [tipo_evento_id], references: [id])
-  solicitacao_id Int
-  solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id])
-  titulo         String
-  inicio         DateTime
-  fim            DateTime
-  exterior       String
-  local_exterior String?
-  cidade_id      Int?
-  cidade         cidade?     @relation(fields: [cidade_id], references: [id])
-  pais_id        Int
-  pais           pais        @relation(fields: [pais_id], references: [id])
-  informacoes    String
-  datareg        DateTime    @default(now())
-  tem_passagem   String?     @db.Char(3)
+  id                    Int         @default(autoincrement())
+  tipo_evento_id        Int
+  tipo_evento           tipo_evento @relation(fields: [tipo_evento_id], references: [id])
+  solicitacao_id        Int
+  solicitacao           solicitacao @relation(fields: [solicitacao_id], references: [id])
+  titulo                String
+  inicio                DateTime
+  fim                   DateTime
+  exterior              String
+  local_exterior        String?
+  cidade_id             Int?
+  cidade                cidade?     @relation(fields: [cidade_id], references: [id])
+  pais_id               Int
+  pais                  pais        @relation(fields: [pais_id], references: [id])
+  informacoes           String
+  datareg               DateTime    @default(now())
+  tem_passagem          String?     @db.Char(3)
   valor_total_inscricao Float?
-  valor_evento Float?
+  valor_evento          Float?
 
   evento_participantes evento_participantes[]
 
@@ -223,11 +211,11 @@ model viagem {
 }
 
 model valor_viagem {
-  id        Int    @id @default(autoincrement())
-  viagem_id Int
-  viagem    viagem @relation(fields: [viagem_id], references: [id])
-  valor_individual     Float?
-  valor_grupo Float?
+  id               Int    @id @default(autoincrement())
+  viagem_id        Int
+  viagem           viagem @relation(fields: [viagem_id], references: [id])
+  valor_individual Float?
+  valor_grupo      Float?
 }
 
 model viagem_participantes {
