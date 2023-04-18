@@ -112,6 +112,15 @@ export class TramiteService {
     });
   }
 
+  updateStatus(id: number) {
+    return this.prisma.tramite.update({
+      where: { id },
+      data: {
+        status: 'RECUSADO'
+      },
+    });
+  }
+
   remove(id: number) {
     return `This action removes a #${id} tramiteSolicitacao`;
   }

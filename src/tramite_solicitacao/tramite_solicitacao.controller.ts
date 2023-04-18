@@ -28,6 +28,11 @@ export class TramiteSolicitacaoController {
     return this.tramiteSolicitacaoService.findAllTramitePeloSetor(+id);
   }
 
+  @Get('/presidencia/todos')
+  findTodos() {    
+    return this.tramiteSolicitacaoService.findAllTramites();
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateTramiteSolicitacaoDto: UpdateTramiteSolicitacaoDto) {
     return this.tramiteSolicitacaoService.update(+id, updateTramiteSolicitacaoDto);

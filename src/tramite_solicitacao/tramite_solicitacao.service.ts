@@ -31,23 +31,88 @@ export class TramiteSolicitacaoService {
       include: {
         tramite_solicitacao: {
           include: {
-            solicitacao: true,
+            solicitacao: {
+              include: {
+                eventos: {
+                  include: {
+                    evento_participantes: {
+                      include: {
+                        participante: true,
+                        viagem_participantes: {
+                          include: {
+                            viagem: {
+                              include: {
+                                origem: true,
+                                destino: true,
+                                cidade_origem: true,
+                                cidade_destino: true,
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    tipo_evento: true,
+                    cidade: {
+                      include:{
+                        estado: true,
+                      }
+                    },
+                    pais: true,
+                  }
+                }
+              }
+            },
+
+          }
+          
+        }
+      }
+    });    
+  }
+
+  findAllTramites() {
+    return this.prisma.tramite.findMany({
+      include: {
+        tramite_solicitacao: {
+          include: {
+            solicitacao: {
+              include: {
+                eventos: {
+                  include: {
+                    evento_participantes: {
+                      include: {
+                        participante: true,
+                        viagem_participantes: {
+                          include: {
+                            viagem: {
+                              include: {
+                                origem: true,
+                                destino: true,
+                                cidade_origem: true,
+                                cidade_destino: true,
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    tipo_evento: true,
+                    cidade: {
+                      include:{
+                        estado: true,
+                      }
+                    },
+                    pais: true,
+                  }
+                }
+              }
+            },
+
           }
         }
       }
-    })
-
-    /* return this.prisma.tramite_solicitacao.findMany({
-      where: {
-        tramite: {
-          cod_lotacao: codLotacao,
-        }
-      },
-      include: {
-        solicitacao: true,
-        tramite: true,
-      }
-    }); */
+    });    
   }
 
   findOne(id: number) {
