@@ -75,7 +75,7 @@ model solicitacao {
   cod_lotacao      Int?
   lotacao          String?
   eventos          evento[]
-  tramite          tramite[]
+  tramite          tramite?
 
   @@id([id])
 }
@@ -86,8 +86,8 @@ model tramite {
   lotacao        String
   status         String
   datareg        DateTime    @default(now())
-  solicitacao_id Int
   solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id])
+  solicitacao_id Int  @unique
 
   @@id([id])
 }

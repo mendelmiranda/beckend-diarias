@@ -74,8 +74,55 @@ export class TramiteService {
     })
   }
 
+  findTramitePresidencia(){
+    return this.prisma.tramite.findMany({
+      include: {
+        solicitacao: {
+          include: {
+            tramite: true,
+            eventos: {
+              include: {
+                evento_participantes: {
+                  include: {
+                    participante: true,
+                    viagem_participantes: {
+                      include: {
+                        viagem: {
+                          include: {
+                            origem: true,
+                            destino: true,
+                            cidade_origem: true,
+                            cidade_destino: true,
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                tipo_evento: true,
+                cidade: {
+                  include:{
+                    estado: true,
+                  }
+                },
+                pais: true,
+              }
+            }
+          }
+        },
+      },
+      orderBy: {
+        id: "desc"
+      }
+    })
+  }
+
   findOne(id: number) {
-    return `This action returns a #${id} tramiteSolicitacao`;
+    return this.prisma.tramite.findFirst({
+      where: {
+        id: +id
+      }
+    })
   }
 
   update(id: number, dto: UpdateTramiteDto) {
@@ -87,11 +134,11 @@ export class TramiteService {
     });
   }
 
-  updateStatus(id: number) {
+  updateStatus(id: number, status: string) {    
     return this.prisma.tramite.update({
       where: { id },
       data: {
-        status: 'RECUSADO'
+        status: status.toUpperCase()
       },
     });
   }

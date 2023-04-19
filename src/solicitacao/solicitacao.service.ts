@@ -35,6 +35,7 @@ export class SolicitacaoService {
         cod_lotacao: codLotacao
       },
       include: {
+        tramite: true,
         eventos: {
           include: {
             tipo_evento: true
@@ -53,6 +54,7 @@ export class SolicitacaoService {
         id: id,
       },
       include: {
+        tramite: true,
         eventos: {
           include: {
             evento_participantes: {

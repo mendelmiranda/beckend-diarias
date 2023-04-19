@@ -15,28 +15,23 @@ import { TramiteService } from './tramite.service';
 
 @Controller('tramite')
 export class TramiteController {
-  constructor(
-    private readonly tramiteService: TramiteService,
-  ) {}
+  constructor(private readonly tramiteService: TramiteService) {}
 
-  @Post()
-  async create(@Body() createTramiteDto: CreateTramiteDto) {
+  @Post(':id')
+  async create(
+    @Param('id') id: string,
+    @Body() createTramiteDto: CreateTramiteDto,
+  ) {
+    
     const data: CreateTramiteDto = {
       ...createTramiteDto,
       datareg: new Date(),
     };
 
-    const solici = createTramiteDto.solicitacao;
-    const resultado = this.tramiteService.create(createTramiteDto);
-    const idTramite = (await resultado).id;
-
-    /* solici.forEach(async (sol) => {
-      const tramite_solicitacao: CreateTramiteSolicitacaoDto = {
-        solicitacao_id: sol.id,
-        tramite_id: idTramite,
-      };
-      await this.tramiteSolicitacaoService.create(tramite_solicitacao);
-    }); */
+    if (+id > 0) {    
+      await this.tramiteService.updateStatus(+id, createTramiteDto.status);
+    }     
+    await this.tramiteService.create(createTramiteDto);
 
     return 0;
   }
@@ -51,16 +46,18 @@ export class TramiteController {
     return this.tramiteService.findTramitePorLotacao(+id);
   }
 
+  @Get('/presidencia/todos')
+  findTramitePresidencia() {
+    return this.tramiteService.findTramitePresidencia();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.tramiteService.findOne(+id);
   }
 
   @Put(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateTramiteDto: UpdateTramiteDto,
-  ) {
+  update(@Param('id') id: string, @Body() updateTramiteDto: UpdateTramiteDto) {
     return this.tramiteService.update(+id, updateTramiteDto);
   }
 
@@ -71,8 +68,6 @@ export class TramiteController {
 
   @Put('/status/:id')
   updateStatus(@Param('id') id: string) {
-    return this.tramiteService.updateStatus(+id);
+    return this.tramiteService.updateStatus(+id, 'RECUSADO');
   }
-
- 
 }
