@@ -26,10 +26,11 @@ export class TramiteController {
     const data: CreateTramiteDto = {
       ...createTramiteDto,
       datareg: new Date(),
-    };
+    };    
 
-    if (+id > 0) {    
-      await this.tramiteService.updateStatus(+id, createTramiteDto.status);
+    //TESTAR COM OUTROS SETORES
+    if (+id > 0 && createTramiteDto.cod_lotacao_origem === 80) {    
+      await this.tramiteService.updateStatus(+id, 'APROVADO');
     }     
     await this.tramiteService.create(createTramiteDto);
 

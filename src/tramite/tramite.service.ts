@@ -30,13 +30,19 @@ export class TramiteService {
   }
 
   findTramitePorLotacao(codLotacao: number){
+    console.log('id', codLotacao);
+    
     return this.prisma.tramite.findMany({
       where: {
-        cod_lotacao: codLotacao
+        OR: [
+          {cod_lotacao_destino: codLotacao},
+          {cod_lotacao_origem: codLotacao}
+        ]
       },
       include: {
         solicitacao: {
           include: {
+            tramite: true,
             eventos: {
               include: {
                 evento_participantes: {

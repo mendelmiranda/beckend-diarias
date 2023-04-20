@@ -75,19 +75,21 @@ model solicitacao {
   cod_lotacao      Int?
   lotacao          String?
   eventos          evento[]
-  tramite          tramite?
+  tramite          tramite[]
 
   @@id([id])
 }
 
 model tramite {
-  id             Int         @unique @default(autoincrement())
-  cod_lotacao    Int
-  lotacao        String
-  status         String
-  datareg        DateTime    @default(now())
-  solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id])
-  solicitacao_id Int  @unique
+  id                  Int         @unique @default(autoincrement())
+  cod_lotacao_origem  Int
+  lotacao_origem      String
+  cod_lotacao_destino Int
+  lotacao_destino     String
+  status              String
+  datareg             DateTime    @default(now())
+  solicitacao         solicitacao @relation(fields: [solicitacao_id], references: [id])
+  solicitacao_id      Int
 
   @@id([id])
 }
