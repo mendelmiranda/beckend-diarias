@@ -30,8 +30,6 @@ export class TramiteService {
   }
 
   findTramitePorLotacao(codLotacao: number){
-    console.log('id', codLotacao);
-    
     return this.prisma.tramite.findMany({
       where: {
         OR: [
