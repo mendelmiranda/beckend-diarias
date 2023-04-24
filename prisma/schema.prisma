@@ -213,11 +213,12 @@ model viagem {
 }
 
 model valor_viagem {
-  id               Int    @id @default(autoincrement())
+  id               Int     @id @default(autoincrement())
   viagem_id        Int
-  viagem           viagem @relation(fields: [viagem_id], references: [id])
+  viagem           viagem  @relation(fields: [viagem_id], references: [id])
   valor_individual Float?
-  valor_grupo      Float?
+  tipo_diaria      String?
+  //valor_grupo      Float?
 }
 
 model viagem_participantes {
