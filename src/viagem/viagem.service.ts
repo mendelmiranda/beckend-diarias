@@ -78,6 +78,7 @@ export class ViagemService {
         cidade_destino: true,
         origem: true,
         destino: true,
+        pais: true,
       }
     });
   }
