@@ -20,7 +20,8 @@ export class ValorViagemService {
   findValorDaViagem(id: number) {
     return this.prisma.valor_viagem.findFirst({
       where: {
-        viagem_id: id
+        viagem_id: id,
+        tipo: 'PASSAGEM'
       }
     });
   }
