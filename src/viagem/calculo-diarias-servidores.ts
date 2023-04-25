@@ -30,11 +30,14 @@ export default class CalculoDiariasServidores {
     }
 
     if (viagem.exterior === "SIM") {
-        const meiaDiaria = this.valorServidoresInternacional(valorDiaria.internacional, viagem.servidor_acompanhando) / 2;         
-        const diariaInteiraNacional =  this.valorServidoresForaAP(valorDiaria.fora, viagem.servidor_acompanhando)
-        return diarias * this.valorServidoresInternacional(valorDiaria.internacional, viagem.servidor_acompanhando) + meiaDiaria + diariaInteiraNacional;
+        const meiaDiaria = this.valorServidoresInternacional(valorDiaria.internacional, viagem.servidor_acompanhando) / 2;
+        return (diarias-1) * this.valorServidoresInternacional(valorDiaria.internacional, viagem.servidor_acompanhando) + meiaDiaria;
     } 
     return 0;
+  }
+
+  valorNacional(viagem: viagem, uf: string, valorDiaria: valor_diarias): number {
+    return  this.valorServidoresForaAP(valorDiaria.fora, viagem.servidor_acompanhando); 
   }
 
   private valorServidoresDentroAP(valorDiaria: number, acompanha: string): number {    

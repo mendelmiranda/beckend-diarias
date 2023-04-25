@@ -1,3 +1,5 @@
+import { valor_viagem } from "@prisma/client";
+
 export class CreateViagemDto {
 
   origem_id?: number;
@@ -18,7 +20,7 @@ export class CreateViagemDto {
   data_ida_diferente?: Date;
   data_volta_diferente?: Date;
   justificativa_diferente?: string;
-  valor_diaria?: number; //<======deve colocar obrigatório em produção
+  //valor_diaria?: number; //<======deve colocar obrigatório em produção
 
   datareg?: Date;
   arcar_passagem?: string;
@@ -28,4 +30,5 @@ export class CreateViagemDto {
   viagem_pernoite?: string;
   justificativa_municipios?: string;
   valor_passagem?: number;
+  valor_viagem?: valor_viagem[];
 }

@@ -10,6 +10,9 @@ import CalculoDiaria from './calculo-diarias-membros';
 import CalculoDiariasServidores from './calculo-diarias-servidores';
 import { AeroportoService } from '../aeroporto/aeroporto.service';
 import { CargoDiariasService } from '../cargo_diarias/cargo_diarias.service';
+import { ValorViagemService } from 'src/valor_viagem/valor_viagem.service';
+import { CreateValorViagemDto } from 'src/valor_viagem/dto/create-valor_viagem.dto';
+import { viagem } from '@prisma/client';
 
 @Injectable()
 export class ViagemService {
@@ -17,11 +20,14 @@ export class ViagemService {
     private cidadeService: CidadeService,
     private aeroportoService: AeroportoService,
     private eventoParticipanteService: EventoParticipantesService,
-    private cargoDiariaService: CargoDiariasService) {}
+    private cargoDiariaService: CargoDiariasService,
+    private valorViagemService: ValorViagemService) {}
 
   async create(dto: CreateViagemDto) {    
+    const {valor_viagem, ...newDto} = dto;
+
     return this.prisma.viagem.create({
-      data: dto,
+      data: newDto,
     });
   }
 
@@ -54,12 +60,32 @@ export class ViagemService {
         const aeroporto = await this.aeroportoService.findOne(localizaViagem.destino_id);            
         uf = "SP";
       }
-  
-  
-      const calculo = await this.cargoDiariaService.findDiariasPorCargo(cargo);
-  
+    
+      const calculo = await this.cargoDiariaService.findDiariasPorCargo(cargo);  
       const calcula = new CalculoDiariasServidores();
-      return calcula.servidores(localizaViagem, uf, calculo.valor_diarias);    
+      const resultadoCalculo = calcula.servidores(localizaViagem, uf, calculo.valor_diarias);    
+      const resultadoNacionalParaInternacional = calcula.valorNacional(localizaViagem, uf, calculo.valor_diarias);    
+
+      //adicionar valor_viagem
+      const findViagem = await this.findOne(idViagem);  
+      
+      const valorViagem: CreateValorViagemDto = {
+        viagem_id: idViagem,
+        tipo_diaria: findViagem.exterior === "SIM" ? 'INTERNACIONAL' : 'NACIONAL', 
+        valor_individual: resultadoCalculo
+      }
+
+      if(findViagem.exterior === "SIM"){
+        const valorViagem: CreateValorViagemDto = {
+          viagem_id: idViagem,
+          tipo_diaria: 'NACIONAL', 
+          valor_individual: resultadoNacionalParaInternacional
+        }
+        this.valorViagemService.create(valorViagem);  
+      }
+
+      this.valorViagemService.create(valorViagem);
+
     }
 
     return null;
@@ -79,6 +105,7 @@ export class ViagemService {
         origem: true,
         destino: true,
         pais: true,
+        valor_viagem: true,
       }
     });
   }
@@ -86,25 +113,31 @@ export class ViagemService {
   update(id: number, updateViagemDto: UpdateViagemDto) {
 
     const prop = 'id';
-    delete updateViagemDto[prop];    
+    delete updateViagemDto[prop]; 
+    
+    const {valor_viagem, ...newDto} = updateViagemDto;
 
     return this.prisma.viagem.update({
       where: { id },
-      data: updateViagemDto,
+      data: newDto,
     });
+
+    //return `This action removes a #${id} viagem`;
   }
 
   remove(id: number) {
     return `This action removes a #${id} viagem`;
   }
 
+  //REFAZER PARA A NOVA TABELA
   atualizarDiariaColaborador(id: number, updateViagemDto: UpdateViagemDto) {
-    return this.prisma.viagem.update({
+    return `This action removes a #${id} viagem`;
+    /* return this.prisma.viagem.update({
       where: { id },
       data: {
         valor_diaria: updateViagemDto.valor_diaria
       },
-    });
+    }); */
   }
 
 }

@@ -67,6 +67,7 @@ export class SolicitacaoService {
                         origem: true,
                         destino: true,
                         pais: true,
+                        valor_viagem: true,
                         cidade_origem: {
                           include: {
                             estado: true

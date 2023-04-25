@@ -195,7 +195,7 @@ model viagem {
   data_ida_diferente      DateTime?
   data_volta_diferente    DateTime?
   justificativa_diferente String?
-  valor_diaria            Float?
+  //valor_diaria            Float?
 
   datareg               DateTime @default(now())
   arcar_passagem        String?  @db.Char(3)
@@ -218,7 +218,7 @@ model valor_viagem {
   viagem           viagem  @relation(fields: [viagem_id], references: [id])
   valor_individual Float?
   tipo_diaria      String?
-  //valor_grupo      Float?
+  valor_grupo      Float?
 }
 
 model viagem_participantes {
