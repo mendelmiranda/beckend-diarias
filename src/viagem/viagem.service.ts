@@ -71,14 +71,16 @@ export class ViagemService {
       
       const valorViagem: CreateValorViagemDto = {
         viagem_id: idViagem,
-        tipo_diaria: findViagem.exterior === "SIM" ? 'INTERNACIONAL' : 'NACIONAL', 
+        tipo: 'DIARIA',
+        destino: findViagem.exterior === "SIM" ? 'INTERNACIONAL' : 'NACIONAL', 
         valor_individual: resultadoCalculo
       }
 
       if(findViagem.exterior === "SIM"){
         const valorViagem: CreateValorViagemDto = {
           viagem_id: idViagem,
-          tipo_diaria: 'NACIONAL', 
+          tipo: 'DIARIA',
+          destino: 'NACIONAL', 
           valor_individual: resultadoNacionalParaInternacional
         }
         this.valorViagemService.create(valorViagem);  

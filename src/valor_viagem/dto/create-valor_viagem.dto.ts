@@ -1,6 +1,8 @@
 export class CreateValorViagemDto {
   viagem_id: number;
+  tipo?: string;
+  destino?: string;
   valor_individual?: number;
-  tipo_diaria?: string;
   valor_grupo?: number;
+
 }

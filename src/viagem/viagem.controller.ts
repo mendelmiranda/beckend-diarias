@@ -21,21 +21,14 @@ export class ViagemController {
       datareg: new Date(),      
     }
 
-    return await this.viagemParticipanteService.create(viagem_participante);    
+    await this.viagemParticipanteService.create(viagem_participante);    
 
-    //return await this.atualizarDiaria(viagem.id, id);
+    return await this.cadastraValoresDaDiaria(viagem.id, id);
   }
 
-  //refatorar tudo
-  /* async atualizarDiaria(idViagem: number, idEventoParticipante: number){
-    const totalDiaria = await this.viagemService.calculaDiaria(idViagem, idEventoParticipante);
-
-    const updateViagem: UpdateViagemDto = {
-      valor_diaria: totalDiaria,
-    }    
-
-  return this.viagemService.update(idViagem, updateViagem);    
-  } */
+  async cadastraValoresDaDiaria(idViagem: number, idEventoParticipante: number){    
+    return await this.viagemService.calculaDiaria(idViagem, idEventoParticipante);
+  }
 
   @Get('/evento/:id')
   findViagemEvento(@Param('id') id: number) {   

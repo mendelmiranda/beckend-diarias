@@ -216,8 +216,9 @@ model valor_viagem {
   id               Int     @id @default(autoincrement())
   viagem_id        Int
   viagem           viagem  @relation(fields: [viagem_id], references: [id])
+  tipo             String? //PASSAGEM OU DIÁRIA
+  destino          String? //NACIONAL OU INTERNACIONAL
   valor_individual Float?
-  tipo_diaria      String?
   valor_grupo      Float?
 }
 
