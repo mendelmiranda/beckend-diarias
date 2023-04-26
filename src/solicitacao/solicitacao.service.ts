@@ -36,6 +36,7 @@ export class SolicitacaoService {
       },
       include: {
         tramite: true,
+        correcao_solicitacao: true,
         eventos: {
           include: {
             tipo_evento: true
@@ -55,6 +56,7 @@ export class SolicitacaoService {
       },
       include: {
         tramite: true,
+        correcao_solicitacao: true,
         eventos: {
           include: {
             evento_participantes: {

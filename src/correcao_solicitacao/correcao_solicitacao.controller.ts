@@ -22,6 +22,11 @@ export class CorrecaoSolicitacaoController {
     return this.correcaoSolicitacaoService.findOne(+id);
   }
 
+  @Get('/solicitacao/:id')
+  corrigirSolicitacao(@Param('id') id: string) {
+    return this.correcaoSolicitacaoService.carregarSolicitacaoParaCorrecao(+id);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCorrecaoSolicitacaoDto: UpdateCorrecaoSolicitacaoDto) {
     return this.correcaoSolicitacaoService.update(+id, updateCorrecaoSolicitacaoDto);

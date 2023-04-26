@@ -1,23 +1,45 @@
 import { Injectable } from '@nestjs/common';
 import { CreateCorrecaoSolicitacaoDto } from './dto/create-correcao_solicitacao.dto';
 import { UpdateCorrecaoSolicitacaoDto } from './dto/update-correcao_solicitacao.dto';
+import { PrismaService } from 'prisma/prisma.service';
 
 @Injectable()
 export class CorrecaoSolicitacaoService {
-  create(createCorrecaoSolicitacaoDto: CreateCorrecaoSolicitacaoDto) {
-    return 'This action adds a new correcaoSolicitacao';
+  constructor(private prisma: PrismaService) {}
+  
+  create(dto: CreateCorrecaoSolicitacaoDto) {    
+    const data: CreateCorrecaoSolicitacaoDto = {
+      ...dto,
+      datareg: new Date(),    
+    }
+
+    return this.prisma.correcao_solicitacao.create({
+      data: data,
+    });
   }
 
   findAll() {
-    return `This action returns all correcaoSolicitacao`;
+    return this.prisma.correcao_solicitacao.findMany();
   }
 
   findOne(id: number) {
     return `This action returns a #${id} correcaoSolicitacao`;
   }
 
+  carregarSolicitacaoParaCorrecao(idSolicitacao: number){
+    return this.prisma.correcao_solicitacao.findMany({
+      where: {
+        solicitacao_id: idSolicitacao
+      },
+      orderBy: [{id: 'desc'}]
+    });
+  }
+
   update(id: number, updateCorrecaoSolicitacaoDto: UpdateCorrecaoSolicitacaoDto) {
-    return `This action updates a #${id} correcaoSolicitacao`;
+    return this.prisma.solicitacao.update({
+      where: { id },
+      data: updateCorrecaoSolicitacaoDto,
+    });
   }
 
   remove(id: number) {
