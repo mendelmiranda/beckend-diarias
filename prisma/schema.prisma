@@ -66,16 +66,17 @@ model cidade {
 }
 
 model solicitacao {
-  id               Int       @default(autoincrement())
-  datareg          DateTime? @default(now())
-  justificativa    String
-  status           String
-  cpf_responsavel  String?
-  nome_responsavel String?
-  cod_lotacao      Int?
-  lotacao          String?
-  eventos          evento[]
-  tramite          tramite[]
+  id                   Int                    @default(autoincrement())
+  datareg              DateTime?              @default(now())
+  justificativa        String
+  status               String
+  cpf_responsavel      String?
+  nome_responsavel     String?
+  cod_lotacao          Int?
+  lotacao              String?
+  eventos              evento[]
+  tramite              tramite[]
+  correcao_solicitacao correcao_solicitacao[]
 
   @@id([id])
 }
@@ -90,6 +91,17 @@ model tramite {
   datareg             DateTime    @default(now())
   solicitacao         solicitacao @relation(fields: [solicitacao_id], references: [id])
   solicitacao_id      Int
+
+  @@id([id])
+}
+
+model correcao_solicitacao {
+  id             Int         @unique @default(autoincrement())
+  solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id])
+  solicitacao_id Int
+  texto          String?
+  status         String //AGUARDANDO_CORRECAO | CORRIGIDO
+  datareg        DateTime    @default(now())
 
   @@id([id])
 }

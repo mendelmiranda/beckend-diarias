@@ -18,6 +18,7 @@ import { TramiteModule } from './tramite/tramite.module';
 import { ValorDiariasModule } from './valor_diarias/valor_diarias.module';
 import { CargoDiariasModule } from './cargo_diarias/cargo_diarias.module';
 import { ValorViagemModule } from './valor_viagem/valor_viagem.module';
+import { CorrecaoSolicitacaoModule } from './correcao_solicitacao/correcao_solicitacao.module';
 
 
 @Module({
@@ -39,6 +40,7 @@ import { ValorViagemModule } from './valor_viagem/valor_viagem.module';
     ValorDiariasModule,
     CargoDiariasModule,
     ValorViagemModule,
+    CorrecaoSolicitacaoModule,
   ],
   controllers: [AppController],
   providers: [AppService],
