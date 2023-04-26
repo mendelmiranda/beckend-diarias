@@ -26,6 +26,10 @@ export class ValorDiariasService {
   }
 
   remove(id: number) {
-    return `This action removes a #${id} valorDiaria`;
+    return this.prisma.valor_diarias.delete({
+      where: {
+        id: id
+      }
+    });
   }
 }
