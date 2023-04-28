@@ -27,7 +27,11 @@ export class ValorViagemService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} valorViagem`;
+    return this.prisma.valor_viagem.findUnique({
+      where: {
+        id: id
+      }
+    });
   }
 
   update(id: number, updateValorViagemDto: UpdateValorViagemDto) {
