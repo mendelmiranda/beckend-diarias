@@ -26,6 +26,15 @@ export class ValorViagemService {
     });
   }
 
+  findValorDaDiariaColaborador(id: number) {
+    return this.prisma.valor_viagem.findFirst({
+      where: {
+        viagem_id: id,
+        tipo: 'DIARIA'
+      }
+    });
+  }
+
   findOne(id: number) {
     return this.prisma.valor_viagem.findUnique({
       where: {

@@ -22,6 +22,11 @@ export class ValorViagemController {
     return this.valorViagemService.findValorDaViagem(+id);
   }
 
+  @Get('/diaria/colaborador/:id')
+  findValorViagemDiariaColaborador(@Param('id') id: string) {
+    return this.valorViagemService.findValorDaDiariaColaborador(+id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.valorViagemService.findOne(+id);
