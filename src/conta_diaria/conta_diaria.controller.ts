@@ -46,7 +46,7 @@ export class ContaDiariaController {
     @Param('id') id: string,
     @Body() updateContaDiariaDto: UpdateContaDiariaDto,
   ) {
-    console.log(updateContaDiariaDto.id);
+    return this.contaDiariaService.update(+id, updateContaDiariaDto);
 
     /* if (updateContaDiariaDto.id > 0 || updateContaDiariaDto.id === undefined) {
       const data: CreateContaDiariaDto = {

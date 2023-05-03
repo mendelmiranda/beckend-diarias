@@ -129,6 +129,14 @@ export class TramiteService {
     })
   }
 
+  findOneSolicitacao(id: number) {
+    return this.prisma.tramite.findFirst({
+      where: {
+        solicitacao_id: +id
+      }
+    })
+  }
+
   update(id: number, dto: UpdateTramiteDto) {
     const { solicitacao, ...dtoSemSolicitacao } = dto;
 
