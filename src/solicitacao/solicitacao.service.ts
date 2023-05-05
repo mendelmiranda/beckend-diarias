@@ -25,6 +25,22 @@ export class SolicitacaoService {
     return this.prisma.solicitacao.findUnique({
       where: {
         id: id,
+      },
+      include: {
+        tramite: true,
+        eventos: {
+          include: {
+            evento_participantes: {
+              include: {
+                viagem_participantes: {
+                  include: {
+                    viagem: true
+                  }
+                }
+              }
+            },
+          }
+        }
       }
     })
   }
@@ -39,7 +55,36 @@ export class SolicitacaoService {
         correcao_solicitacao: true,
         eventos: {
           include: {
-            tipo_evento: true
+            evento_participantes: {
+              include: {
+                participante: true,
+                viagem_participantes: {
+                  include: {
+                    viagem: {
+                      include: {
+                        origem: true,
+                        destino: true,
+                        pais: true,
+                        valor_viagem: true,
+                        cidade_origem: {
+                          include: {
+                            estado: true
+                          }
+                        },
+                        cidade_destino: true,
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            tipo_evento: true,
+            cidade: {
+              include:{
+                estado: true,
+              }
+            },
+            pais: true,
           }
         }
       },
