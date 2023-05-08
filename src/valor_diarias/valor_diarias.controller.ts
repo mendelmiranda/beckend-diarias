@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { ValorDiariasService } from './valor_diarias.service';
 import { CreateValorDiariaDto } from './dto/create-valor_diaria.dto';
 import { UpdateValorDiariaDto } from './dto/update-valor_diaria.dto';
+import { HttpService } from '@nestjs/axios';
 
 @Controller('valor-diarias')
 export class ValorDiariasController {
@@ -31,4 +32,13 @@ export class ValorDiariasController {
   remove(@Param('id') id: string) {   
     return this.valorDiariasService.remove(+id);
   }
+
+
+
+  @Get('/cotacao/dolar')
+  cotacaoDolar(){
+    return this.valorDiariasService.consultarCotacao();
+  }
+
+
 }

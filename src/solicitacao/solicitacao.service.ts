@@ -34,7 +34,11 @@ export class SolicitacaoService {
               include: {
                 viagem_participantes: {
                   include: {
-                    viagem: true
+                    viagem: {
+                      include: {
+                        valor_viagem: true,
+                      }
+                    }
                   }
                 }
               }
