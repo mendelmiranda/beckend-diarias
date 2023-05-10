@@ -47,6 +47,15 @@ export class ValorViagemService {
     return `This action updates a #${id} valorViagem`;
   }
 
+  updateCotacao(id: number, cotacao: string) {
+    return this.prisma.valor_viagem.update({
+      where: { id },
+      data: {
+        cotacao_dolar: parseFloat(cotacao)
+      }      
+    });
+  }
+
   async remove(id: number) {
     return await this.prisma.valor_viagem.delete({
       where: {

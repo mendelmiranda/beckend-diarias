@@ -17,6 +17,16 @@ function totalDeDias(inicio: Date, fim: Date) {
     return moment(fim).diff(moment(inicio), 'days') + 1;
 }
 
+const formataDataAmericana = (valor: Date | number) => {
+    if (valor === null)
+        return null;
+
+    if (typeof valor === 'number')
+        valor = new Date(valor);
+
+    return moment(valor).format('MM-DD-yyyy');
+}
+
 export const Util = {
-    dataAtual, convertToDate,totalDeDias
+    dataAtual, convertToDate,totalDeDias, formataDataAmericana
 }

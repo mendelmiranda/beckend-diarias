@@ -40,5 +40,10 @@ export class ValorDiariasController {
     return this.valorDiariasService.consultarCotacao();
   }
 
+  @Get('/cotacao/bc/dolar')
+  cotacaoDolarBancoCentral(){
+    return this.valorDiariasService.consultarCotacaoBancoCentral();
+  }
+
 
 }

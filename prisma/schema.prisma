@@ -232,6 +232,7 @@ model valor_viagem {
   destino          String? //NACIONAL OU INTERNACIONAL
   valor_individual Float?
   valor_grupo      Float?
+  cotacao_dolar    Float?
 }
 
 model viagem_participantes {

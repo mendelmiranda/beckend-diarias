@@ -3,6 +3,7 @@ import { PrismaService } from 'prisma/prisma.service';
 import { CreateValorDiariaDto } from './dto/create-valor_diaria.dto';
 import { UpdateValorDiariaDto } from './dto/update-valor_diaria.dto';
 import { HttpService } from '@nestjs/axios';
+import { Util } from 'src/util/Util';
 
 @Injectable()
 export class ValorDiariasService {
@@ -40,4 +41,15 @@ export class ValorDiariasService {
     .then((result) => result.data)
     .then(data => data.USDBRL);
   }
+
+  consultarCotacaoBancoCentral() { 
+
+    const dtInicial = new Date();
+    const dtFinal = dtInicial.setDate(dtInicial.getDate() -1);    
+
+    return this.httpService.axiosRef.get("https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoMoedaPeriodoFechamento(codigoMoeda=@codigoMoeda,dataInicialCotacao=@dataInicialCotacao,dataFinalCotacao=@dataFinalCotacao)?@codigoMoeda='USD'&@dataInicialCotacao='"+Util.formataDataAmericana(dtFinal)+"'&@dataFinalCotacao='"+Util.formataDataAmericana(dtFinal)+"'&$format=json")
+    .then((result) => result.data)
+    .then(data => data.value[0]);
+  }
+
 }
