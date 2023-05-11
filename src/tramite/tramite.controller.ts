@@ -29,11 +29,19 @@ export class TramiteController {
     };    
 
     //TESTAR COM OUTROS SETORES
-    if (+id > 0 && createTramiteDto.cod_lotacao_origem === 80) {    
+    /* if (+id > 0 && createTramiteDto.cod_lotacao_origem === 80) {    
       await this.tramiteService.updateStatus(+id, 'APROVADO');
-    }     
-    await this.tramiteService.create(createTramiteDto);
+    }
 
+    if (+id > 0 && createTramiteDto.cod_lotacao_origem === 47) {    
+      await this.tramiteService.updateStatus(+id, 'CALCULADO');
+    } */
+
+    if (+id > 0) {
+      await this.tramiteService.update(+id, createTramiteDto);
+    } else {
+      await this.tramiteService.create(createTramiteDto);
+    }
     return 0;
   }
 
