@@ -100,7 +100,6 @@ model tramite {
 model log_tramite {
   id                  Int          @unique @default(autoincrement())
   nome                String
-  username            String
   cod_lotacao_origem  Int
   lotacao_origem      String
   cod_lotacao_destino Int
