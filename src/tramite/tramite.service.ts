@@ -3,16 +3,17 @@ import { PrismaService } from 'prisma/prisma.service';
 import { CreateTramiteDto } from './dto/create-tramite.dto';
 import { UpdateTramiteDto } from './dto/update-tramite.dto';
 import { CreateLogTramiteDto } from 'src/log_tramite/dto/create-log_tramite.dto';
+import { LogTramiteService } from 'src/log_tramite/log_tramite.service';
 
 
 @Injectable()
 export class TramiteService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private logTramiteService: LogTramiteService) {}
 
   async create(dto: CreateTramiteDto, nome: string) {
     const { solicitacao, ...dtoSemSolicitacao } = dto;
 
-    const resultado = this.prisma.tramite.create({
+    const resultado = await this.prisma.tramite.create({
       data: dtoSemSolicitacao,      
     });
 
@@ -23,7 +24,7 @@ export class TramiteService {
     return resultado;
   }
 
-  salvarLogTramite(dto: CreateTramiteDto, nome: string, tramiteId: number){
+  async salvarLogTramite(dto: CreateTramiteDto, nome: string, tramiteId: number){
 
     const dados: CreateLogTramiteDto = {
       cod_lotacao_origem: dto.cod_lotacao_origem,
@@ -36,8 +37,7 @@ export class TramiteService {
       tramite_id: tramiteId
     }
 
-    this.prisma.log_tramite.create(dados);
-
+    return await this.logTramiteService.create(dados);
   }
 
   findAll() {

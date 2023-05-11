@@ -17,9 +17,9 @@ import { TramiteService } from './tramite.service';
 export class TramiteController {
   constructor(private readonly tramiteService: TramiteService) {}
 
-  @Post(':id')
+  @Post('/:id/:nome')
   async create(
-    @Param('id') id: string,
+    @Param('id') id: string, @Param('nome') nome: string,
     @Body() createTramiteDto: CreateTramiteDto,
   ) {
     
@@ -40,7 +40,9 @@ export class TramiteController {
     if (+id > 0) {
       await this.tramiteService.update(+id, createTramiteDto);
     } else {
-      await this.tramiteService.create(createTramiteDto);
+      console.log('nome', nome);
+      
+      await this.tramiteService.create(createTramiteDto, nome);
     }
     return 0;
   }
