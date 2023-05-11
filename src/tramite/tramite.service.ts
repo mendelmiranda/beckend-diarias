@@ -2,20 +2,42 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { CreateTramiteDto } from './dto/create-tramite.dto';
 import { UpdateTramiteDto } from './dto/update-tramite.dto';
+import { CreateLogTramiteDto } from 'src/log_tramite/dto/create-log_tramite.dto';
 
 
 @Injectable()
 export class TramiteService {
   constructor(private prisma: PrismaService) {}
 
-  async create(dto: CreateTramiteDto) {
+  async create(dto: CreateTramiteDto, nome: string) {
     const { solicitacao, ...dtoSemSolicitacao } = dto;
 
     const resultado = this.prisma.tramite.create({
       data: dtoSemSolicitacao,      
     });
 
+    const id = (await resultado).id;
+    await this.salvarLogTramite(dto, nome, id);
+
+
     return resultado;
+  }
+
+  salvarLogTramite(dto: CreateTramiteDto, nome: string, tramiteId: number){
+
+    const dados: CreateLogTramiteDto = {
+      cod_lotacao_origem: dto.cod_lotacao_origem,
+      cod_lotacao_destino: dto.cod_lotacao_destino,
+      datareg: new Date(),
+      nome: nome,
+      lotacao_destino: dto.lotacao_destino,
+      lotacao_origem: dto.lotacao_origem,
+      status: dto.status,
+      tramite_id: tramiteId
+    }
+
+    this.prisma.log_tramite.create(dados);
+
   }
 
   findAll() {
