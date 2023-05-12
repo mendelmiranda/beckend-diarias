@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateLogTramiteDto } from './dto/create-log_tramite.dto';
 import { UpdateLogTramiteDto } from './dto/update-log_tramite.dto';
 import { PrismaService } from 'prisma/prisma.service';
-import { tramite } from '@prisma/client';
+import { tramite, solicitacao } from '@prisma/client';
 
 @Injectable()
 export class LogTramiteService {
@@ -31,6 +31,21 @@ export class LogTramiteService {
       where: {
         tramite: {
           solicitacao_id: id
+        }
+      }
+    })
+  }
+
+  findLogsTramitePorLotacao(id: number) {
+    return this.prisma.log_tramite.findMany({
+      where: {
+       cod_lotacao_origem: id
+      },
+      include: {
+        tramite: {
+          include: {
+            solicitacao: true
+          }
         }
       }
     })

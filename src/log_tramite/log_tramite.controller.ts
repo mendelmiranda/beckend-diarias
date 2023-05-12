@@ -27,6 +27,11 @@ export class LogTramiteController {
     return this.logTramiteService.findLogsTramiteSolicitacao(+id);
   }
 
+  @Get('/lotacao/:id')
+  findLogsDaSolicitacaoPorLotacaoId(@Param('id') id: string) {
+    return this.logTramiteService.findLogsTramitePorLotacao(+id);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateLogTramiteDto: UpdateLogTramiteDto) {
     return this.logTramiteService.update(+id, updateLogTramiteDto);
