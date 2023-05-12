@@ -28,20 +28,9 @@ export class TramiteController {
       datareg: new Date(),
     };    
 
-    //TESTAR COM OUTROS SETORES
-    /* if (+id > 0 && createTramiteDto.cod_lotacao_origem === 80) {    
-      await this.tramiteService.updateStatus(+id, 'APROVADO');
-    }
-
-    if (+id > 0 && createTramiteDto.cod_lotacao_origem === 47) {    
-      await this.tramiteService.updateStatus(+id, 'CALCULADO');
-    } */
-
     if (+id > 0) {
-      await this.tramiteService.update(+id, createTramiteDto);
-    } else {
-      console.log('nome', nome);
-      
+      await this.tramiteService.update(+id, createTramiteDto, nome);
+    } else {      
       await this.tramiteService.create(createTramiteDto, nome);
     }
     return 0;
@@ -83,8 +72,9 @@ export class TramiteController {
     return this.tramiteService.remove(+id);
   }
 
-  @Put('/status/:id')
-  updateStatus(@Param('id') id: string) {
-    return this.tramiteService.updateStatus(+id, 'RECUSADO');
+  @Put('/status/:id/:nome')
+  updateStatus(@Param('id') id: string, @Param('nome') nome: string,
+  @Body() dto: CreateTramiteDto) {
+    return this.tramiteService.updateStatus(+id, 'RECUSADO', nome, dto);
   }
 }

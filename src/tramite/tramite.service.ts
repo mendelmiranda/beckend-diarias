@@ -159,8 +159,10 @@ export class TramiteService {
     })
   }
 
-  update(id: number, dto: UpdateTramiteDto) {
+  update(id: number, dto: UpdateTramiteDto, nome?: string) {
     const { solicitacao, ...dtoSemSolicitacao } = dto;
+
+    this.salvarLogTramite(dto as CreateTramiteDto, nome, id);
 
     return this.prisma.tramite.update({
       where: { id },
@@ -168,7 +170,29 @@ export class TramiteService {
     });
   }
 
-  updateStatus(id: number, status: string) {    
+  updateStatus(id: number, status: string, nome: string, dto: CreateTramiteDto) {    
+    /* const data = this.prisma.tramite.findUnique({
+      where: {
+        id: id,
+      }
+    }).then((dto) => { */
+      
+      const dados: CreateLogTramiteDto = {
+        cod_lotacao_origem: dto.cod_lotacao_origem,
+        cod_lotacao_destino: dto.cod_lotacao_destino,
+        datareg: new Date(),
+        nome: nome,
+        lotacao_destino: dto.lotacao_destino,
+        lotacao_origem: dto.lotacao_origem,
+        status: status,
+        tramite_id: id
+      }
+
+      this.salvarLogTramite(dto, nome, id);
+
+    //});
+
+
     return this.prisma.tramite.update({
       where: { id },
       data: {
