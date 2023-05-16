@@ -19,18 +19,18 @@ export class TramiteController {
 
   @Post('/:id/:nome')
   async create(
-    @Param('id') id: string, @Param('nome') nome: string,
+    @Param('id') id: string,
+    @Param('nome') nome: string,
     @Body() createTramiteDto: CreateTramiteDto,
   ) {
-    
     const data: CreateTramiteDto = {
       ...createTramiteDto,
       datareg: new Date(),
-    };    
+    };
 
     if (+id > 0) {
       await this.tramiteService.update(+id, createTramiteDto, nome);
-    } else {      
+    } else {
       await this.tramiteService.create(createTramiteDto, nome);
     }
     return 0;
@@ -45,7 +45,6 @@ export class TramiteController {
   findTramiteSolicitracao(@Param('id') id: string) {
     return this.tramiteService.findOneSolicitacao(+id);
   }
-
 
   @Get('/lotacao/:id')
   findTramitePorLocatacao(@Param('id') id: string) {
@@ -73,8 +72,11 @@ export class TramiteController {
   }
 
   @Put('/status/:id/:nome')
-  updateStatus(@Param('id') id: string, @Param('nome') nome: string,
-  @Body() dto: CreateTramiteDto) {
+  updateStatus(
+    @Param('id') id: string,
+    @Param('nome') nome: string,
+    @Body() dto: CreateTramiteDto,
+  ) {
     return this.tramiteService.updateStatus(+id, 'RECUSADO', nome, dto);
   }
 }

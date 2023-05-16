@@ -55,7 +55,11 @@ export class SolicitacaoService {
         cod_lotacao: codLotacao
       },
       include: {
-        tramite: true,
+        tramite: {
+          include: {
+            log_tramite: true,
+          }
+        },
         correcao_solicitacao: true,
         eventos: {
           include: {

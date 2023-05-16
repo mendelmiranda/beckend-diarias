@@ -155,6 +155,9 @@ export class TramiteService {
     return this.prisma.tramite.findFirst({
       where: {
         solicitacao_id: +id
+      },
+      include: {
+        log_tramite: true
       }
     })
   }
