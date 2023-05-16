@@ -157,7 +157,16 @@ export class TramiteService {
         solicitacao_id: +id
       },
       include: {
-        log_tramite: true
+        log_tramite: true,
+        solicitacao: {
+          include: {
+            eventos: {
+              include: {
+                tipo_evento: true
+              }
+            }
+          }
+        }
       }
     })
   }
