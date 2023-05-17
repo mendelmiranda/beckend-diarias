@@ -100,6 +100,51 @@ export class TramiteService {
     })
   }
 
+  findTramitePorLotacaoAprovadosDaOrigem(codLotacao: number){
+    return this.prisma.tramite.findMany({
+      where: {cod_lotacao_origem: codLotacao,
+      },
+      include: {
+        solicitacao: {
+          include: {
+            tramite: true,
+            eventos: {
+              include: {
+                evento_participantes: {
+                  include: {
+                    participante: true,
+                    viagem_participantes: {
+                      include: {
+                        viagem: {
+                          include: {
+                            origem: true,
+                            destino: true,
+                            cidade_origem: true,
+                            cidade_destino: true,
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                tipo_evento: true,
+                cidade: {
+                  include:{
+                    estado: true,
+                  }
+                },
+                pais: true,
+              }
+            }
+          }
+        },
+      },
+      orderBy: {
+        id: "desc"
+      }
+    })
+  }
+
   findTramitePresidencia(){
     return this.prisma.tramite.findMany({
       include: {

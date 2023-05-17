@@ -59,6 +59,29 @@ export class LogTramiteService {
     })
   }
 
+  findLogsTramitePorLotacaoDestino(id: number) {
+    return this.prisma.log_tramite.findMany({
+      where: {
+       cod_lotacao_destino: id
+      },
+      include: {
+        tramite: {
+          include: {
+            solicitacao: {
+              include: {
+                eventos: {
+                  include: {
+                    tipo_evento: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    })
+  }
+
   update(id: number, updateLogTramiteDto: UpdateLogTramiteDto) {
     return `This action updates a #${id} logTramite`;
   }
