@@ -77,9 +77,22 @@ model solicitacao {
   eventos              evento[]
   tramite              tramite[]
   correcao_solicitacao correcao_solicitacao[]
-  
+  empenho_daofi        empenho_daofi[]
 
   @@id([id])
+}
+
+model empenho_daofi {
+  id              Int       @default(autoincrement())
+  datareg         DateTime? @default(now())
+  tipo            String
+  saldo_inicial   Float
+  valor_reservado Float
+
+  solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id])
+  solicitacao_id Int
+
+  @@id([id, solicitacao_id])
 }
 
 model tramite {
@@ -98,15 +111,15 @@ model tramite {
 }
 
 model log_tramite {
-  id                  Int          @unique @default(autoincrement())
+  id                  Int      @unique @default(autoincrement())
   nome                String
   cod_lotacao_origem  Int
   lotacao_origem      String
   cod_lotacao_destino Int
   lotacao_destino     String
   status              String
-  datareg             DateTime     @default(now())
-  tramite             tramite      @relation(fields: [tramite_id], references: [id])
+  datareg             DateTime @default(now())
+  tramite             tramite  @relation(fields: [tramite_id], references: [id])
   tramite_id          Int
 
   @@id([id])

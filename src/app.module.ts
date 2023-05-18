@@ -20,6 +20,7 @@ import { CargoDiariasModule } from './cargo_diarias/cargo_diarias.module';
 import { ValorViagemModule } from './valor_viagem/valor_viagem.module';
 import { CorrecaoSolicitacaoModule } from './correcao_solicitacao/correcao_solicitacao.module';
 import { LogTramiteModule } from './log_tramite/log_tramite.module';
+import { EmpenhoDaofiModule } from './empenho_daofi/empenho_daofi.module';
 
 
 @Module({
@@ -43,6 +44,7 @@ import { LogTramiteModule } from './log_tramite/log_tramite.module';
     ValorViagemModule,
     CorrecaoSolicitacaoModule,
     LogTramiteModule,
+    EmpenhoDaofiModule,
   ],
   controllers: [AppController],
   providers: [AppService],
