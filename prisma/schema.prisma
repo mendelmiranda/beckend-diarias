@@ -83,7 +83,7 @@ model solicitacao {
 }
 
 model empenho_daofi {
-  id              Int       @default(autoincrement())
+  id              Int  @unique    @default(autoincrement())
   datareg         DateTime? @default(now())
   tipo            String
   saldo_inicial   Float

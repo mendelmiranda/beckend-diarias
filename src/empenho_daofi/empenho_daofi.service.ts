@@ -1,19 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import { CreateEmpenhoDaofiDto } from './dto/create-empenho_daofi.dto';
 import { UpdateEmpenhoDaofiDto } from './dto/update-empenho_daofi.dto';
+import { PrismaService } from 'prisma/prisma.service';
 
 @Injectable()
 export class EmpenhoDaofiService {
-  create(createEmpenhoDaofiDto: CreateEmpenhoDaofiDto) {
-    return 'This action adds a new empenhoDaofi';
+  constructor(private prisma: PrismaService) {}
+  
+  create(dto: CreateEmpenhoDaofiDto) {
+    return this.prisma.empenho_daofi.create({
+      data: dto,      
+    });
   }
 
   findAll() {
-    return `This action returns all empenhoDaofi`;
+    return this.prisma.empenho_daofi.findMany();
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} empenhoDaofi`;
+    return this.prisma.empenho_daofi.findUnique({
+      where: {
+        id: id
+      }
+    })
   }
 
   update(id: number, updateEmpenhoDaofiDto: UpdateEmpenhoDaofiDto) {
