@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
 import { CorrecaoSolicitacaoService } from './correcao_solicitacao.service';
 import { CreateCorrecaoSolicitacaoDto } from './dto/create-correcao_solicitacao.dto';
 import { UpdateCorrecaoSolicitacaoDto } from './dto/update-correcao_solicitacao.dto';
@@ -27,7 +27,7 @@ export class CorrecaoSolicitacaoController {
     return this.correcaoSolicitacaoService.carregarSolicitacaoParaCorrecao(+id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateCorrecaoSolicitacaoDto: UpdateCorrecaoSolicitacaoDto) {
     return this.correcaoSolicitacaoService.update(+id, updateCorrecaoSolicitacaoDto);
   }

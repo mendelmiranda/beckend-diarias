@@ -36,7 +36,7 @@ export class CorrecaoSolicitacaoService {
   }
 
   update(id: number, updateCorrecaoSolicitacaoDto: UpdateCorrecaoSolicitacaoDto) {
-    return this.prisma.solicitacao.update({
+    return this.prisma.correcao_solicitacao.update({
       where: { id },
       data: updateCorrecaoSolicitacaoDto,
     });
