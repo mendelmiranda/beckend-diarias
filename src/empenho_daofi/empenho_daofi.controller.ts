@@ -22,6 +22,11 @@ export class EmpenhoDaofiController {
     return this.empenhoDaofiService.findOne(+id);
   }
 
+  @Get('/solicitacao/:id')
+  findEmpenhoPorSolicitacao(@Param('id') id: string) {
+    return this.empenhoDaofiService.findEmpenhoPorSolicitacaoId(+id);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateEmpenhoDaofiDto: UpdateEmpenhoDaofiDto) {
     return this.empenhoDaofiService.update(+id, updateEmpenhoDaofiDto);

@@ -8,8 +8,14 @@ export class EmpenhoDaofiService {
   constructor(private prisma: PrismaService) {}
   
   create(dto: CreateEmpenhoDaofiDto) {
+
+    const dados: CreateEmpenhoDaofiDto = {
+      ...dto,
+      datareg: new Date(),
+    }
+
     return this.prisma.empenho_daofi.create({
-      data: dto,      
+      data: dados,      
     });
   }
 
@@ -25,11 +31,24 @@ export class EmpenhoDaofiService {
     })
   }
 
+  findEmpenhoPorSolicitacaoId(id: number) {
+    return this.prisma.empenho_daofi.findMany({
+      where: {
+        solicitacao_id: id
+      },
+    })
+  }
+
   update(id: number, updateEmpenhoDaofiDto: UpdateEmpenhoDaofiDto) {
     return `This action updates a #${id} empenhoDaofi`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} empenhoDaofi`;
+  async remove(id: number) {
+    return await this.prisma.empenho_daofi.delete({
+      where: {
+        id: id
+      }
+    })
   }
+
 }

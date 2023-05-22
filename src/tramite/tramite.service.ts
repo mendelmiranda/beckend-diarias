@@ -201,6 +201,9 @@ export class TramiteService {
       where: {
         solicitacao_id: +id
       },
+      orderBy: [
+        { id: "desc"}
+       ],
       include: {
         log_tramite: true,
         solicitacao: {
