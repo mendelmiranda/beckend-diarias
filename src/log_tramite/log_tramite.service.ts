@@ -64,6 +64,9 @@ export class LogTramiteService {
       where: {
        cod_lotacao_destino: id
       },
+      orderBy: [
+        { id: "desc"}
+       ],
       include: {
         tramite: {
           include: {
