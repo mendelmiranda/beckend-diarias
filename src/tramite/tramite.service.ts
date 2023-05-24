@@ -219,6 +219,55 @@ export class TramiteService {
     })
   }
 
+  findEmpenhados() {
+    return this.prisma.tramite.findMany({
+      where: {
+        status: 'EMPENHADO'
+      },
+      include: {
+        solicitacao: {
+          include: {
+            tramite: true,
+            eventos: {
+              include: {
+                evento_participantes: {
+                  include: {
+                    participante: true,
+                    viagem_participantes: {
+                      include: {
+                        viagem: {
+                          include: {
+                            origem: true,
+                            destino: true,
+                            pais: true,
+                            valor_viagem: true,
+                            cidade_origem: {
+                              include: {
+                                estado: true
+                              }
+                            },
+                            cidade_destino: true,
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                tipo_evento: true,
+                cidade: {
+                  include:{
+                    estado: true,
+                  }
+                },
+                pais: true,
+              }
+            }
+          }
+        }
+      }
+    })
+  }
+
   update(id: number, dto: UpdateTramiteDto, nome?: string) {
     const { solicitacao, ...dtoSemSolicitacao } = dto;
 

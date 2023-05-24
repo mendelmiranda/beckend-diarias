@@ -1,13 +1,11 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  Put,
-  Query,
+  Get,
+  Param,
+  Post,
+  Put
 } from '@nestjs/common';
 import { CreateTramiteDto } from './dto/create-tramite.dto';
 import { UpdateTramiteDto } from './dto/update-tramite.dto';
@@ -59,6 +57,11 @@ export class TramiteController {
   @Get('/presidencia/todos')
   findTramitePresidencia() {
     return this.tramiteService.findTramitePresidencia();
+  }
+
+  @Get('/empenhados')
+  findEmpenhados() {
+    return this.tramiteService.findEmpenhados();
   }
 
   @Get(':id')
