@@ -7,10 +7,10 @@ import { tramite, solicitacao } from '@prisma/client';
 @Injectable()
 export class LogTramiteService {
   constructor(private prisma: PrismaService) {}
-  
+
   create(dto: CreateLogTramiteDto) {
     return this.prisma.log_tramite.create({
-      data: dto,      
+      data: dto,
     });
   }
 
@@ -21,25 +21,25 @@ export class LogTramiteService {
   findOne(id: number) {
     return this.prisma.log_tramite.findUnique({
       where: {
-        id: id
-      }
-    })
+        id: id,
+      },
+    });
   }
 
   findLogsTramiteSolicitacao(id: number) {
     return this.prisma.log_tramite.findMany({
       where: {
         tramite: {
-          solicitacao_id: id
-        }
-      }
-    })
+          solicitacao_id: id,
+        },
+      },
+    });
   }
 
   findLogsTramitePorLotacao(id: number) {
     return this.prisma.log_tramite.findMany({
       where: {
-       cod_lotacao_origem: id
+        cod_lotacao_origem: id,
       },
       include: {
         tramite: {
@@ -48,25 +48,23 @@ export class LogTramiteService {
               include: {
                 eventos: {
                   include: {
-                    tipo_evento: true
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    })
+                    tipo_evento: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
   }
 
   findLogsTramitePorLotacaoDestino(id: number) {
     return this.prisma.log_tramite.findMany({
       where: {
-       cod_lotacao_destino: id
+        cod_lotacao_destino: id,
       },
-      orderBy: [
-        { id: "desc"}
-       ],
+      orderBy: [{ id: 'desc' }],
       include: {
         tramite: {
           include: {
@@ -74,15 +72,15 @@ export class LogTramiteService {
               include: {
                 eventos: {
                   include: {
-                    tipo_evento: true
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    })
+                    tipo_evento: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
   }
 
   update(id: number, updateLogTramiteDto: UpdateLogTramiteDto) {
