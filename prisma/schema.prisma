@@ -83,7 +83,7 @@ model solicitacao {
 }
 
 model empenho_daofi {
-  id              Int  @unique    @default(autoincrement())
+  id              Int       @unique @default(autoincrement())
   datareg         DateTime? @default(now())
   tipo            String
   saldo_inicial   Float
@@ -91,8 +91,6 @@ model empenho_daofi {
 
   solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id])
   solicitacao_id Int
-
-  
 
   @@id([id, solicitacao_id])
 }
@@ -139,12 +137,10 @@ model correcao_solicitacao {
 }
 
 model aeroporto {
-  id             Int     @unique @default(autoincrement())
-  iata           String?
-  icao           String?
-  nome_aeroporto String
-  cidade         String
-  uf             String
+  id     Int    @unique @default(autoincrement())
+  uf     String
+  estado String
+  cidade String
 
   origem  viagem[] @relation("ori")
   destino viagem[] @relation("dest")
