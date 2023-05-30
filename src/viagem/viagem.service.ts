@@ -16,78 +16,113 @@ import { viagem } from '@prisma/client';
 
 @Injectable()
 export class ViagemService {
-  constructor(private prisma: PrismaService, 
+  constructor(
+    private prisma: PrismaService,
     private cidadeService: CidadeService,
     private aeroportoService: AeroportoService,
     private eventoParticipanteService: EventoParticipantesService,
     private cargoDiariaService: CargoDiariasService,
-    private valorViagemService: ValorViagemService) {}
+    private valorViagemService: ValorViagemService,
+  ) {}
 
-  async create(dto: CreateViagemDto) {    
-    const {valor_viagem, ...newDto} = dto;
+  async create(dto: CreateViagemDto) {
+    if (dto.destino_id > 0) {
+      const { valor_viagem, ...newDto } = dto;
 
-    return this.prisma.viagem.create({
-      data: newDto,
-    });
+      return this.prisma.viagem.create({
+        data: newDto,
+      });
+    } else {
+      const dados: CreateViagemDto = {
+        ...dto,
+        origem_id: null,
+        destino_id: null,
+      };
+
+      const { valor_viagem, ...newDto } = dados;
+
+      return this.prisma.viagem.create({
+        data: newDto,
+      });
+    }
   }
 
-  async calculaDiaria(idViagem: number, idEventoParticipante){            
-
-    const localizaEventoParticipante = await this.eventoParticipanteService.findOne(+idEventoParticipante);
+  async calculaDiaria(idViagem: number, idEventoParticipante) {
+    const localizaEventoParticipante =
+      await this.eventoParticipanteService.findOne(+idEventoParticipante);
 
     //testar ESSA PARTE
-    if(localizaEventoParticipante.participante.tipo === "S"){
-      const cargo = localizaEventoParticipante.participante.cargo; 
-      const temViagem = localizaEventoParticipante.evento.tem_passagem;    
-  
+    if (localizaEventoParticipante.participante.tipo === 'S') {
+      const cargo = localizaEventoParticipante.participante.cargo;
+      const temViagem = localizaEventoParticipante.evento.tem_passagem;
+
       //REFATORAR ESSA PARTE
       let localizaViagem;
       let uf;
-      if(temViagem === "NAO"){
-        localizaViagem = await this.findOne(idViagem);   
-        const localizaCidade = await this.cidadeService.findOne(localizaViagem.cidade_destino_id);
+      if (temViagem === 'NAO') {
+        localizaViagem = await this.findOne(idViagem);
+        const localizaCidade = await this.cidadeService.findOne(
+          localizaViagem.cidade_destino_id,
+        );
         uf = localizaCidade.estado.uf;
-      } 
-      
-      if(temViagem === "SIM" && localizaEventoParticipante.evento.exterior === "NAO"){
-        localizaViagem = await this.findOne(idViagem);   
-        const aeroporto = await this.aeroportoService.findOne(localizaViagem.destino_id);            
+      }
+
+      if (
+        temViagem === 'SIM' &&
+        localizaEventoParticipante.evento.exterior === 'NAO'
+      ) {
+        localizaViagem = await this.findOne(idViagem);
+        const aeroporto = await this.aeroportoService.findOne(
+          localizaViagem.destino_id,
+        );
         uf = aeroporto.uf;
       }
-  
-      if(temViagem === "SIM" && localizaEventoParticipante.evento.exterior === "SIM"){
-        localizaViagem = await this.findOne(idViagem);   
-        const aeroporto = await this.aeroportoService.findOne(localizaViagem.destino_id);            
-        uf = "SP";
+
+      if (
+        temViagem === 'SIM' &&
+        localizaEventoParticipante.evento.exterior === 'SIM'
+      ) {
+        localizaViagem = await this.findOne(idViagem);
+        const aeroporto = await this.aeroportoService.findOne(
+          localizaViagem.destino_id,
+        );
+        uf = 'SP';
       }
-    
-      const calculo = await this.cargoDiariaService.findDiariasPorCargo(cargo);  
+
+      const calculo = await this.cargoDiariaService.findDiariasPorCargo(cargo);
       const calcula = new CalculoDiariasServidores();
-      const resultadoCalculo = calcula.servidores(localizaViagem, uf, calculo.valor_diarias);    
-      const resultadoNacionalParaInternacional = calcula.valorNacional(localizaViagem, uf, calculo.valor_diarias);    
+      const resultadoCalculo = calcula.servidores(
+        localizaViagem,
+        uf,
+        calculo.valor_diarias,
+      );
+      const resultadoNacionalParaInternacional = calcula.valorNacional(
+        localizaViagem,
+        uf,
+        calculo.valor_diarias,
+      );
 
       //adicionar valor_viagem
-      const findViagem = await this.findOne(idViagem);  
-      
+      const findViagem = await this.findOne(idViagem);
+
       const valorViagem: CreateValorViagemDto = {
         viagem_id: idViagem,
         tipo: 'DIARIA',
-        destino: findViagem.exterior === "SIM" ? 'INTERNACIONAL' : 'NACIONAL', 
-        valor_individual: resultadoCalculo
-      }
+        destino: findViagem.exterior === 'SIM' ? 'INTERNACIONAL' : 'NACIONAL',
+        valor_individual: resultadoCalculo,
+      };
 
-      if(findViagem.exterior === "SIM"){
+      if (findViagem.exterior === 'SIM') {
         const valorViagem: CreateValorViagemDto = {
           viagem_id: idViagem,
           tipo: 'DIARIA',
-          destino: 'NACIONAL', 
-          valor_individual: resultadoNacionalParaInternacional
-        }
-        this.valorViagemService.create(valorViagem);  
+          destino: 'NACIONAL',
+          valor_individual: resultadoNacionalParaInternacional,
+        };
+        this.valorViagemService.create(valorViagem);
       }
 
       this.valorViagemService.create(valorViagem);
-
     }
 
     return null;
@@ -100,24 +135,24 @@ export class ViagemService {
   findOne(id: number) {
     return this.prisma.viagem.findFirst({
       where: {
-        id: id
-      }, include: {
+        id: id,
+      },
+      include: {
         cidade_origem: true,
         cidade_destino: true,
         origem: true,
         destino: true,
         pais: true,
         valor_viagem: true,
-      }
+      },
     });
   }
 
   update(id: number, updateViagemDto: UpdateViagemDto) {
-
     const prop = 'id';
-    delete updateViagemDto[prop]; 
-    
-    const {valor_viagem, ...newDto} = updateViagemDto;
+    delete updateViagemDto[prop];
+
+    const { valor_viagem, ...newDto } = updateViagemDto;
 
     return this.prisma.viagem.update({
       where: { id },
@@ -141,5 +176,4 @@ export class ViagemService {
       },
     }); */
   }
-
 }
