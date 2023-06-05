@@ -22,6 +22,9 @@ model conta_diaria {
   agencia    String @db.VarChar(20)
   conta      String @db.VarChar(20)
 
+  participante_id Int
+  participante    participante @relation(fields: [participante_id], references: [id], onDelete: Cascade)
+
   banco_id Int
   banco    bancos @relation(fields: [banco_id], references: [cod])
 }
@@ -193,6 +196,7 @@ model participante {
   local_trabalho           String?
 
   evento_participantes evento_participantes[]
+  conta_diaria         conta_diaria[]
 }
 
 model evento_participantes {
@@ -235,7 +239,6 @@ model viagem {
   data_ida_diferente      DateTime?
   data_volta_diferente    DateTime?
   justificativa_diferente String?
-  
 
   datareg               DateTime @default(now())
   arcar_passagem        String?  @db.Char(3)
