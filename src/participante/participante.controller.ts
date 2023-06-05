@@ -48,6 +48,7 @@ export class ParticipanteController {
           agencia: contaDto.agencia,
           conta: contaDto.conta,
           banco_id: contaDto.banco_id,
+          participante_id: contaDto.participante_id
         };
         this.contaDiariaService.create(conta);
       }
@@ -125,6 +126,7 @@ export class ParticipanteController {
           agencia: contaDto.agencia,
           conta: contaDto.conta,
           banco_id: contaDto.banco_id,
+          participante_id: contaDto.participante_id,
         };
 
         if (contaDto.id > 0 || contaDto.id === undefined) {

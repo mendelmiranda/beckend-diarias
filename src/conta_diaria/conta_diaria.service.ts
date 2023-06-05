@@ -24,6 +24,7 @@ export class ContaDiariaService {
         agencia: dto.agencia,
         conta: dto.conta,
         banco_id: dto.banco_id,
+        participante_id: dto.participante_id
       };
 
       await this.update(dto.id,data )

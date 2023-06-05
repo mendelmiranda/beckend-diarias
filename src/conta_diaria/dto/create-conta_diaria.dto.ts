@@ -7,5 +7,5 @@ export class CreateContaDiariaDto {
     agencia: string;
     conta: string;
     banco_id: number;
-    participante_id?: number;
+    participante_id: number;
 }
