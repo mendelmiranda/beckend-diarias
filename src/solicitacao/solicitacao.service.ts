@@ -15,9 +15,7 @@ export class SolicitacaoService {
 
   findAll() {
     return this.prisma.solicitacao.findMany({
-      orderBy: [
-        {id: 'desc'}
-      ]
+      orderBy: [{ id: 'desc' }],
     });
   }
 
@@ -37,35 +35,39 @@ export class SolicitacaoService {
                     viagem: {
                       include: {
                         valor_viagem: true,
-                      }
-                    }
-                  }
-                }
-              }
+                      },
+                    },
+                  },
+                },
+              },
             },
-          }
-        }
-      }
-    })
+          },
+        },
+      },
+    });
   }
 
   findAllByLotacao(codLotacao: number) {
     return this.prisma.solicitacao.findMany({
       where: {
-        cod_lotacao: codLotacao
+        cod_lotacao: codLotacao,
       },
       include: {
         tramite: {
           include: {
             log_tramite: true,
-          }
+          },
         },
         correcao_solicitacao: true,
         eventos: {
           include: {
             evento_participantes: {
               include: {
-                participante: true,
+                participante: {
+                  include: {
+                    conta_diaria: true,
+                  },
+                },
                 viagem_participantes: {
                   include: {
                     viagem: {
@@ -76,29 +78,27 @@ export class SolicitacaoService {
                         valor_viagem: true,
                         cidade_origem: {
                           include: {
-                            estado: true
-                          }
+                            estado: true,
+                          },
                         },
                         cidade_destino: true,
-                      }
-                    }
-                  }
-                }
-              }
+                      },
+                    },
+                  },
+                },
+              },
             },
             tipo_evento: true,
             cidade: {
-              include:{
+              include: {
                 estado: true,
-              }
+              },
             },
             pais: true,
-          }
-        }
+          },
+        },
       },
-      orderBy: [
-        {id: 'desc'}
-      ]
+      orderBy: [{ id: 'desc' }],
     });
   }
 
@@ -114,7 +114,11 @@ export class SolicitacaoService {
           include: {
             evento_participantes: {
               include: {
-                participante: true,
+                participante: {
+                  include: {
+                    conta_diaria: true,
+                  },
+                },
                 viagem_participantes: {
                   include: {
                     viagem: {
@@ -125,27 +129,27 @@ export class SolicitacaoService {
                         valor_viagem: true,
                         cidade_origem: {
                           include: {
-                            estado: true
-                          }
+                            estado: true,
+                          },
                         },
                         cidade_destino: true,
-                      }
-                    }
-                  }
-                }
-              }
+                      },
+                    },
+                  },
+                },
+              },
             },
             tipo_evento: true,
             cidade: {
-              include:{
+              include: {
                 estado: true,
-              }
+              },
             },
             pais: true,
-          }
-        }
-      }
-    })
+          },
+        },
+      },
+    });
   }
 
   update(id: number, updateSolicitacaoDto: UpdateSolicitacaoDto) {
