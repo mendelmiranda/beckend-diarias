@@ -232,7 +232,15 @@ export class TramiteService {
               include: {
                 evento_participantes: {
                   include: {
-                    participante: true,
+                    participante: {
+                      include: {
+                        conta_diaria: {
+                          include: {
+                            banco: true
+                          }
+                        }
+                      }
+                    },
                     viagem_participantes: {
                       include: {
                         viagem: {
