@@ -254,7 +254,11 @@ export class TramiteService {
                                 estado: true
                               }
                             },
-                            cidade_destino: true,
+                            cidade_destino: {
+                              include: {
+                                estado: true
+                              }
+                            },
                           }
                         }
                       }

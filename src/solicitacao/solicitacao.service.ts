@@ -30,6 +30,15 @@ export class SolicitacaoService {
           include: {
             evento_participantes: {
               include: {
+                participante: {
+                  include: {
+                    conta_diaria: {
+                      include: {
+                        banco: true
+                      }
+                    }
+                  }
+                },
                 viagem_participantes: {
                   include: {
                     viagem: {
@@ -65,7 +74,11 @@ export class SolicitacaoService {
               include: {
                 participante: {
                   include: {
-                    conta_diaria: true,
+                    conta_diaria: {
+                      include: {
+                        banco: true
+                      }
+                    },
                   },
                 },
                 viagem_participantes: {
@@ -116,7 +129,11 @@ export class SolicitacaoService {
               include: {
                 participante: {
                   include: {
-                    conta_diaria: true,
+                    conta_diaria: {
+                      include: {
+                        banco: true
+                      }
+                    },
                   },
                 },
                 viagem_participantes: {
