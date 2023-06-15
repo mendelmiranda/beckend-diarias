@@ -11,7 +11,7 @@ import {
 import { ParticipanteService } from './participante.service';
 import { CreateParticipanteDto } from './dto/create-participante.dto';
 import { UpdateParticipanteDto } from './dto/update-participante.dto';
-import { participante } from '@prisma/client';
+import { conta_diaria, participante } from '@prisma/client';
 import { Util } from 'src/util/Util';
 import moment from 'moment';
 import { ContaDiariaService } from '../conta_diaria/conta_diaria.service';
@@ -110,8 +110,7 @@ export class ParticipanteController {
   ) {
 
     const dateString = updateParticipanteDto.data_nascimento as any;    
-    let resultado;
-   
+    let resultado;   
 
     if (updateParticipanteDto.tipo !== 'S' && id > 0) {
       const contaDto = updateParticipanteDto.contaDiariaModel;
@@ -145,6 +144,29 @@ export class ParticipanteController {
         ...updateParticipanteDto,        
         data_nascimento: Util.convertToDate(dateString),
       };
+
+
+      //REFATORAR ESSE CÓDIGO - UPDATE
+      if (updateParticipanteDto.tipo === 'C' && id > 0) {                
+        const remove = 'conta_diaria';
+        delete data[remove];
+        await this.participanteService.update(+id, data);
+
+        const prop = 'conta_diaria';
+        const contaX: conta_diaria = updateParticipanteDto[prop][0]; 
+
+        const modeloConta: UpdateContaDiariaDto = {
+          ...contaX,
+          participante_id: id,
+        }
+
+        const del = 'id';
+        delete modeloConta[del];
+        delete modeloConta['participante_id'];
+
+        await this.contaDiariaService.update(contaX.id, modeloConta);
+
+      }
       
       resultado = (await this.participanteService.update(+id, data)).id;
 
