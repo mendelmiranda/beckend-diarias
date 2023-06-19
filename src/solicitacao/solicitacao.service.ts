@@ -94,7 +94,11 @@ export class SolicitacaoService {
                             estado: true,
                           },
                         },
-                        cidade_destino: true,
+                        cidade_destino: {
+                          include: {
+                            estado: true,
+                          }
+                        },
                       },
                     },
                   },
@@ -149,7 +153,11 @@ export class SolicitacaoService {
                             estado: true,
                           },
                         },
-                        cidade_destino: true,
+                        cidade_destino: {
+                          include: {
+                            estado: true,
+                          }
+                        },
                       },
                     },
                   },
