@@ -276,7 +276,14 @@ export class TramiteService {
             }
           }
         }
-      }
+      },
+      orderBy: 
+        [
+          {id: 'desc'},
+          {datareg: 'desc'}
+      ],
+
+      
     })
   }
 
