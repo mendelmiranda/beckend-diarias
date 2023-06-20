@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/
 import { SolicitacaoService } from './solicitacao.service';
 import { CreateSolicitacaoDto } from './dto/create-solicitacao.dto';
 import { UpdateSolicitacaoDto } from './dto/update-solicitacao.dto';
+import PesquisaSolicitacaoDTO from './dto/pesquisa-solicitacao.dto';
 
 @Controller('solicitacao')
 export class SolicitacaoController {
@@ -50,4 +51,11 @@ export class SolicitacaoController {
   remove(@Param('id') id: string) {
     return this.solicitacaoService.remove(+id);
   }
+
+
+  pesquisarSolicitacoes(@Body() dto: PesquisaSolicitacaoDTO) {    
+    return this.solicitacaoService.pesquisarSolicitacoes(dto);
+  }
+
+
 }

@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { CreateSolicitacaoDto } from './dto/create-solicitacao.dto';
 import { UpdateSolicitacaoDto } from './dto/update-solicitacao.dto';
+import PesquisaSolicitacaoDTO from './dto/pesquisa-solicitacao.dto';
+
 
 @Injectable()
 export class SolicitacaoService {
@@ -123,6 +125,78 @@ export class SolicitacaoService {
     return this.prisma.solicitacao.findUnique({
       where: {
         id: id,
+      },
+      include: {
+        tramite: true,
+        correcao_solicitacao: true,
+        eventos: {
+          include: {
+            evento_participantes: {
+              include: {
+                participante: {
+                  include: {
+                    conta_diaria: {
+                      include: {
+                        banco: true
+                      }
+                    },
+                  },
+                },
+                viagem_participantes: {
+                  include: {
+                    viagem: {
+                      include: {
+                        origem: true,
+                        destino: true,
+                        pais: true,
+                        valor_viagem: true,
+                        cidade_origem: {
+                          include: {
+                            estado: true,
+                          },
+                        },
+                        cidade_destino: {
+                          include: {
+                            estado: true,
+                          }
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            tipo_evento: true,
+            cidade: {
+              include: {
+                estado: true,
+              },
+            },
+            pais: true,
+          },
+        },
+      },
+    });
+  }
+
+
+  pesquisarSolicitacoes(dto: PesquisaSolicitacaoDTO) {
+    return this.prisma.solicitacao.findMany({
+      where: {
+        OR: [
+          {
+            datareg: {
+              lte: dto?.dataInicio,
+            },
+          },
+          { 
+            datareg: { 
+            gte: dto?.dataFim 
+            } 
+          },
+        ],
+        cod_lotacao: dto?.codLotacao,
+        cpf_responsavel: dto?.cpfServidor
       },
       include: {
         tramite: true,
