@@ -183,7 +183,7 @@ export class SolicitacaoService {
   pesquisarSolicitacoes(dto: PesquisaSolicitacaoDTO) {
     return this.prisma.solicitacao.findMany({
       where: {
-        OR: [
+        /* OR: [
           {
             datareg: {
               lte: dto?.dataInicio,
@@ -194,9 +194,12 @@ export class SolicitacaoService {
             gte: dto?.dataFim 
             } 
           },
-        ],
-        cod_lotacao: dto?.codLotacao,
-        cpf_responsavel: dto?.cpfServidor
+        ], */
+        cod_lotacao: dto?.cod_lotacao,
+        AND: {
+          cpf_responsavel: dto?.cpf_responsavel
+        }
+        
       },
       include: {
         tramite: true,
@@ -250,6 +253,17 @@ export class SolicitacaoService {
       },
     });
   }
+
+  pesquisarResponsaveis() {
+    return this.prisma.solicitacao.findMany(
+      {
+        distinct: ['nome_responsavel'],
+        orderBy: [{ nome_responsavel: 'asc' }]
+      }
+    )
+  }
+
+
 
   update(id: number, updateSolicitacaoDto: UpdateSolicitacaoDto) {
     return this.prisma.solicitacao.update({

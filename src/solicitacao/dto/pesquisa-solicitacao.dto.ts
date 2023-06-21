@@ -2,7 +2,7 @@
 export default interface PesquisaSolicitacaoDTO {
     dataInicio?: Date;
     dataFim?: Date;
-    codLotacao?: number;
-    cpfServidor?: string;
+    cod_lotacao?: number;
+    cpf_responsavel?: string;
 }
 

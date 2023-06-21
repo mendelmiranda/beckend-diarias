@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Put,
+} from '@nestjs/common';
 import { SolicitacaoService } from './solicitacao.service';
 import { CreateSolicitacaoDto } from './dto/create-solicitacao.dto';
 import { UpdateSolicitacaoDto } from './dto/update-solicitacao.dto';
@@ -9,16 +18,15 @@ export class SolicitacaoController {
   constructor(private readonly solicitacaoService: SolicitacaoService) {}
 
   @Post()
-  create(@Body() createSolicitacaoDto: CreateSolicitacaoDto) {    
-
+  create(@Body() createSolicitacaoDto: CreateSolicitacaoDto) {
     let d = new Date();
-    d.setTime( d.getTime() - new Date().getTimezoneOffset()*60*1000 );
+    d.setTime(d.getTime() - new Date().getTimezoneOffset() * 60 * 1000);
 
     const solicitacao: CreateSolicitacaoDto = {
       ...createSolicitacaoDto,
       datareg: d,
       status: 'NAO',
-    }
+    };
     return this.solicitacaoService.create(solicitacao);
   }
 
@@ -37,13 +45,21 @@ export class SolicitacaoController {
     return this.solicitacaoService.detalhesDaSolicitacao(+id);
   }
 
+  @Get('/responsaveis')
+  listarResponsaveisDaSolicitacao() {
+    return this.solicitacaoService.pesquisarResponsaveis();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.solicitacaoService.findOne(+id);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateSolicitacaoDto: UpdateSolicitacaoDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateSolicitacaoDto: UpdateSolicitacaoDto,
+  ) {
     return this.solicitacaoService.update(+id, updateSolicitacaoDto);
   }
 
@@ -52,10 +68,8 @@ export class SolicitacaoController {
     return this.solicitacaoService.remove(+id);
   }
 
-
-  pesquisarSolicitacoes(@Body() dto: PesquisaSolicitacaoDTO) {    
+  @Post('/pesquisar')
+  pesquisarSolicitacoes(@Body() dto: PesquisaSolicitacaoDTO) {
     return this.solicitacaoService.pesquisarSolicitacoes(dto);
   }
-
-
 }
