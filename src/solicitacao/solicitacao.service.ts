@@ -195,10 +195,23 @@ export class SolicitacaoService {
             } 
           },
         ], */
-        cod_lotacao: dto?.cod_lotacao,
+        
         AND: {
-          cpf_responsavel: dto?.cpf_responsavel
-        }
+          cpf_responsavel: dto?.cpf_responsavel,
+          cod_lotacao: dto?.cod_lotacao
+        }, 
+
+        OR: [
+          {
+            tramite: {
+              every: {
+                status: dto.status
+              }
+            }
+          }
+        ]
+        
+        
         
       },
       include: {

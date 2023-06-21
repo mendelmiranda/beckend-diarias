@@ -4,5 +4,6 @@ export default interface PesquisaSolicitacaoDTO {
     dataFim?: Date;
     cod_lotacao?: number;
     cpf_responsavel?: string;
+    status?: string;
 }
 
