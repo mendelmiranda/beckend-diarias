@@ -183,19 +183,11 @@ export class SolicitacaoService {
   pesquisarSolicitacoes(dto: PesquisaSolicitacaoDTO) {
     return this.prisma.solicitacao.findMany({
       where: {
-        /* OR: [
-          {
-            datareg: {
-              lte: dto?.dataInicio,
-            },
-          },
-          { 
-            datareg: { 
-            gte: dto?.dataFim 
-            } 
-          },
-        ], */
-        
+        datareg: {
+          lte: dto.dataInicio,
+          gte: dto.dataFim,
+        },
+                
         AND: {
           cpf_responsavel: dto?.cpf_responsavel,
           cod_lotacao: dto?.cod_lotacao
@@ -210,9 +202,6 @@ export class SolicitacaoService {
             }
           }
         ]
-        
-        
-        
       },
       include: {
         tramite: true,
