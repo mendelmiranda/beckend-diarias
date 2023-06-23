@@ -59,7 +59,7 @@ export class TramiteController {
     return this.tramiteService.findTramitePresidencia();
   }
 
-  @Get('/empenhados')
+  @Get('/solicitacoes/empenhados')
   findEmpenhados() {
     return this.tramiteService.findEmpenhados();
   }
