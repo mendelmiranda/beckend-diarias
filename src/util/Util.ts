@@ -27,6 +27,16 @@ const formataDataAmericana = (valor: Date | number) => {
     return moment(valor).format('MM-DD-yyyy');
 }
 
+const formataDataAmericanaBanco = (valor: Date | number) => {
+    if (valor === null)
+        return null;
+
+    if (typeof valor === 'number')
+        valor = new Date(valor);
+
+    return moment(valor).format('yyyy-MM-DD');
+}
+
 export const Util = {
-    dataAtual, convertToDate,totalDeDias, formataDataAmericana
+    dataAtual, convertToDate,totalDeDias, formataDataAmericana, formataDataAmericanaBanco
 }

@@ -3,6 +3,7 @@ import { PrismaService } from 'prisma/prisma.service';
 import { CreateSolicitacaoDto } from './dto/create-solicitacao.dto';
 import { UpdateSolicitacaoDto } from './dto/update-solicitacao.dto';
 import PesquisaSolicitacaoDTO from './dto/pesquisa-solicitacao.dto';
+import { Util } from 'src/util/Util';
 
 
 @Injectable()
@@ -181,11 +182,14 @@ export class SolicitacaoService {
 
 
   pesquisarSolicitacoes(dto: PesquisaSolicitacaoDTO) {
+
+    console.log('data', dto.dataInicio);
+    
     return this.prisma.solicitacao.findMany({
       where: {
         datareg: {
-          lte: dto.dataInicio,
-          gte: dto.dataFim,
+          lte: Util.formataDataAmericanaBanco(dto.dataInicio),
+          gte: Util.formataDataAmericanaBanco(dto.dataFim),
         },
                 
         AND: {
