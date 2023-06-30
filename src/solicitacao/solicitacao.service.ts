@@ -181,23 +181,24 @@ export class SolicitacaoService {
   }
 
 
-  pesquisarSolicitacoes(dto: PesquisaSolicitacaoDTO) {
-
-    console.log('data', dto.dataInicio);
-    
+  pesquisarSolicitacoes(dto: PesquisaSolicitacaoDTO) {    
     return this.prisma.solicitacao.findMany({
       where: {
-        datareg: {
-          lte: Util.formataDataAmericanaBanco(dto.dataInicio),
-          gte: Util.formataDataAmericanaBanco(dto.dataFim),
-        },
+        OR: [
+          {
+            datareg: {
+              gte: new Date(dto.dataInicio),
+              lte: new Date(dto.dataFim),
+            },
+          }
+        ],
                 
         AND: {
           cpf_responsavel: dto?.cpf_responsavel,
           cod_lotacao: dto?.cod_lotacao
         }, 
 
-        OR: [
+        /* OR: [
           {
             tramite: {
               every: {
@@ -205,7 +206,7 @@ export class SolicitacaoService {
               }
             }
           }
-        ]
+        ] */
       },
       include: {
         tramite: true,

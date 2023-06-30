@@ -37,6 +37,12 @@ const formataDataAmericanaBanco = (valor: Date | number) => {
     return moment(valor).format('yyyy-MM-DD');
 }
 
+function convertToDateDB(dateString: string) {
+    let d = dateString.split("/");
+    let dat = new Date(d[0] + '-' + d[1] + '-' + d[2]);
+    return dat;     
+}
+
 export const Util = {
-    dataAtual, convertToDate,totalDeDias, formataDataAmericana, formataDataAmericanaBanco
+    dataAtual, convertToDate,totalDeDias, formataDataAmericana, formataDataAmericanaBanco, convertToDateDB
 }
