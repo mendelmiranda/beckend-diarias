@@ -78,7 +78,7 @@ model cidade {
 
 model solicitacao {
   id                   Int                    @default(autoincrement())
-  datareg              DateTime?              @default(now())
+  datareg              DateTime?              @default(now()) @db.Timestamptz(3)
   justificativa        String
   status               String
   cpf_responsavel      String?
@@ -95,7 +95,7 @@ model solicitacao {
 
 model empenho_daofi {
   id              Int       @unique @default(autoincrement())
-  datareg         DateTime? @default(now())
+  datareg         DateTime? @default(now()) @db.Timestamptz(3)
   tipo            String
   saldo_inicial   Float
   valor_reservado Float
@@ -113,7 +113,7 @@ model tramite {
   cod_lotacao_destino Int
   lotacao_destino     String
   status              String
-  datareg             DateTime      @default(now())
+  datareg             DateTime      @default(now()) @db.Timestamptz(3)
   solicitacao         solicitacao   @relation(fields: [solicitacao_id], references: [id])
   solicitacao_id      Int
   log_tramite         log_tramite[]
@@ -129,7 +129,7 @@ model log_tramite {
   cod_lotacao_destino Int
   lotacao_destino     String
   status              String
-  datareg             DateTime @default(now())
+  datareg             DateTime @default(now()) @db.Timestamptz(3)
   tramite             tramite  @relation(fields: [tramite_id], references: [id])
   tramite_id          Int
 
@@ -142,7 +142,7 @@ model correcao_solicitacao {
   solicitacao_id Int
   texto          String?
   status         String //AGUARDANDO_CORRECAO | CORRIGIDO
-  datareg        DateTime    @default(now())
+  datareg        DateTime    @default(now()) @db.Timestamptz(3)
 
   @@id([id])
 }
@@ -173,7 +173,7 @@ model evento {
   pais_id               Int
   pais                  pais        @relation(fields: [pais_id], references: [id])
   informacoes           String
-  datareg               DateTime    @default(now())
+  datareg               DateTime    @default(now()) @db.Timestamptz(3)
   tem_passagem          String?     @db.Char(3)
   valor_total_inscricao Float?
   valor_evento          Float?
@@ -248,7 +248,7 @@ model viagem {
   data_volta_diferente    DateTime?
   justificativa_diferente String?
 
-  datareg               DateTime @default(now())
+  datareg               DateTime @default(now()) @db.Timestamptz(3)
   arcar_passagem        String?  @db.Char(3)
   custos                String[]
   servidor_acompanhando String?  @db.Char(3)
@@ -294,7 +294,7 @@ model valor_diarias {
   dentro        Float
   fora          Float
   internacional Float?
-  datareg       DateTime        @default(now())
+  datareg       DateTime        @default(now()) @db.Timestamptz(3)
   cargo_diarias cargo_diarias[]
 
   @@id([id])
