@@ -16,9 +16,7 @@ export class LogSistemaService {
   }
 
   async createLog(dto: any, usuario: InfoUsuario){
-    console.log(DateTime.now().toJSDate());
     
-
     const logSistemaDto: CreateLogSistemaDto = {
       datareg: DateTime.now().toJSDate(),
       linha: Object.values(dto) + '',

@@ -18,7 +18,7 @@ model log_sistema {
   linha    String
   operacao String
   usuario  String
-  datareg  DateTime @default(now())
+  datareg  DateTime @default(now()) @db.Timestamptz(3)
 }
 
 model conta_diaria {
