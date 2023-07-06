@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { CreateLogSistemaDto } from './dto/create-log_sistema.dto';
 import { UpdateLogSistemaDto } from './dto/update-log_sistema.dto';
 import { PrismaService } from 'prisma/prisma.service';
+import { DateTime } from "luxon";
+
 
 @Injectable()
 export class LogSistemaService {

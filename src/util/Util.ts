@@ -2,10 +2,14 @@ import * as moment from 'moment';
 
 
 
-function dataAtual(d: Date) {
-    
+function dataAtual(d: Date) {    
     return d.setTime( d.getTime() - new Date().getTimezoneOffset()*60*1000 );
 }
+
+/* function dataHoraAtual() {  
+    let d = new Date();  
+    return d.setTime( d.getTime() - new Date().getTimezoneOffset()*60*1000 );
+} */
 
 function convertToDate(dateString: string) {
     let d = dateString.split("/");
