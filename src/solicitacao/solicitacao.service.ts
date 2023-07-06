@@ -4,13 +4,19 @@ import { CreateSolicitacaoDto } from './dto/create-solicitacao.dto';
 import { UpdateSolicitacaoDto } from './dto/update-solicitacao.dto';
 import PesquisaSolicitacaoDTO from './dto/pesquisa-solicitacao.dto';
 import { Util } from 'src/util/Util';
+import { InfoUsuario, LogSistemaService } from 'src/log_sistema/log_sistema.service';
+import { CreateLogSistemaDto } from 'src/log_sistema/dto/create-log_sistema.dto';
 
 
 @Injectable()
 export class SolicitacaoService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService,
+    private logSistemaService: LogSistemaService) {}
 
-  async create(dto: CreateSolicitacaoDto): Promise<CreateSolicitacaoDto> {
+  async create(dto: CreateSolicitacaoDto, usuario: InfoUsuario): Promise<CreateSolicitacaoDto> {
+
+    this.logSistemaService.createLog(dto, usuario);
+
     return this.prisma.solicitacao.create({
       data: dto,
     });

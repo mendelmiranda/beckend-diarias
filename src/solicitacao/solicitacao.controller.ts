@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Put,
+  Req,
 } from '@nestjs/common';
 import { SolicitacaoService } from './solicitacao.service';
 import { CreateSolicitacaoDto } from './dto/create-solicitacao.dto';
@@ -18,16 +19,18 @@ export class SolicitacaoController {
   constructor(private readonly solicitacaoService: SolicitacaoService) {}
 
   @Post()
-  create(@Body() createSolicitacaoDto: CreateSolicitacaoDto) {
+  create(@Body() createSolicitacaoDto: CreateSolicitacaoDto, @Req() request: Request) {
     let d = new Date();
     d.setTime(d.getTime() - new Date().getTimezoneOffset() * 60 * 1000);
+
+    const usuario = request.headers['dados_client'];    
 
     const solicitacao: CreateSolicitacaoDto = {
       ...createSolicitacaoDto,
       datareg: d,
       status: 'NAO',
     };
-    return this.solicitacaoService.create(solicitacao);
+    return this.solicitacaoService.create(solicitacao, usuario);
   }
 
   @Get()

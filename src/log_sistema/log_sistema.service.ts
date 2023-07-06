@@ -13,6 +13,36 @@ export class LogSistemaService {
     });
   }
 
+  async createLog(dto: any, usuario: InfoUsuario){
+
+    console.log(usuario);
+    console.log('aqui', usuario['nomeCompleto']);
+    
+    
+
+    
+    
+
+
+   /*  const prop = 'username';
+    const contaX: InfoUsuario = usuario[prop];   
+
+      console.log('username', contaX); */
+      
+
+
+
+    const logSistemaDto: CreateLogSistemaDto = {
+      datareg: new Date(),
+      linha: Object.values(dto) + '',
+      usuario:  '0000',
+      operacao: 'INSERT',
+    }
+    await this.prisma.log_sistema.create({
+      data: logSistemaDto,
+    });
+  }
+
   findAll() {
     return `This action returns all logSistema`;
   }
@@ -28,4 +58,14 @@ export class LogSistemaService {
   remove(id: number) {
     return `This action removes a #${id} logSistema`;
   }
+}
+
+export interface InfoUsuario {
+  accessToken: string;
+  id: string;
+  username: string;
+  nomeCompleto: string; 
+  expirationIn: string;
+  roles: string;
+  cpf: string; 
 }
