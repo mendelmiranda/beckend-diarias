@@ -13,6 +13,7 @@ import { SolicitacaoService } from './solicitacao.service';
 import { CreateSolicitacaoDto } from './dto/create-solicitacao.dto';
 import { UpdateSolicitacaoDto } from './dto/update-solicitacao.dto';
 import PesquisaSolicitacaoDTO from './dto/pesquisa-solicitacao.dto';
+import { InfoUsuario } from 'src/log_sistema/log_sistema.service';
 
 @Controller('solicitacao')
 export class SolicitacaoController {
@@ -20,10 +21,10 @@ export class SolicitacaoController {
 
   @Post()
   create(@Body() createSolicitacaoDto: CreateSolicitacaoDto, @Req() request: Request) {
+    const usuario = JSON.parse(request.headers['dados_client']);
+    
     let d = new Date();
     d.setTime(d.getTime() - new Date().getTimezoneOffset() * 60 * 1000);
-
-    const usuario = request.headers['dados_client'];    
 
     const solicitacao: CreateSolicitacaoDto = {
       ...createSolicitacaoDto,

@@ -15,27 +15,10 @@ export class LogSistemaService {
 
   async createLog(dto: any, usuario: InfoUsuario){
 
-    console.log(usuario);
-    console.log('aqui', usuario['nomeCompleto']);
-    
-    
-
-    
-    
-
-
-   /*  const prop = 'username';
-    const contaX: InfoUsuario = usuario[prop];   
-
-      console.log('username', contaX); */
-      
-
-
-
     const logSistemaDto: CreateLogSistemaDto = {
       datareg: new Date(),
       linha: Object.values(dto) + '',
-      usuario:  '0000',
+      usuario:  usuario.nomeCompleto + ' '+ usuario.username,
       operacao: 'INSERT',
     }
     await this.prisma.log_sistema.create({
