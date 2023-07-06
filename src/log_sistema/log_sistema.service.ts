@@ -16,9 +16,11 @@ export class LogSistemaService {
   }
 
   async createLog(dto: any, usuario: InfoUsuario){
+    console.log(DateTime.now().setZone('America/Belem'));
+    
 
     const logSistemaDto: CreateLogSistemaDto = {
-      datareg: new Date(),
+      datareg: DateTime.now().setZone('America/Belem').toJSDate(),
       linha: Object.values(dto) + '',
       usuario:  usuario.nomeCompleto + ' '+ usuario.username,
       operacao: 'INSERT',
