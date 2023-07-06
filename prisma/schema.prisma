@@ -13,6 +13,14 @@ model bancos {
   conta_diaria conta_diaria[]
 }
 
+model log_sistema {
+  id       Int      @id @default(autoincrement())
+  linha    String
+  operacao String
+  usuario  String
+  datareg  DateTime @default(now())
+}
+
 model conta_diaria {
   id         Int    @id @default(autoincrement())
   nome       String @db.VarChar(200)

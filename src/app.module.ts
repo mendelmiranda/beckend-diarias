@@ -21,6 +21,7 @@ import { ValorViagemModule } from './valor_viagem/valor_viagem.module';
 import { CorrecaoSolicitacaoModule } from './correcao_solicitacao/correcao_solicitacao.module';
 import { LogTramiteModule } from './log_tramite/log_tramite.module';
 import { EmpenhoDaofiModule } from './empenho_daofi/empenho_daofi.module';
+import { LogSistemaModule } from './log_sistema/log_sistema.module';
 
 
 @Module({
@@ -45,6 +46,7 @@ import { EmpenhoDaofiModule } from './empenho_daofi/empenho_daofi.module';
     CorrecaoSolicitacaoModule,
     LogTramiteModule,
     EmpenhoDaofiModule,
+    LogSistemaModule,
   ],
   controllers: [AppController],
   providers: [AppService],
