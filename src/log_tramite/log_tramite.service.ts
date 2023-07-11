@@ -37,8 +37,6 @@ export class LogTramiteService {
   }
 
   findLogsTramitePorLotacao(id: number) {
-    console.log('emtrou aqui', id);
-    
     return this.prisma.log_tramite.findMany({
       where: {
         cod_lotacao_origem: id,
