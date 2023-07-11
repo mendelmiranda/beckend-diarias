@@ -34,7 +34,11 @@ export class SolicitacaoService {
         id: id,
       },
       include: {
-        tramite: true,
+        tramite: {
+          include: {
+            log_tramite: true,
+          }
+        },
         eventos: {
           include: {
             evento_participantes: {
@@ -134,7 +138,11 @@ export class SolicitacaoService {
         id: id,
       },
       include: {
-        tramite: true,
+        tramite: {
+          include: {
+            log_tramite: true,
+          }
+        },
         correcao_solicitacao: true,
         eventos: {
           include: {
