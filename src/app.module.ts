@@ -22,6 +22,7 @@ import { CorrecaoSolicitacaoModule } from './correcao_solicitacao/correcao_solic
 import { LogTramiteModule } from './log_tramite/log_tramite.module';
 import { EmpenhoDaofiModule } from './empenho_daofi/empenho_daofi.module';
 import { LogSistemaModule } from './log_sistema/log_sistema.module';
+import { AnexoSolicitacaoModule } from './anexo_solicitacao/anexo_solicitacao.module';
 
 
 @Module({
@@ -47,6 +48,7 @@ import { LogSistemaModule } from './log_sistema/log_sistema.module';
     LogTramiteModule,
     EmpenhoDaofiModule,
     LogSistemaModule,
+    AnexoSolicitacaoModule,
   ],
   controllers: [AppController],
   providers: [AppService],
