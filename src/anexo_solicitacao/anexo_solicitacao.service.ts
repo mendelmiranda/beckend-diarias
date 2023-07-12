@@ -31,10 +31,10 @@ export class AnexoSolicitacaoService {
     return `This action removes a #${id} anexoSolicitacao`;
   }
 
-  upload(file: Express.Multer.File, idEvento: number) {
+  upload(file: Express.Multer.File, solicitacaoId: number) {
     const formData = new FormData();
     formData.append('file', file.buffer, { filename: file.originalname });
-    formData.append('collection', 'anexo-evento'+idEvento);
+    formData.append('collection', 'anexo-evento'+solicitacaoId);
 
     return this.httpService.axiosRef.post('http://10.10.0.73:3000/files/upload', formData, {
       headers:  {

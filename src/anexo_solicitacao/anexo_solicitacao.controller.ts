@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { AnexoSolicitacaoService } from './anexo_solicitacao.service';
 import { CreateAnexoSolicitacaoDto } from './dto/create-anexo_solicitacao.dto';
 import { UpdateAnexoSolicitacaoDto } from './dto/update-anexo_solicitacao.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('anexo-solicitacao')
 export class AnexoSolicitacaoController {
@@ -31,4 +32,20 @@ export class AnexoSolicitacaoController {
   remove(@Param('id') id: string) {
     return this.anexoSolicitacaoService.remove(+id);
   }
+
+  @UseInterceptors(FileInterceptor("arquivo"))
+  async upload(
+    @Body() uploadFileDto: CreateAnexoSolicitacaoDto,
+    @UploadedFile() file: Express.Multer.File
+  ) {
+    const result = await this.anexoSolicitacaoService.upload(file, uploadFileDto.solicitacao_id);
+    const { id } = result;
+
+    uploadFileDto.api_anexo_id = id;
+
+    this.anexoSolicitacaoService.create(uploadFileDto);
+
+    return result;
+  }
+  
 }
