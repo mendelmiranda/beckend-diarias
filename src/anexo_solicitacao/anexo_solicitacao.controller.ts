@@ -33,11 +33,10 @@ export class AnexoSolicitacaoController {
     return this.anexoSolicitacaoService.remove(+id);
   }
 
+  @Post("/upload")
   @UseInterceptors(FileInterceptor("arquivo"))
-  async upload(
-    @Body() uploadFileDto: CreateAnexoSolicitacaoDto,
-    @UploadedFile() file: Express.Multer.File
-  ) {
+  async upload( @Body() uploadFileDto: CreateAnexoSolicitacaoDto, @UploadedFile() file: Express.Multer.File ) {
+    
     const result = await this.anexoSolicitacaoService.upload(file, uploadFileDto.solicitacao_id);
     const { id } = result;
 
