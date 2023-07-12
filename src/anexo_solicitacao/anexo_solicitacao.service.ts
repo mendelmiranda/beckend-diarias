@@ -36,7 +36,7 @@ export class AnexoSolicitacaoService {
     formData.append('file', file.buffer, { filename: file.originalname });
     formData.append('collection', 'anexo-evento'+solicitacaoId);
 
-    return this.httpService.axiosRef.post('http://10.10.0.73:3000/files/upload', formData, {
+    return this.httpService.axiosRef.post('https://arquivos.tce.ap.gov.br:3000/files/upload', formData, {
       headers:  {
         "Content-Type": "multipart/form-data",
         Accept: "/",
