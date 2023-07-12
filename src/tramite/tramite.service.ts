@@ -287,6 +287,74 @@ export class TramiteService {
     })
   }
 
+  findConcluidas() {
+    return this.prisma.tramite.findMany({
+      where: {
+        status: 'CONCLUIDO'
+      },
+      include: {
+        solicitacao: {
+          include: {
+            tramite: true,
+            eventos: {
+              include: {
+                evento_participantes: {
+                  include: {
+                    participante: {
+                      include: {
+                        conta_diaria: {
+                          include: {
+                            banco: true
+                          }
+                        }
+                      }
+                    },
+                    viagem_participantes: {
+                      include: {
+                        viagem: {
+                          include: {
+                            origem: true,
+                            destino: true,
+                            pais: true,
+                            valor_viagem: true,
+                            cidade_origem: {
+                              include: {
+                                estado: true
+                              }
+                            },
+                            cidade_destino: {
+                              include: {
+                                estado: true
+                              }
+                            },
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                tipo_evento: true,
+                cidade: {
+                  include:{
+                    estado: true,
+                  }
+                },
+                pais: true,
+              }
+            }
+          }
+        }
+      },
+      orderBy: 
+        [
+          {id: 'desc'},
+          {datareg: 'desc'}
+      ],
+
+      
+    })
+  }
+
   update(id: number, dto: UpdateTramiteDto, nome?: string) {
     const { solicitacao, ...dtoSemSolicitacao } = dto;
 

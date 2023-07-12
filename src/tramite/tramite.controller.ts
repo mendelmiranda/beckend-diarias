@@ -67,6 +67,11 @@ export class TramiteController {
     return this.tramiteService.findEmpenhados();
   }
 
+  @Get('/solicitacoes/concluidas')
+  findConcluidas() {
+    return this.tramiteService.findConcluidas();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.tramiteService.findOne(+id);
