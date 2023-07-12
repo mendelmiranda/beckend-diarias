@@ -45,15 +45,10 @@ export class AnexoSolicitacaoService {
     }).then((result) => result.data);
   }
 
-  async anexosDoEvento(idEvento: number) {
-    /* return (await this.anexoRepository.find({
-      order: {
-        id: "DESC",
-      },
-    }))
-      .filter(a => {        
-        return a.evento_id === idEvento;
-      }); */
+  async anexosDaSolicitacao(idSolicitacao: number) {
+    return await this.prisma.anexo_solicitacao.findMany({ 
+      where: {solicitacao_id: idSolicitacao}
+    })
   }
 
   removerUpload(idArquivo: number) {
