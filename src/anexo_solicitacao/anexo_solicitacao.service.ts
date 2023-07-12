@@ -1,11 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { CreateAnexoSolicitacaoDto } from './dto/create-anexo_solicitacao.dto';
 import { UpdateAnexoSolicitacaoDto } from './dto/update-anexo_solicitacao.dto';
+import { PrismaService } from 'prisma/prisma.service';
 
 @Injectable()
 export class AnexoSolicitacaoService {
-  create(createAnexoSolicitacaoDto: CreateAnexoSolicitacaoDto) {
-    return 'This action adds a new anexoSolicitacao';
+  constructor(private prisma: PrismaService) {}
+
+  create(dto: CreateAnexoSolicitacaoDto) {
+    return this.prisma.anexo_solicitacao.create({
+      data: dto,
+    });
   }
 
   findAll() {
