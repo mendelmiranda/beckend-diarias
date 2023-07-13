@@ -42,7 +42,7 @@ export class AnexoSolicitacaoController {
 
     uploadFileDto.api_anexo_id = id;
 
-    this.anexoSolicitacaoService.create(uploadFileDto);
+    await this.anexoSolicitacaoService.create(uploadFileDto);
 
     return result;
   }
