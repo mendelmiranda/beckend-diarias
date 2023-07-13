@@ -18,9 +18,9 @@ export class AnexoSolicitacaoController {
     return this.anexoSolicitacaoService.findAll();
   }
 
-  @Get('/solicitacao/:id')
-  findAnexosDaSolicitacao(@Param('id') id: string) {
-    return this.anexoSolicitacaoService.findAnexosDaSolicitacao(+id);
+  @Get('/evento/:id')
+  findAnexosDoEvento(@Param('id') id: string) {
+    return this.anexoSolicitacaoService.findAnexosDoEvento(+id);
   }
 
   @Get(':id')
@@ -42,7 +42,7 @@ export class AnexoSolicitacaoController {
   @UseInterceptors(FileInterceptor("arquivo"))
   async upload( @Body() uploadFileDto: CreateAnexoSolicitacaoDto, @UploadedFile() file: Express.Multer.File ) {
     
-    const result = await this.anexoSolicitacaoService.upload(file, uploadFileDto.solicitacao_id);
+    const result = await this.anexoSolicitacaoService.upload(file, uploadFileDto.evento_id);
     const { id } = result;
 
     uploadFileDto.api_anexo_id = id;

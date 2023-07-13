@@ -13,12 +13,12 @@ export class AnexoSolicitacaoService {
   ) {}
 
   create(dto: CreateAnexoSolicitacaoDto) {
-    return this.prisma.anexo_solicitacao.create({
+    return this.prisma.anexo_evento.create({
       data: {
         api_anexo_id: dto.api_anexo_id,
         descricao: dto.descricao,
         filename: dto.filename,
-        solicitacao_id: +dto.solicitacao_id,
+        evento_id: +dto.evento_id,
         categoria: dto.categoria,
       },
     });
@@ -32,10 +32,10 @@ export class AnexoSolicitacaoService {
     return `This action returns a #${id} anexoSolicitacao`;
   }
 
-  findAnexosDaSolicitacao(id: number) {
-    return this.prisma.anexo_solicitacao.findMany({
+  findAnexosDoEvento(id: number) {
+    return this.prisma.anexo_evento.findMany({
       where: {
-        solicitacao_id: id,
+        evento_id: id,
       },
       orderBy: [{ id: 'desc' }],
     });
@@ -46,13 +46,13 @@ export class AnexoSolicitacaoService {
   }
 
   async remove(id: number) {
-    const anexo = await this.prisma.anexo_solicitacao.findUnique({
+    const anexo = await this.prisma.anexo_evento.findUnique({
       where: {
         id: id,
       },
     });
 
-    await this.prisma.anexo_solicitacao.delete({
+    await this.prisma.anexo_evento.delete({
       where: {
         id: id,
       },
@@ -79,9 +79,9 @@ export class AnexoSolicitacaoService {
       .then((result) => result.data);
   }
 
-  async anexosDaSolicitacao(idSolicitacao: number) {
-    return await this.prisma.anexo_solicitacao.findMany({
-      where: { solicitacao_id: idSolicitacao },
+  async anexosDoEvento(idEvento: number) {
+    return await this.prisma.anexo_evento.findMany({
+      where: { evento_id: idEvento },
     });
   }
 

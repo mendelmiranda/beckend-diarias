@@ -6,5 +6,5 @@ export class CreateAnexoSolicitacaoDto {
     datareg?:   Date;
     api_anexo_id: number;
     filename: string;
-    solicitacao_id: number;
+    evento_id: number;
 }
