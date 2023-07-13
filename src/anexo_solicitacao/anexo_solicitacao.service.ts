@@ -23,6 +23,17 @@ export class AnexoSolicitacaoService {
     return `This action returns a #${id} anexoSolicitacao`;
   }
 
+  findAnexosDaSolicitacao(id: number) {
+    return this.prisma.anexo_solicitacao.findMany({
+      where: {
+        solicitacao_id: id
+      },
+      orderBy: [
+        {id: 'desc'}
+      ]
+    })
+  }
+
   update(id: number, updateAnexoSolicitacaoDto: UpdateAnexoSolicitacaoDto) {
     return `This action updates a #${id} anexoSolicitacao`;
   }

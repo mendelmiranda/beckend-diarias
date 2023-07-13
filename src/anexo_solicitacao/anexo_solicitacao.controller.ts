@@ -18,6 +18,11 @@ export class AnexoSolicitacaoController {
     return this.anexoSolicitacaoService.findAll();
   }
 
+  @Get('/solicitacao/:id')
+  findAnexosDaSolicitacao(@Param('id') id: string) {
+    return this.anexoSolicitacaoService.findAnexosDaSolicitacao(+id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.anexoSolicitacaoService.findOne(+id);
