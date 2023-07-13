@@ -22,15 +22,14 @@ model log_sistema {
 }
 
 model anexo_solicitacao {
-  id       Int      @id @default(autoincrement())
-  categoria String
-  descricao String
-  usuario  String
-  datareg  DateTime @default(now()) @db.Timestamptz(3)
-  api_anexo_id  BigInt
-  filename String
-  solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id])
-  solicitacao_id Int
+  id             Int          @id @default(autoincrement())
+  categoria      String
+  descricao      String
+  datareg        DateTime     @default(now()) @db.Timestamptz(3)
+  api_anexo_id   Int
+  filename       String
+  solicitacao    solicitacao? @relation(fields: [solicitacao_id], references: [id])
+  solicitacao_id Int?
 }
 
 model conta_diaria {
