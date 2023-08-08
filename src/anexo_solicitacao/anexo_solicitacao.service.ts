@@ -86,7 +86,6 @@ export class AnexoSolicitacaoService {
   }
 
   removerUpload(idArquivo: number) {
-    console.log('id arq', idArquivo);
     
     if (idArquivo > 0)
       return this.httpService.axiosRef

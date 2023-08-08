@@ -359,12 +359,7 @@ export class TramiteService {
     const { solicitacao, ...dtoSemSolicitacao } = dto;
 
     this.salvarLogTramite(dto as CreateTramiteDto, nome, id);
-
-    console.log('dtoSemSolicitacao', dtoSemSolicitacao);
-    console.log('id', id);
     
-    
-
     return this.prisma.tramite.update({
       where: { id },
       data: dtoSemSolicitacao,

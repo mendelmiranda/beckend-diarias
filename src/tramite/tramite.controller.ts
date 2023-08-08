@@ -24,10 +24,7 @@ export class TramiteController {
     const data: CreateTramiteDto = {
       ...createTramiteDto,
       datareg: new Date(),
-    };
-
-    console.log('id controller', id);
-    
+    };    
 
     if (+id > 0) {
       await this.tramiteService.update(+id, createTramiteDto, nome);
