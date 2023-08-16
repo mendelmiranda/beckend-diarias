@@ -216,6 +216,7 @@ model participante {
   local_trabalho           String?
   email                    String?
   telefone                 String?
+  rg                       String?
 
   evento_participantes evento_participantes[]
   conta_diaria         conta_diaria[]
