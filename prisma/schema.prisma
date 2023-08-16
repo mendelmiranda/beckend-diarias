@@ -214,6 +214,8 @@ model participante {
   recebe_diarias_na_origem String? @db.Char(3)
   profissao                String?
   local_trabalho           String?
+  email                    String?
+  telefone                 String?
 
   evento_participantes evento_participantes[]
   conta_diaria         conta_diaria[]
@@ -284,6 +286,7 @@ model valor_viagem {
   valor_individual Float?
   valor_grupo      Float?
   cotacao_dolar    Float?
+  justificativa    String?
 }
 
 model viagem_participantes {
