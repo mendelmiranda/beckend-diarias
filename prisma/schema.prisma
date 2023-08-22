@@ -114,6 +114,9 @@ model empenho_daofi {
   solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id])
   solicitacao_id Int
 
+  acao       Int?
+  observacao String?
+
   @@id([id, solicitacao_id])
 }
 

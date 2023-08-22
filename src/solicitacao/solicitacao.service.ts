@@ -83,6 +83,7 @@ export class SolicitacaoService {
         correcao_solicitacao: true,
         eventos: {
           include: {
+            anexo_evento: true,
             evento_participantes: {
               include: {
                 participante: {
@@ -146,6 +147,7 @@ export class SolicitacaoService {
         correcao_solicitacao: true,
         eventos: {
           include: {
+            anexo_evento: true,
             evento_participantes: {
               include: {
                 participante: {
@@ -227,6 +229,7 @@ export class SolicitacaoService {
         correcao_solicitacao: true,
         eventos: {
           include: {
+            anexo_evento: true,
             evento_participantes: {
               include: {
                 participante: {
