@@ -208,6 +208,7 @@ export class TramiteService {
         log_tramite: true,
         solicitacao: {
           include: {
+            empenho_daofi: true,
             eventos: {
               include: {
                 tipo_evento: true
@@ -227,6 +228,7 @@ export class TramiteService {
       include: {
         solicitacao: {
           include: {
+            empenho_daofi: true,
             tramite: true,
             eventos: {
               include: {
@@ -296,6 +298,7 @@ export class TramiteService {
         solicitacao: {
           include: {
             tramite: true,
+            empenho_daofi: true,
             eventos: {
               include: {
                 evento_participantes: {

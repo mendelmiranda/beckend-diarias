@@ -3,9 +3,9 @@ import { PrismaService } from 'prisma/prisma.service';
 import { CreateSolicitacaoDto } from './dto/create-solicitacao.dto';
 import { UpdateSolicitacaoDto } from './dto/update-solicitacao.dto';
 import PesquisaSolicitacaoDTO from './dto/pesquisa-solicitacao.dto';
-import { Util } from 'src/util/Util';
 import { InfoUsuario, LogSistemaService } from 'src/log_sistema/log_sistema.service';
-import { CreateLogSistemaDto } from 'src/log_sistema/dto/create-log_sistema.dto';
+import { solicitacao } from '@prisma/client';
+
 
 
 @Injectable()
@@ -34,6 +34,7 @@ export class SolicitacaoService {
         id: id,
       },
       include: {
+        empenho_daofi: true,
         tramite: {
           include: {
             log_tramite: true,
@@ -80,6 +81,7 @@ export class SolicitacaoService {
             log_tramite: true,
           },
         },
+        empenho_daofi: true,
         correcao_solicitacao: true,
         eventos: {
           include: {
@@ -144,6 +146,7 @@ export class SolicitacaoService {
             log_tramite: true,
           }
         },
+        empenho_daofi: true,
         correcao_solicitacao: true,
         eventos: {
           include: {
@@ -227,6 +230,7 @@ export class SolicitacaoService {
       include: {
         tramite: true,
         correcao_solicitacao: true,
+        empenho_daofi: true,
         eventos: {
           include: {
             anexo_evento: true,
