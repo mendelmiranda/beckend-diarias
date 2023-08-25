@@ -1,4 +1,4 @@
-import { valor_diarias } from '@prisma/client';
+import { evento, valor_diarias } from '@prisma/client';
 import { viagem } from '@prisma/client';
 import { Util } from 'src/util/Util';
 
@@ -15,8 +15,9 @@ enum Local {
 }
 export default class CalculoDiariasServidores {
 
-  servidores(viagem: viagem, uf: string, valorDiaria: valor_diarias): number {
-    const totalDias = Util.totalDeDias(viagem.data_ida, viagem.data_volta);
+  servidores(viagem: viagem, uf: string, valorDiaria: valor_diarias, evento: evento): number {    
+    //const totalDias = Util.totalDeDias(viagem.data_ida, viagem.data_volta);
+    const totalDias = Util.totalDeDias(evento.inicio, evento.fim)+2;
     const diarias = totalDias - 1;
 
     if (uf === 'AP') {
