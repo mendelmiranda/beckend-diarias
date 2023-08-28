@@ -291,8 +291,6 @@ export class SolicitacaoService {
     )
   }
 
-
-
   update(id: number, updateSolicitacaoDto: UpdateSolicitacaoDto) {
     return this.prisma.solicitacao.update({
       where: { id },
@@ -300,7 +298,12 @@ export class SolicitacaoService {
     });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} solicitacao`;
+  async remove(id: number) {
+    return await this.prisma.solicitacao.delete({
+      where: {
+        id: id
+      }
+    })
   }
+
 }

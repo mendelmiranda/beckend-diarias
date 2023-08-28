@@ -205,7 +205,11 @@ export class TramiteService {
         { id: "desc"}
        ],
       include: {
-        log_tramite: true,
+        log_tramite: {
+          include: {
+            tramite: true,
+          }
+        },
         solicitacao: {
           include: {
             empenho_daofi: true,
