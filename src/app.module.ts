@@ -23,6 +23,10 @@ import { LogTramiteModule } from './log_tramite/log_tramite.module';
 import { EmpenhoDaofiModule } from './empenho_daofi/empenho_daofi.module';
 import { LogSistemaModule } from './log_sistema/log_sistema.module';
 import { AnexoSolicitacaoModule } from './anexo_solicitacao/anexo_solicitacao.module';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { EmailService } from './email/email.service';
+
 
 
 @Module({
@@ -49,8 +53,32 @@ import { AnexoSolicitacaoModule } from './anexo_solicitacao/anexo_solicitacao.mo
     EmpenhoDaofiModule,
     LogSistemaModule,
     AnexoSolicitacaoModule,
+
+    MailerModule.forRootAsync({
+      useFactory: () => ({
+        transport: {
+          host: 'smtp.office365.com',
+          port: 587,
+          secure: false, // upgrade later with STARTTLS
+          auth: {
+            user: "contato@tce.ap.gov.br",
+            pass: "JE%!RE?9g*&fF[$sus>",
+          },
+        },
+        defaults: {
+          from:'"nest-modules" <contato@tce.ap.gov.br>',
+        },
+        template: {
+          dir: process.cwd() + '/templates/',
+          adapter: new HandlebarsAdapter(), // or new PugAdapter() or new EjsAdapter()
+          options: {
+            strict: true,
+          },
+        },
+      }),
+    }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, EmailService],
 })
 export class AppModule {}
