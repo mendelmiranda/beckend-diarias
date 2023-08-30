@@ -6,7 +6,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 export class EmailService {
   constructor(private readonly mailerService: MailerService) {}
   
-  public enviarEmail(): void {
+  public enviarEmail(numero: string, status: string): void {
     this
       .mailerService
       .sendMail({
@@ -15,8 +15,8 @@ export class EmailService {
         subject: 'SOLICITAÇÃO DE PASSAGENS E DIÁRIAS',
         template: '../template/index', // The `.pug` or `.hbs` extension is appended automatically.
         context: {  // Data to be sent to template engine.
-          code: '154',
-          username: 'SOLICITADO',
+          code: numero,
+          username: status,
         },
       })
        .then((success) => {

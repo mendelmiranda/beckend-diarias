@@ -9,8 +9,6 @@ export class AppController {
 
   @Get()
   getHello(): string {
-    this.emailService.enviarEmail();
-
     return "enviou"
   }
 }

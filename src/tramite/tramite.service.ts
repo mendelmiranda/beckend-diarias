@@ -4,11 +4,13 @@ import { CreateTramiteDto } from './dto/create-tramite.dto';
 import { UpdateTramiteDto } from './dto/update-tramite.dto';
 import { CreateLogTramiteDto } from 'src/log_tramite/dto/create-log_tramite.dto';
 import { LogTramiteService } from 'src/log_tramite/log_tramite.service';
+import { EmailService } from 'src/email/email.service';
 
 
 @Injectable()
 export class TramiteService {
-  constructor(private prisma: PrismaService, private logTramiteService: LogTramiteService) {}
+  constructor(private prisma: PrismaService, private logTramiteService: LogTramiteService,
+    private emailService: EmailService) {}
 
   async create(dto: CreateTramiteDto, nome: string) {
     const { solicitacao, ...dtoSemSolicitacao } = dto;
@@ -20,6 +22,7 @@ export class TramiteService {
     const id = (await resultado).id;
     await this.salvarLogTramite(dto, nome, id);
 
+    this.emailService.enviarEmail(dto.solicitacao_id+'', dto.status);
 
     return resultado;
   }
