@@ -22,7 +22,7 @@ export class TramiteService {
     const id = (await resultado).id;
     await this.salvarLogTramite(dto, nome, id);
 
-    this.emailService.enviarEmail(dto.solicitacao_id+'', dto.status);
+    //this.emailService.enviarEmail(dto.solicitacao_id+'', dto.status);
 
     return resultado;
   }
