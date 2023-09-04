@@ -84,8 +84,9 @@ export class ViagemService {
 
       const calculo = await this.cargoDiariaService.findDiariasPorCargo(cargo);
       const calcula = new CalculoDiariasServidores();
+
       const resultadoCalculo = calcula.servidores(localizaViagem, uf,calculo.valor_diarias, datasEvento);
-      const resultadoNacionalParaInternacional = calcula.valorNacional(localizaViagem, uf,calculo.valor_diarias,);
+      const resultadoNacionalParaInternacional = calcula.valorNacional(localizaViagem, uf,calculo.valor_diarias,); //uma diaria nacional para evento inter
 
       //adicionar valor_viagem
       const findViagem = await this.findOne(idViagem);
@@ -101,7 +102,7 @@ export class ViagemService {
         const valorViagem: CreateValorViagemDto = {
           viagem_id: idViagem,
           tipo: 'DIARIA',
-          destino: 'INTERNACIONAL',
+          destino: 'NACIONAL',
           valor_individual: resultadoNacionalParaInternacional,
         };
         this.valorViagemService.create(valorViagem);
