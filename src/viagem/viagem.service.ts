@@ -87,8 +87,8 @@ export class ViagemService {
 
       const resultadoCalculo = calcula.servidores(localizaViagem, uf,calculo.valor_diarias, datasEvento);
       const resultadoNacionalParaInternacional = calcula.valorNacional(localizaViagem, uf,calculo.valor_diarias,); //uma diaria nacional para evento inter
+      const meiaNacionalParaInternacional = calcula.valorNacionalMeia(localizaViagem,calculo.valor_diarias,); //uma meia diaria nacional para evento inter
 
-      //adicionar valor_viagem
       const findViagem = await this.findOne(idViagem);
 
       const valorViagem: CreateValorViagemDto = {
@@ -106,6 +106,14 @@ export class ViagemService {
           valor_individual: resultadoNacionalParaInternacional,
         };
         this.valorViagemService.create(valorViagem);
+
+        const valorViagemMeia: CreateValorViagemDto = {
+          viagem_id: idViagem,
+          tipo: 'DIARIA',
+          destino: 'NACIONAL',
+          valor_individual: meiaNacionalParaInternacional,
+        };
+        this.valorViagemService.create(valorViagemMeia);
       }
 
       this.valorViagemService.create(valorViagem);
