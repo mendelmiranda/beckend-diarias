@@ -228,7 +228,7 @@ model participante {
 model evento_participantes {
   id        Int    @unique @default(autoincrement())
   evento_id Int
-  evento    evento @relation(fields: [evento_id], references: [id])
+  evento    evento @relation(fields: [evento_id], references: [id], onDelete: Cascade)
 
   participante_id Int
   participante    participante @relation(fields: [participante_id], references: [id], onDelete: Cascade)
