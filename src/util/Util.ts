@@ -25,6 +25,15 @@ const formataDataAmericana = () => {
     return moment(new Date()).format('MM-DD-yyyy');
 }
 
+const formataDataAmericanaComParametro = (data: Date) => {
+    return moment(data).format('MM-DD-yyyy');
+}
+
+const subtractDays = (date: Date, days: number) => {
+    date.setDate(date.getDate() - days);  
+    return date;
+  }
+
 const formataDataAmericanaBanco = (valor: Date | number) => {
     if (valor === null)
         return null;
@@ -42,5 +51,5 @@ function convertToDateDB(dateString: string) {
 }
 
 export const Util = {
-    dataAtual, convertToDate,totalDeDias, formataDataAmericana, formataDataAmericanaBanco, convertToDateDB
+    dataAtual, convertToDate,totalDeDias, formataDataAmericana, formataDataAmericanaBanco, convertToDateDB, subtractDays, formataDataAmericanaComParametro
 }
