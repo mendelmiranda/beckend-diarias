@@ -38,9 +38,7 @@ export default class CalculoDiariasServidores {
   }
 
   valorNacionalMeia(viagem: viagem, valorDiaria: valor_diarias): number {
-
-    const meiaDiaria = this.valorServidoresForaAP(valorDiaria.fora, viagem.servidor_acompanhando) / 2;
-    return  meiaDiaria; 
+    return this.valorServidoresForaAP(valorDiaria.fora, viagem.servidor_acompanhando) / 2;     
   }
 
   valorNacional(viagem: viagem, uf: string, valorDiaria: valor_diarias): number {
