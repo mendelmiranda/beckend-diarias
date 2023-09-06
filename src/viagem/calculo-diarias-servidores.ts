@@ -37,6 +37,27 @@ export default class CalculoDiariasServidores {
     return 0;
   }
 
+  servidoresSimula(viagem: viagem, uf: string, valorDiaria: valor_diarias, totalDiasSimula: number): number {    
+    const totalDias = totalDiasSimula + 2;
+    const diarias = totalDias - 1;
+
+    if (uf === 'AP') {
+      const meiaDiaria = this.valorServidoresDentroAP(valorDiaria.dentro, viagem.servidor_acompanhando) / 2;
+      return diarias * this.valorServidoresDentroAP(valorDiaria.dentro,  viagem.servidor_acompanhando) + meiaDiaria;
+    }
+
+    if (uf !== 'AP' && viagem.exterior === "NAO") {
+        const meiaDiaria = this.valorServidoresForaAP(valorDiaria.fora, viagem.servidor_acompanhando) / 2;
+        return diarias * this.valorServidoresForaAP(valorDiaria.fora, viagem.servidor_acompanhando) + meiaDiaria;
+    }
+
+    if (viagem.exterior === "SIM") {
+        //const meiaDiaria = this.valorServidoresInternacional(valorDiaria.internacional, viagem.servidor_acompanhando) / 2; JÁ ESTÁ CADASTRANDO NA CHAMADA
+        return (diarias-1) * this.valorServidoresInternacional(valorDiaria.internacional, viagem.servidor_acompanhando);
+    } 
+    return 0;
+  }
+
   valorNacionalMeia(viagem: viagem, valorDiaria: valor_diarias): number {
     return this.valorServidoresForaAP(valorDiaria.fora, viagem.servidor_acompanhando) / 2;     
   }

@@ -83,11 +83,11 @@ export class ViagemService {
       }
 
       const calculo = await this.cargoDiariaService.findDiariasPorCargo(cargo);
-      const calcula = new CalculoDiariasServidores();
+      const diaria = new CalculoDiariasServidores();
 
-      const resultadoCalculo = calcula.servidores(localizaViagem, uf,calculo.valor_diarias, datasEvento);
-      const resultadoNacionalParaInternacional = calcula.valorNacional(localizaViagem, uf,calculo.valor_diarias,); //uma diaria nacional para evento inter
-      const meiaNacionalParaInternacional = calcula.valorNacionalMeia(localizaViagem,calculo.valor_diarias,); //uma meia diaria nacional para evento inter
+      const resultadoCalculo = diaria.servidores(localizaViagem, uf,calculo.valor_diarias, datasEvento);
+      const resultadoNacionalParaInternacional = diaria.valorNacional(localizaViagem, uf,calculo.valor_diarias,); //uma diaria nacional para evento inter
+      const meiaNacionalParaInternacional = diaria.valorNacionalMeia(localizaViagem,calculo.valor_diarias,); //uma meia diaria nacional para evento inter
 
       const findViagem = await this.findOne(idViagem);
 
@@ -117,6 +117,85 @@ export class ViagemService {
       }
 
       this.valorViagemService.create(valorViagem);
+    }
+
+    return null;
+  }
+
+  async calculaDiariaTest(idViagem: number, idEventoParticipante, totalDiasSimula: number) {    
+    const localizaEventoParticipante = await this.eventoParticipanteService.findOne(+idEventoParticipante);
+
+    if (localizaEventoParticipante.participante.tipo === 'S') {
+      const cargo = localizaEventoParticipante.participante.cargo;
+      const temViagem = localizaEventoParticipante.evento.tem_passagem;
+
+      let localizaViagem;
+      let uf;
+      if (temViagem === 'NAO') {
+        localizaViagem = await this.findOne(idViagem);
+        const localizaCidade = await this.cidadeService.findOne(localizaViagem.cidade_destino_id,);
+        uf = localizaCidade.estado.uf;
+      }
+
+      if (temViagem === 'SIM' && localizaEventoParticipante.evento.exterior === 'NAO') {
+        localizaViagem = await this.findOne(idViagem);
+        const aeroporto = await this.aeroportoService.findOne(localizaViagem.destino_id,);
+        uf = aeroporto.uf;
+      }
+
+      if (temViagem === 'SIM' && localizaEventoParticipante.evento.exterior === 'SIM') {
+        localizaViagem = await this.findOne(idViagem);
+        const aeroporto = await this.aeroportoService.findOne(localizaViagem.destino_id,);
+        uf = 'SP';
+      }
+
+      const calculo = await this.cargoDiariaService.findDiariasPorCargo(cargo);
+      const diaria = new CalculoDiariasServidores();
+
+      const resultadoCalculo = diaria.servidoresSimula(localizaViagem, uf,calculo.valor_diarias, totalDiasSimula);
+      const resultadoNacionalParaInternacional = diaria.valorNacional(localizaViagem, uf,calculo.valor_diarias,); //uma diaria nacional para evento inter
+      const meiaNacionalParaInternacional = diaria.valorNacionalMeia(localizaViagem,calculo.valor_diarias,); //uma meia diaria nacional para evento inter
+
+      const findViagem = await this.findOne(idViagem);
+
+      const valorViagem: CreateValorViagemDto = {
+        viagem_id: idViagem,
+        tipo: 'DIARIA',
+        destino: findViagem.exterior === 'SIM' ? 'INTERNACIONAL' : 'NACIONAL',
+        valor_individual: resultadoCalculo,
+      };
+
+      console.log('return valor diarias interiras', valorViagem);
+      
+
+      if (findViagem.exterior === 'SIM') {
+        const valorViagem: CreateValorViagemDto = {
+          viagem_id: idViagem,
+          tipo: 'DIARIA',
+          destino: 'NACIONAL',
+          valor_individual: resultadoNacionalParaInternacional,
+        };
+
+        console.log('return inteira internacional', valorViagem);
+        
+        
+        //this.valorViagemService.create(valorViagem);
+
+        const valorViagemMeia: CreateValorViagemDto = {
+          viagem_id: idViagem,
+          tipo: 'DIARIA',
+          destino: 'NACIONAL',
+          valor_individual: meiaNacionalParaInternacional,
+        };
+
+        console.log('return meia', valorViagemMeia);
+        
+
+
+       // this.valorViagemService.create(valorViagemMeia);
+      }
+
+      //this.valorViagemService.create(valorViagem);
     }
 
     return null;
