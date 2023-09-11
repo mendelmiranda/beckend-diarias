@@ -61,8 +61,7 @@ export class ViagemService {
     if (localizaEventoParticipante.participante.tipo === 'S') {
       const funcao = localizaEventoParticipante.participante.funcao;
       let cargo = localizaEventoParticipante.participante.cargo;
-      const efetivo = localizaEventoParticipante.participante.efetivo;
-      
+      const efetivo = localizaEventoParticipante.participante.efetivo;      
       
       if(efetivo.trim() === "SERVIDORES EFETIVOS" && funcao !== ""){
         cargo = funcao;
