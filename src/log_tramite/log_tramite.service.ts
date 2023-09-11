@@ -72,6 +72,7 @@ export class LogTramiteService {
           include: {
             solicitacao: {
               include: {
+                empenho_daofi: true,
                 eventos: {
                   include: {
                     tipo_evento: true,

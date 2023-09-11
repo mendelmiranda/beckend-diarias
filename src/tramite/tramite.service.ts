@@ -66,6 +66,7 @@ export class TramiteService {
         solicitacao: {
           include: {
             tramite: true,
+            empenho_daofi: true,
             eventos: {
               include: {
                 evento_participantes: {
@@ -111,6 +112,7 @@ export class TramiteService {
         solicitacao: {
           include: {
             tramite: true,
+            empenho_daofi: true,
             eventos: {
               include: {
                 evento_participantes: {
@@ -154,6 +156,7 @@ export class TramiteService {
         solicitacao: {
           include: {
             tramite: true,
+            empenho_daofi: true,
             eventos: {
               include: {
                 evento_participantes: {
