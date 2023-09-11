@@ -89,7 +89,7 @@ export class AnexoSolicitacaoService {
     
     if (idArquivo > 0)
       return this.httpService.axiosRef
-        .delete('http://10.10.0.73:3000/files/' + idArquivo, {
+        .delete('https://arquivos.tce.ap.gov.br:3000/files/' + idArquivo, {
           headers: {
             'Content-Type': 'multipart/form-data',
             Accept: '/',

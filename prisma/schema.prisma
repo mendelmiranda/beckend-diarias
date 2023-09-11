@@ -220,6 +220,8 @@ model participante {
   email                    String?
   telefone                 String?
   rg                       String?
+  funcao                   String?
+  efetivo                  String?
 
   evento_participantes evento_participantes[]
   conta_diaria         conta_diaria[]

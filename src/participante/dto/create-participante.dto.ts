@@ -16,4 +16,6 @@ export class CreateParticipanteDto {
   profissao?: string;
   local_trabalho?: string;
   contaDiariaModel?: conta_diaria;
+  funcao?: string;
+  efetivo?: string;
 }
