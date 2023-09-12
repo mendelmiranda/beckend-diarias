@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Put,
+  Request,
   Req,
 } from '@nestjs/common';
 import { SolicitacaoService } from './solicitacao.service';
