@@ -65,7 +65,9 @@ export class ContaDiariaService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} contaDiaria`;
+    return this.prisma.conta_diaria.findFirst({
+      where: {id: id}
+    });
   }
 
   update(id: number, updateContaDiariaDto: UpdateContaDiariaDto) {            

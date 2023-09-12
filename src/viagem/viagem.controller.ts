@@ -4,6 +4,7 @@ import { CreateViagemDto } from './dto/create-viagem.dto';
 import { UpdateViagemDto } from './dto/update-viagem.dto';
 import { ViagemParticipantesService } from '../viagem_participantes/viagem_participantes.service';
 import { CreateViagemParticipanteDto } from 'src/viagem_participantes/dto/create-viagem_participante.dto';
+import { evento } from '@prisma/client';
 
 @Controller('viagem')
 export class ViagemController {
@@ -12,6 +13,11 @@ export class ViagemController {
 
   @Post('/evento_participantes/:id')
   async create(@Param('id') id: number, @Body() createViagemDto: CreateViagemDto) {
+
+    const eventoId = createViagemDto['eventoId'];
+
+    const prop = 'eventoId';
+    delete createViagemDto[prop];
     
     const viagem = await this.viagemService.create(createViagemDto);
             
@@ -21,13 +27,18 @@ export class ViagemController {
       datareg: new Date(),      
     }
 
-    await this.viagemParticipanteService.create(viagem_participante);    
-
-    return await this.cadastraValoresDaDiaria(viagem.id, id);
+    await this.viagemParticipanteService.create(viagem_participante);   
+    
+    return await this.cadastraValoresDaDiaria(viagem.id, id, eventoId);
   }
 
-  async cadastraValoresDaDiaria(idViagem: number, idEventoParticipante: number){    
-    return await this.viagemService.calculaDiaria(idViagem, idEventoParticipante);
+  async cadastraValoresDaDiaria(idViagem: number, idEventoParticipante: number, eventoId: number){    
+    return await this.viagemService.calculaDiaria(idViagem, idEventoParticipante, eventoId);
+  }
+
+  @Post('/simula-diaria/viagem/:viagemId/participate/:participanteId/dias/:quantidade')
+  async simula(@Param('viagemId') viagemId: number, @Param('participanteId') participanteId: number, @Param('quantidade') quantidade: number,) {
+    return await this.viagemService.calculaDiaria(viagemId, participanteId, quantidade);
   }
 
   @Get('/evento/:id')

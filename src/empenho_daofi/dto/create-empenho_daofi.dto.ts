@@ -4,6 +4,8 @@ datareg: Date;
   saldo_inicial: number;
   valor_reservado: number;
   solicitacao_id: number;
+  acao?: string;
+  observacao?: string;
 }
 
 

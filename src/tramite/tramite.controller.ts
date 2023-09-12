@@ -24,7 +24,7 @@ export class TramiteController {
     const data: CreateTramiteDto = {
       ...createTramiteDto,
       datareg: new Date(),
-    };
+    };    
 
     if (+id > 0) {
       await this.tramiteService.update(+id, createTramiteDto, nome);
@@ -59,9 +59,14 @@ export class TramiteController {
     return this.tramiteService.findTramitePresidencia();
   }
 
-  @Get('/empenhados')
+  @Get('/solicitacoes/empenhados')
   findEmpenhados() {
     return this.tramiteService.findEmpenhados();
+  }
+
+  @Get('/solicitacoes/concluidas')
+  findConcluidas() {
+    return this.tramiteService.findConcluidas();
   }
 
   @Get(':id')

@@ -4,11 +4,13 @@ import { CreateTramiteDto } from './dto/create-tramite.dto';
 import { UpdateTramiteDto } from './dto/update-tramite.dto';
 import { CreateLogTramiteDto } from 'src/log_tramite/dto/create-log_tramite.dto';
 import { LogTramiteService } from 'src/log_tramite/log_tramite.service';
+import { EmailService } from 'src/email/email.service';
 
 
 @Injectable()
 export class TramiteService {
-  constructor(private prisma: PrismaService, private logTramiteService: LogTramiteService) {}
+  constructor(private prisma: PrismaService, private logTramiteService: LogTramiteService,
+    private emailService: EmailService) {}
 
   async create(dto: CreateTramiteDto, nome: string) {
     const { solicitacao, ...dtoSemSolicitacao } = dto;
@@ -20,6 +22,7 @@ export class TramiteService {
     const id = (await resultado).id;
     await this.salvarLogTramite(dto, nome, id);
 
+    //this.emailService.enviarEmail(dto.solicitacao_id+'', dto.status);
 
     return resultado;
   }
@@ -63,6 +66,7 @@ export class TramiteService {
         solicitacao: {
           include: {
             tramite: true,
+            empenho_daofi: true,
             eventos: {
               include: {
                 evento_participantes: {
@@ -108,6 +112,7 @@ export class TramiteService {
         solicitacao: {
           include: {
             tramite: true,
+            empenho_daofi: true,
             eventos: {
               include: {
                 evento_participantes: {
@@ -151,6 +156,7 @@ export class TramiteService {
         solicitacao: {
           include: {
             tramite: true,
+            empenho_daofi: true,
             eventos: {
               include: {
                 evento_participantes: {
@@ -205,9 +211,14 @@ export class TramiteService {
         { id: "desc"}
        ],
       include: {
-        log_tramite: true,
+        log_tramite: {
+          include: {
+            tramite: true,
+          }
+        },
         solicitacao: {
           include: {
+            empenho_daofi: true,
             eventos: {
               include: {
                 tipo_evento: true
@@ -227,12 +238,21 @@ export class TramiteService {
       include: {
         solicitacao: {
           include: {
+            empenho_daofi: true,
             tramite: true,
             eventos: {
               include: {
                 evento_participantes: {
                   include: {
-                    participante: true,
+                    participante: {
+                      include: {
+                        conta_diaria: {
+                          include: {
+                            banco: true
+                          }
+                        }
+                      }
+                    },
                     viagem_participantes: {
                       include: {
                         viagem: {
@@ -246,7 +266,11 @@ export class TramiteService {
                                 estado: true
                               }
                             },
-                            cidade_destino: true,
+                            cidade_destino: {
+                              include: {
+                                estado: true
+                              }
+                            },
                           }
                         }
                       }
@@ -264,7 +288,83 @@ export class TramiteService {
             }
           }
         }
-      }
+      },
+      orderBy: 
+        [
+          {id: 'desc'},
+          {datareg: 'desc'}
+      ],
+
+      
+    })
+  }
+
+  findConcluidas() {
+    return this.prisma.tramite.findMany({
+      where: {
+        status: 'CONCLUIDO'
+      },
+      include: {
+        solicitacao: {
+          include: {
+            tramite: true,
+            empenho_daofi: true,
+            eventos: {
+              include: {
+                evento_participantes: {
+                  include: {
+                    participante: {
+                      include: {
+                        conta_diaria: {
+                          include: {
+                            banco: true
+                          }
+                        }
+                      }
+                    },
+                    viagem_participantes: {
+                      include: {
+                        viagem: {
+                          include: {
+                            origem: true,
+                            destino: true,
+                            pais: true,
+                            valor_viagem: true,
+                            cidade_origem: {
+                              include: {
+                                estado: true
+                              }
+                            },
+                            cidade_destino: {
+                              include: {
+                                estado: true
+                              }
+                            },
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                tipo_evento: true,
+                cidade: {
+                  include:{
+                    estado: true,
+                  }
+                },
+                pais: true,
+              }
+            }
+          }
+        }
+      },
+      orderBy: 
+        [
+          {id: 'desc'},
+          {datareg: 'desc'}
+      ],
+
+      
     })
   }
 
@@ -272,7 +372,7 @@ export class TramiteService {
     const { solicitacao, ...dtoSemSolicitacao } = dto;
 
     this.salvarLogTramite(dto as CreateTramiteDto, nome, id);
-
+    
     return this.prisma.tramite.update({
       where: { id },
       data: dtoSemSolicitacao,

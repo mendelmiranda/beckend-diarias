@@ -45,9 +45,16 @@ export class ValorDiariasService {
   consultarCotacaoBancoCentral() { 
 
     const dtInicial = new Date();
-    const dtFinal = dtInicial.setDate(dtInicial.getDate() -1);    
+    let dtFinal = Util.subtractDays(dtInicial, 1);    
 
-    return this.httpService.axiosRef.get("https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoMoedaPeriodoFechamento(codigoMoeda=@codigoMoeda,dataInicialCotacao=@dataInicialCotacao,dataFinalCotacao=@dataFinalCotacao)?@codigoMoeda='USD'&@dataInicialCotacao='"+Util.formataDataAmericana(dtFinal)+"'&@dataFinalCotacao='"+Util.formataDataAmericana(dtFinal)+"'&$format=json")
+    if(dtInicial.getDay() === 0 || dtInicial.getDay() === 6){
+      dtFinal = Util.subtractDays(dtInicial, 3);
+    }
+    
+
+    const url = "https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarPeriodo(dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@dataInicial='"+Util.formataDataAmericanaComParametro(dtFinal)+"'&@dataFinalCotacao='"+Util.formataDataAmericana()+"'&$top=100&$format=json&$select=cotacaoCompra,cotacaoVenda,dataHoraCotacao";
+
+    return this.httpService.axiosRef.get(url)
     .then((result) => result.data)
     .then(data => data.value[0]);
   }

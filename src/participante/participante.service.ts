@@ -2,15 +2,46 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { CreateParticipanteDto } from './dto/create-participante.dto';
 import { UpdateParticipanteDto } from './dto/update-participante.dto';
+import { conta_diaria } from '@prisma/client';
+import { CreateContaDiariaDto } from 'src/conta_diaria/dto/create-conta_diaria.dto';
 
 @Injectable()
 export class ParticipanteService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateParticipanteDto) {
+
+    if(dto.tipo === "C"){
+      return this.cadastraColaborador(dto);
+    } 
+    
+
     return this.prisma.participante.create({
       data: dto,
     });
+  }
+
+  async cadastraColaborador(dto: CreateParticipanteDto){    
+      const remove = 'conta_diaria';
+      const prop = 'conta_diaria';
+      const contaX: conta_diaria = dto[prop][0];      
+      
+      delete dto[remove];
+
+      const participante = this.prisma.participante.create({
+        data: dto,
+      });
+
+      const modeloConta: CreateContaDiariaDto = {
+        ...contaX,
+        participante_id: (await participante).id,
+      }
+
+      return this.prisma.conta_diaria.create({
+        data: modeloConta,
+      })      
+
+    
   }
 
   findAll() {

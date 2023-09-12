@@ -1,4 +1,4 @@
-import { valor_viagem } from "@prisma/client";
+import { evento, valor_viagem } from "@prisma/client";
 
 export class CreateViagemDto {
 
@@ -31,4 +31,5 @@ export class CreateViagemDto {
   justificativa_municipios?: string;
   valor_passagem?: number;
   valor_viagem?: valor_viagem[];
+  //eventoId?: number; //transient
 }

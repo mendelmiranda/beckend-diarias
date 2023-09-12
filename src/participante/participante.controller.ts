@@ -11,7 +11,7 @@ import {
 import { ParticipanteService } from './participante.service';
 import { CreateParticipanteDto } from './dto/create-participante.dto';
 import { UpdateParticipanteDto } from './dto/update-participante.dto';
-import { participante } from '@prisma/client';
+import { conta_diaria, participante } from '@prisma/client';
 import { Util } from 'src/util/Util';
 import moment from 'moment';
 import { ContaDiariaService } from '../conta_diaria/conta_diaria.service';
@@ -30,10 +30,12 @@ export class ParticipanteController {
   ) {}
 
   @Post('/evento/:id')
-  async create(@Param('id') idEvento: number, @Body() createParticipanteDto: CreateParticipanteDto) {        
-
+  async create(
+    @Param('id') idEvento: number,
+    @Body() createParticipanteDto: CreateParticipanteDto,
+  ) {
     const dateString = createParticipanteDto.data_nascimento as any;
-        
+
     let resultado;
 
     if (createParticipanteDto.tipo !== 'S') {
@@ -48,7 +50,7 @@ export class ParticipanteController {
           agencia: contaDto.agencia,
           conta: contaDto.conta,
           banco_id: contaDto.banco_id,
-          participante_id: contaDto.participante_id
+          participante_id: contaDto.participante_id,
         };
         this.contaDiariaService.create(conta);
       }
@@ -60,16 +62,15 @@ export class ParticipanteController {
         ...createParticipanteDto,
         data_nascimento: Util.convertToDate(dateString),
       };
-      
+
       resultado = (await this.participanteService.create(data)).id;
 
       const eventoPaticipanteDto: CreateEventoParticipanteDto = {
-        evento_id: parseInt(idEvento+''),
+        evento_id: parseInt(idEvento + ''),
         participante_id: resultado,
-      }
+      };
 
       this.eventoParticipanteService.create(eventoPaticipanteDto);
-
     } else {
       const data: CreateParticipanteDto = {
         ...createParticipanteDto,
@@ -78,12 +79,11 @@ export class ParticipanteController {
       resultado = await (await this.participanteService.create(data)).id;
 
       const eventoPaticipanteDto: CreateEventoParticipanteDto = {
-        evento_id: parseInt(idEvento+''),
+        evento_id: parseInt(idEvento + ''),
         participante_id: resultado,
-      }
+      };
 
-      this.eventoParticipanteService.create(eventoPaticipanteDto);      
-
+      this.eventoParticipanteService.create(eventoPaticipanteDto);
     }
     return resultado;
   }
@@ -105,13 +105,12 @@ export class ParticipanteController {
 
   @Put(':id/evento/:idEvento')
   async update(
-    @Param('id') id: number, @Param('idEvento') idEvento: number,
+    @Param('id') id: number,
+    @Param('idEvento') idEvento: number,
     @Body() updateParticipanteDto: UpdateParticipanteDto,
   ) {
-
-    const dateString = updateParticipanteDto.data_nascimento as any;    
+    const dateString = updateParticipanteDto.data_nascimento as any;
     let resultado;
-   
 
     if (updateParticipanteDto.tipo !== 'S' && id > 0) {
       const contaDto = updateParticipanteDto.contaDiariaModel;
@@ -134,25 +133,49 @@ export class ParticipanteController {
         } else {
           await this.contaDiariaService.update(contaDto.id, conta);
         }
-
-        
       } /**/
 
       const prop = 'contaDiariaModel';
-      delete updateParticipanteDto[prop];      
+      delete updateParticipanteDto[prop];
 
       const data: UpdateParticipanteDto = {
-        ...updateParticipanteDto,        
+        ...updateParticipanteDto,
         data_nascimento: Util.convertToDate(dateString),
       };
-      
+
+      //REFATORAR ESSE CÓDIGO - UPDATE
+      if ( updateParticipanteDto.tipo === 'C' || updateParticipanteDto.tipo === 'T' && id > 0) {
+        const remove = 'conta_diaria';
+        delete data[remove];
+        await this.participanteService.update(+id, data);
+
+        const prop = 'conta_diaria';
+        const contaX: conta_diaria = updateParticipanteDto[prop][0];
+
+        const modeloConta: UpdateContaDiariaDto = {
+          ...contaX,
+          participante_id: id,
+        };
+
+        const del = 'id';
+        delete modeloConta[del];
+        delete modeloConta['participante_id'];
+        
+        const idConta = contaX.id;
+
+        if ( idConta > 0 && idConta !== undefined) {
+          await this.contaDiariaService.update(contaX.id, modeloConta);
+        } else {
+          await this.contaDiariaService.create(contaX);
+        }
+      }
+
       resultado = (await this.participanteService.update(+id, data)).id;
 
-            
       const eventoPaticipanteDto: CreateEventoParticipanteDto = {
-        evento_id: parseInt(idEvento+''),
+        evento_id: parseInt(idEvento + ''),
         participante_id: resultado,
-      }
+      };
 
       await this.eventoParticipanteService.create(eventoPaticipanteDto);
     }

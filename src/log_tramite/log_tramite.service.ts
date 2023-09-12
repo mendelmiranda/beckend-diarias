@@ -44,8 +44,10 @@ export class LogTramiteService {
       include: {
         tramite: {
           include: {
+            log_tramite: true,
             solicitacao: {
               include: {
+                tramite: true,
                 eventos: {
                   include: {
                     tipo_evento: true,
@@ -70,6 +72,7 @@ export class LogTramiteService {
           include: {
             solicitacao: {
               include: {
+                empenho_daofi: true,
                 eventos: {
                   include: {
                     tipo_evento: true,

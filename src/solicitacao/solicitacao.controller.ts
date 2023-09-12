@@ -1,24 +1,37 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Put,
+  Req,
+} from '@nestjs/common';
 import { SolicitacaoService } from './solicitacao.service';
 import { CreateSolicitacaoDto } from './dto/create-solicitacao.dto';
 import { UpdateSolicitacaoDto } from './dto/update-solicitacao.dto';
+import PesquisaSolicitacaoDTO from './dto/pesquisa-solicitacao.dto';
+import { InfoUsuario } from 'src/log_sistema/log_sistema.service';
 
 @Controller('solicitacao')
 export class SolicitacaoController {
   constructor(private readonly solicitacaoService: SolicitacaoService) {}
 
   @Post()
-  create(@Body() createSolicitacaoDto: CreateSolicitacaoDto) {    
-
+  create(@Body() createSolicitacaoDto: CreateSolicitacaoDto, @Req() request: Request) {
+    const usuario = JSON.parse(request.headers['dados_client']);
+    
     let d = new Date();
-    d.setTime( d.getTime() - new Date().getTimezoneOffset()*60*1000 );
+    d.setTime(d.getTime() - new Date().getTimezoneOffset() * 60 * 1000);
 
     const solicitacao: CreateSolicitacaoDto = {
       ...createSolicitacaoDto,
       datareg: d,
       status: 'NAO',
-    }
-    return this.solicitacaoService.create(solicitacao);
+    };
+    return this.solicitacaoService.create(solicitacao, usuario);
   }
 
   @Get()
@@ -36,18 +49,31 @@ export class SolicitacaoController {
     return this.solicitacaoService.detalhesDaSolicitacao(+id);
   }
 
+  @Get('/responsaveis')
+  listarResponsaveisDaSolicitacao() {
+    return this.solicitacaoService.pesquisarResponsaveis();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.solicitacaoService.findOne(+id);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateSolicitacaoDto: UpdateSolicitacaoDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateSolicitacaoDto: UpdateSolicitacaoDto,
+  ) {
     return this.solicitacaoService.update(+id, updateSolicitacaoDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.solicitacaoService.remove(+id);
+  }
+
+  @Post('/pesquisar')
+  pesquisarSolicitacoes(@Body() dto: PesquisaSolicitacaoDTO) {
+    return this.solicitacaoService.pesquisarSolicitacoes(dto);
   }
 }

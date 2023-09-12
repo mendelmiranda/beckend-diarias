@@ -9,10 +9,11 @@ import { EventoParticipantesService } from '../evento_participantes/evento_parti
 import { AeroportoService } from '../aeroporto/aeroporto.service';
 import { CargoDiariasService } from '../cargo_diarias/cargo_diarias.service';
 import { ValorViagemService } from 'src/valor_viagem/valor_viagem.service';
+import { EventoService } from 'src/evento/evento.service';
 
 @Module({
   controllers: [ViagemController],
   providers: [ViagemService, PrismaService, ViagemParticipantesService, 
-    CidadeService, ParticipanteService, EventoParticipantesService, AeroportoService, CargoDiariasService, ValorViagemService],
+    CidadeService, ParticipanteService, EventoParticipantesService, AeroportoService, CargoDiariasService, ValorViagemService, EventoService],
 })
 export class ViagemModule {}
