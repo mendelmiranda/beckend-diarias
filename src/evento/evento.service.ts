@@ -17,6 +17,29 @@ export class EventoService {
     return this.prisma.evento.findMany();
   }
 
+  findEventosDisponiveis() {
+    return this.prisma.evento.findMany({
+      distinct: ['titulo'],
+      where: {
+        inicio: {
+          gte: new Date()
+        }        
+      },
+      include: {
+        tipo_evento: true,
+        pais: true,
+        cidade: {
+          include: {
+            estado: true
+          }
+        }
+      },
+      orderBy: [
+        { inicio: "desc"}
+       ]
+    })
+  }
+
   findEventosDaSolicitacao(idSolicitacao: number) {
     return this.prisma.evento.findMany({
       where: {

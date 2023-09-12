@@ -38,6 +38,11 @@ export class EventoController {
     return this.eventoService.findOne(+id);
   }
 
+  @Get('/disponiveis/menu')
+  findEventosDisponiveis() {
+    return this.eventoService.findEventosDisponiveis();
+  }
+
   @Put(':id')
   update(@Param('id') id: string, @Body() updateEventoDto: UpdateEventoDto) {   
 
