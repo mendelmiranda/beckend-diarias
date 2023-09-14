@@ -13,5 +13,6 @@ export class CreateEventoDto {
     tem_passagem?: string;
     valor_total_inscricao?: number;
     valor_evento?: number;
+    observacao_valor?: string;
 }
  

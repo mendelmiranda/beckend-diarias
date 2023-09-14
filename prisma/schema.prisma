@@ -191,6 +191,7 @@ model evento {
   tem_passagem          String?     @db.Char(3)
   valor_total_inscricao Float?
   valor_evento          Float?
+  observacao_valor      String?
 
   evento_participantes evento_participantes[]
   anexo_evento         anexo_evento[]
