@@ -78,7 +78,8 @@ export class EventoService {
       where: { id },
       data: {
         valor_evento: updateEventoDto.valor_evento,
-        valor_total_inscricao: updateEventoDto.valor_total_inscricao
+        valor_total_inscricao: updateEventoDto.valor_total_inscricao,
+        observacao_valor: updateEventoDto.observacao_valor ?? ''
       },
     });
   }

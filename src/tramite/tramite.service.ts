@@ -221,7 +221,8 @@ export class TramiteService {
             empenho_daofi: true,
             eventos: {
               include: {
-                tipo_evento: true
+                tipo_evento: true,
+                pais: true,
               }
             }
           }
@@ -241,7 +242,7 @@ export class TramiteService {
             empenho_daofi: true,
             tramite: true,
             eventos: {
-              include: {
+              include: {                
                 evento_participantes: {
                   include: {
                     participante: {
@@ -346,13 +347,14 @@ export class TramiteService {
                     }
                   }
                 },
+                pais: true,
                 tipo_evento: true,
                 cidade: {
                   include:{
                     estado: true,
                   }
-                },
-                pais: true,
+                }
+                
               }
             }
           }
