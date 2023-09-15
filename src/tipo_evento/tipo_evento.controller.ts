@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Put,
 } from '@nestjs/common';
 import { TipoEventoService } from './tipo_evento.service';
 import { CreateTipoEventoDto } from './dto/create-tipo_evento.dto';
@@ -30,7 +31,7 @@ export class TipoEventoController {
     return this.tipoEventoService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(
     @Param('id') id: string,
     @Body() updateTipoEventoDto: UpdateTipoEventoDto,

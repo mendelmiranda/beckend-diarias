@@ -7,10 +7,11 @@ import { UpdateTipoEventoDto } from './dto/update-tipo_evento.dto';
 export class TipoEventoService {
   constructor(private prisma: PrismaService) {}
 
-  create(createTipoEventoDto: CreateTipoEventoDto) {
-    return 'This action adds a new tipoEvento';
+  async create(dto: CreateTipoEventoDto) {   
+    return this.prisma.tipo_evento.create({
+      data: dto,
+    });
   }
-
   findAll() {
     return this.prisma.tipo_evento.findMany({
       orderBy: {descricao: "asc"},
@@ -22,7 +23,10 @@ export class TipoEventoService {
   }
 
   update(id: number, updateTipoEventoDto: UpdateTipoEventoDto) {
-    return `This action updates a #${id} tipoEvento`;
+    return this.prisma.tipo_evento.update({
+      where: { id },
+      data: updateTipoEventoDto,
+    });
   }
 
   remove(id: number) {
