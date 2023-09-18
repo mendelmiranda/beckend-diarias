@@ -20,7 +20,7 @@ export default class CalculoDiariasServidores {
     const totalDias = Util.totalDeDias(evento.inicio, evento.fim)+2;
     const diarias = totalDias - 1;
 
-    if (uf === 'AP') {
+    if (uf === 'AP' && viagem.viagem_pernoite === "SIM" || viagem.viagem_superior === "SIM") {
       const meiaDiaria = this.valorServidoresDentroAP(valorDiaria.dentro, viagem.servidor_acompanhando) / 2;
       return diarias * this.valorServidoresDentroAP(valorDiaria.dentro,  viagem.servidor_acompanhando) + meiaDiaria;
     }

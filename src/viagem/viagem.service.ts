@@ -71,12 +71,18 @@ export class ViagemService {
 
       let localizaViagem;
       let uf;
+
       if (temViagem === 'NAO') {
         localizaViagem = await this.findOne(idViagem);
         const localizaCidade = await this.cidadeService.findOne(localizaViagem.cidade_destino_id,);
         uf = localizaCidade.estado.uf;
+
+        if( uf === "AP" && localizaCidade.descricao === "Macapá"){
+          return null;          
+        }
       }
 
+      
       if (temViagem === 'SIM' && localizaEventoParticipante.evento.exterior === 'NAO') {
         localizaViagem = await this.findOne(idViagem);
         const aeroporto = await this.aeroportoService.findOne(localizaViagem.destino_id,);
@@ -138,6 +144,7 @@ export class ViagemService {
 
       let localizaViagem;
       let uf;
+
       if (temViagem === 'NAO') {
         localizaViagem = await this.findOne(idViagem);
         const localizaCidade = await this.cidadeService.findOne(localizaViagem.cidade_destino_id,);
@@ -181,10 +188,7 @@ export class ViagemService {
           tipo: 'DIARIA',
           destino: 'NACIONAL',
           valor_individual: resultadoNacionalParaInternacional,
-        };
-
-        console.log('return inteira internacional', valorViagem);
-        
+        };       
         
         //this.valorViagemService.create(valorViagem);
 
@@ -193,10 +197,7 @@ export class ViagemService {
           tipo: 'DIARIA',
           destino: 'NACIONAL',
           valor_individual: meiaNacionalParaInternacional,
-        };
-
-        console.log('return meia', valorViagemMeia);
-        
+        };        
 
 
        // this.valorViagemService.create(valorViagemMeia);
