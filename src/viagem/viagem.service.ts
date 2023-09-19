@@ -67,7 +67,8 @@ export class ViagemService {
     }
 
     this.destinoMacapa(parametros);
-    this.destinoEstadual(parametros);
+    const estadual = await this.destinoEstadual(parametros);
+    console.log(estadual);
     
 
     
@@ -79,22 +80,15 @@ export class ViagemService {
       //viagem: viagem, uf: string, cidade: string, valorDiaria: valor_diarias, evento: evento
 
       if (parametros.evento.evento.tem_passagem === 'NAO') {       
-        const uf = parametros.localizaCidade.estado.uf;
         const calculo = await this.cargoDiariaService.findDiariasPorCargo(parametros.cargo);
 
-        const estadual: any = {
-          viagem: parametros.viagem, 
-          uf: uf, 
-          cidade: parametros.viagem.cidade_destino.descricao,
-          valorDiarias: calculo.valor_diarias, 
-          evento: parametros.evento
-        }
-
-        console.log(estadual);
-        
+        const uf     = parametros.localizaCidade.estado.uf;
+        const viagem = parametros.viagem;
+        const cidade = parametros.viagem.cidade_destino.descricao;
+        const evento = parametros.evento;
 
         const calculoEstadual = new CalculoEstadual();
-        return 0; //calculoEstadual.servidores(parametros.viagem, uf, parametros.viagem.cidade_destino.descricao,calculo.valor_diarias, parametros.evento);                
+        return calculoEstadual.servidores(viagem, uf, cidade,calculo.valor_diarias, evento);                
     }
 
     return 0;
