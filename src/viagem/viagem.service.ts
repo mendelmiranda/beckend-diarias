@@ -60,35 +60,32 @@ export class ViagemService {
         
     const parametros: any = {
       viagem: localizaViagem, 
-      temPassagem: localizaEventoParticipante.evento.tem_passagem,
-      idEventoParticipante: participanteId,       
-      localizaEventoParticipante: localizaEventoParticipante,
+      evento: localizaEventoParticipante,
+      participante: localizaEventoParticipante,
       cargo: cargo,
-      funcao: localizaEventoParticipante.participante.funcao,
-      eventoId: eventoId,
-      inicio: localizaEventoParticipante.evento.inicio,
-      fim: localizaEventoParticipante.evento.fim,
-      localizaCidade: localizaCidade,
-      
+      localizaCidade: localizaCidade,      
     }
+
+    
+    
     
 
-    this.destinoMacapa(parametros);
+    //this.destinoMacapa(parametros);
     console.log(this.destinoEstadual(parametros));
-    ;
+    
 
     
     return null;
   }
 
-  async destinoEstadual(parametros: any): Promise<number> {                
+  async destinoEstadual(parametros: any): Promise<number> {               
 
-      if (parametros.temPassagem === 'NAO') {       
+      if (parametros.evento.evento.tem_passagem === 'NAO') {       
         const uf = parametros.localizaCidade.estado.uf;
         const calculo = await this.cargoDiariaService.findDiariasPorCargo(parametros.cargo);
 
         const estadual = new CalculoEstadual();
-        return estadual.servidores(parametros.viagem, uf, parametros.viagem.cidade_destino.descricao,calculo.valor_diarias, parametros.datasEvento);                
+        return estadual.servidores(parametros.viagem, uf, parametros.viagem.cidade_destino.descricao,calculo.valor_diarias, parametros.evento);                
     }
 
     return 0;
@@ -132,8 +129,7 @@ export class ViagemService {
   async destinoMacapa(parametros: any) {
     if (parametros.temPassagem === 'NAO') {
       try {
-        const localizaViagem = await this.findOne(parametros.idViagem);
-        const localizaCidade = await this.cidadeService.findOne(localizaViagem.cidade_destino_id);
+        const localizaCidade = await this.cidadeService.findOne(parametros.viagem.localizaViagem.cidade_destino_id);
   
         if (localizaCidade.estado.uf === "AP" && localizaCidade.descricao === "Macapá") {
           return null;
