@@ -66,26 +66,35 @@ export class ViagemService {
       localizaCidade: localizaCidade,      
     }
 
-    
-    
-    
-
-    //this.destinoMacapa(parametros);
-    console.log(this.destinoEstadual(parametros));
+    this.destinoMacapa(parametros);
+    this.destinoEstadual(parametros);
     
 
     
     return null;
   }
 
-  async destinoEstadual(parametros: any): Promise<number> {               
+  async destinoEstadual(parametros: any): Promise<number> {   
+    
+      //viagem: viagem, uf: string, cidade: string, valorDiaria: valor_diarias, evento: evento
 
       if (parametros.evento.evento.tem_passagem === 'NAO') {       
         const uf = parametros.localizaCidade.estado.uf;
         const calculo = await this.cargoDiariaService.findDiariasPorCargo(parametros.cargo);
 
-        const estadual = new CalculoEstadual();
-        return estadual.servidores(parametros.viagem, uf, parametros.viagem.cidade_destino.descricao,calculo.valor_diarias, parametros.evento);                
+        const estadual: any = {
+          viagem: parametros.viagem, 
+          uf: uf, 
+          cidade: parametros.viagem.cidade_destino.descricao,
+          valorDiarias: calculo.valor_diarias, 
+          evento: parametros.evento
+        }
+
+        console.log(estadual);
+        
+
+        const calculoEstadual = new CalculoEstadual();
+        return 0; //calculoEstadual.servidores(parametros.viagem, uf, parametros.viagem.cidade_destino.descricao,calculo.valor_diarias, parametros.evento);                
     }
 
     return 0;
