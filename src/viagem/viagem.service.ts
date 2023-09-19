@@ -12,8 +12,9 @@ import { AeroportoService } from '../aeroporto/aeroporto.service';
 import { CargoDiariasService } from '../cargo_diarias/cargo_diarias.service';
 import { ValorViagemService } from 'src/valor_viagem/valor_viagem.service';
 import { CreateValorViagemDto } from 'src/valor_viagem/dto/create-valor_viagem.dto';
-import { viagem } from '@prisma/client';
+import { viagem, evento } from '@prisma/client';
 import { EventoService } from 'src/evento/evento.service';
+import CalculoEstadual from 'src/calculo_diarias/estadual';
 
 @Injectable()
 export class ViagemService {
@@ -50,162 +51,79 @@ export class ViagemService {
   }
 
   async calculaDiaria(idViagem: number, idEventoParticipante, eventoId: number) {
-    const localizaEvento = this.eventoService.findOne(eventoId);
+    const localizaEventoParticipante = await this.eventoParticipanteService.findOne(+idEventoParticipante);
+    
+    this.destinoMacapa(idViagem, localizaEventoParticipante.evento.tem_passagem);
+
+    const estadual: any = {
+      idViagem: idViagem, 
+      temPassagem: localizaEventoParticipante.evento.tem_passagem,
+      idEventoParticipante: idEventoParticipante, 
+      eventoId: eventoId,
+      localizaEventoParticipante: localizaEventoParticipante
+    }
+
+    this.destinoEstadual(estadual);
+    
+
+    return null;
+  }
+
+  async destinoEstadual(parametrosEstadual: any) {
+
+    const localizaEvento = this.eventoService.findOne(parametrosEstadual.eventoId);
+
     const datasEvento: any = {
       inicio: (await localizaEvento).inicio,
       fim: (await localizaEvento).fim
     }
 
-    const localizaEventoParticipante = await this.eventoParticipanteService.findOne(+idEventoParticipante);
-
-    if (localizaEventoParticipante.participante.tipo === 'S') {
-      const funcao = localizaEventoParticipante.participante.funcao;
-      let cargo = localizaEventoParticipante.participante.cargo;
-      const efetivo = localizaEventoParticipante.participante.efetivo;      
+    if (parametrosEstadual.localizaEventoParticipante.participante.tipo === 'S') {
+      const funcao = parametrosEstadual.localizaEventoParticipante.participante.funcao;
+      let cargo = parametrosEstadual.localizaEventoParticipante.participante.cargo;
+      const efetivo = parametrosEstadual.localizaEventoParticipante.participante.efetivo;      
       
       if(efetivo.trim() === "SERVIDORES EFETIVOS" && funcao !== ""){
         cargo = funcao;
       }
 
-      const temViagem = localizaEventoParticipante.evento.tem_passagem;
-
-      let localizaViagem;
-      let uf;
-
-      if (temViagem === 'NAO') {
-        localizaViagem = await this.findOne(idViagem);
+      if (parametrosEstadual.temPassagem === 'NAO') {
+        const localizaViagem = await this.findOne(parametrosEstadual.idViagem);
         const localizaCidade = await this.cidadeService.findOne(localizaViagem.cidade_destino_id,);
-        uf = localizaCidade.estado.uf;
+        const uf = localizaCidade.estado.uf;
 
-        if( uf === "AP" && localizaCidade.descricao === "Macapá"){
-          return null;          
-        }
+
+        const calculo = await this.cargoDiariaService.findDiariasPorCargo(cargo);
+
+        const estadual = new CalculoEstadual();
+        const resultadoCalculo = estadual.servidores(localizaViagem, uf, localizaViagem.cidade_destino.descricao,calculo.valor_diarias, datasEvento);
+
+        console.log(resultadoCalculo);
+        
+        
+
+        
       }
 
-      
-      if (temViagem === 'SIM' && localizaEventoParticipante.evento.exterior === 'NAO') {
-        localizaViagem = await this.findOne(idViagem);
-        const aeroporto = await this.aeroportoService.findOne(localizaViagem.destino_id,);
-        uf = aeroporto.uf;
-      }
-
-      if (temViagem === 'SIM' && localizaEventoParticipante.evento.exterior === 'SIM') {
-        localizaViagem = await this.findOne(idViagem);
-        const aeroporto = await this.aeroportoService.findOne(localizaViagem.destino_id,);
-        uf = 'SP';
-      }
-
-      const calculo = await this.cargoDiariaService.findDiariasPorCargo(cargo);
-      const diaria = new CalculoDiariasServidores();
-
-      const resultadoCalculo = diaria.servidores(localizaViagem, uf,calculo.valor_diarias, datasEvento);
-      const resultadoNacionalParaInternacional = diaria.valorNacional(localizaViagem, uf,calculo.valor_diarias,); //uma diaria nacional para evento inter
-      const meiaNacionalParaInternacional = diaria.valorNacionalMeia(localizaViagem,calculo.valor_diarias,); //uma meia diaria nacional para evento inter
-
-      const findViagem = await this.findOne(idViagem);
-
-      const valorViagem: CreateValorViagemDto = {
-        viagem_id: idViagem,
-        tipo: 'DIARIA',
-        destino: findViagem.exterior === 'SIM' ? 'INTERNACIONAL' : 'NACIONAL',
-        valor_individual: resultadoCalculo,
-      };
-
-      if (findViagem.exterior === 'SIM') {
-        const valorViagem: CreateValorViagemDto = {
-          viagem_id: idViagem,
-          tipo: 'DIARIA',
-          destino: 'NACIONAL',
-          valor_individual: resultadoNacionalParaInternacional,
-        };
-        this.valorViagemService.create(valorViagem);
-
-        const valorViagemMeia: CreateValorViagemDto = {
-          viagem_id: idViagem,
-          tipo: 'DIARIA',
-          destino: 'NACIONAL',
-          valor_individual: meiaNacionalParaInternacional,
-        };
-        this.valorViagemService.create(valorViagemMeia);
-      }
-
-      this.valorViagemService.create(valorViagem);
     }
 
-    return null;
+
   }
 
-  async calculaDiariaTest(idViagem: number, idEventoParticipante, totalDiasSimula: number) {    
-    const localizaEventoParticipante = await this.eventoParticipanteService.findOne(+idEventoParticipante);
-
-    if (localizaEventoParticipante.participante.tipo === 'S') {
-      const cargo = localizaEventoParticipante.participante.cargo;
-      const temViagem = localizaEventoParticipante.evento.tem_passagem;
-
-      let localizaViagem;
-      let uf;
-
-      if (temViagem === 'NAO') {
-        localizaViagem = await this.findOne(idViagem);
-        const localizaCidade = await this.cidadeService.findOne(localizaViagem.cidade_destino_id,);
-        uf = localizaCidade.estado.uf;
+  async destinoMacapa(idViagem: number, temPassagem: string) {
+    if (temPassagem === 'NAO') {
+      try {
+        const localizaViagem = await this.findOne(idViagem);
+        const localizaCidade = await this.cidadeService.findOne(localizaViagem.cidade_destino_id);
+  
+        if (localizaCidade.estado.uf === "AP" && localizaCidade.descricao === "Macapá") {
+          return null;
+        }
+      } catch (error) {
+        console.error('Ocorreu um erro ao buscar informações da viagem ou da cidade:', error);
+        throw error;
       }
-
-      if (temViagem === 'SIM' && localizaEventoParticipante.evento.exterior === 'NAO') {
-        localizaViagem = await this.findOne(idViagem);
-        const aeroporto = await this.aeroportoService.findOne(localizaViagem.destino_id,);
-        uf = aeroporto.uf;
-      }
-
-      if (temViagem === 'SIM' && localizaEventoParticipante.evento.exterior === 'SIM') {
-        localizaViagem = await this.findOne(idViagem);
-        const aeroporto = await this.aeroportoService.findOne(localizaViagem.destino_id,);
-        uf = 'SP';
-      }
-
-      const calculo = await this.cargoDiariaService.findDiariasPorCargo(cargo);
-      const diaria = new CalculoDiariasServidores();
-
-      const resultadoCalculo = diaria.servidoresSimula(localizaViagem, uf,calculo.valor_diarias, totalDiasSimula);
-      const resultadoNacionalParaInternacional = diaria.valorNacional(localizaViagem, uf,calculo.valor_diarias,); //uma diaria nacional para evento inter
-      const meiaNacionalParaInternacional = diaria.valorNacionalMeia(localizaViagem,calculo.valor_diarias,); //uma meia diaria nacional para evento inter
-
-      const findViagem = await this.findOne(idViagem);
-
-      const valorViagem: CreateValorViagemDto = {
-        viagem_id: idViagem,
-        tipo: 'DIARIA',
-        destino: findViagem.exterior === 'SIM' ? 'INTERNACIONAL' : 'NACIONAL',
-        valor_individual: resultadoCalculo,
-      };
-
-      console.log('return valor diarias interiras', valorViagem);
-      
-
-      if (findViagem.exterior === 'SIM') {
-        const valorViagem: CreateValorViagemDto = {
-          viagem_id: idViagem,
-          tipo: 'DIARIA',
-          destino: 'NACIONAL',
-          valor_individual: resultadoNacionalParaInternacional,
-        };       
-        
-        //this.valorViagemService.create(valorViagem);
-
-        const valorViagemMeia: CreateValorViagemDto = {
-          viagem_id: idViagem,
-          tipo: 'DIARIA',
-          destino: 'NACIONAL',
-          valor_individual: meiaNacionalParaInternacional,
-        };        
-
-
-       // this.valorViagemService.create(valorViagemMeia);
-      }
-
-      //this.valorViagemService.create(valorViagem);
-    }
-
+    }  
     return null;
   }
 
