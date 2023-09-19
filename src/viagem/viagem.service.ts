@@ -15,6 +15,7 @@ import { CreateValorViagemDto } from 'src/valor_viagem/dto/create-valor_viagem.d
 import { viagem, evento } from '@prisma/client';
 import { EventoService } from 'src/evento/evento.service';
 import CalculoEstadual from 'src/calculo_diarias/estadual';
+import CalculoNacional from 'src/calculo_diarias/externo';
 
 @Injectable()
 export class ViagemService {
@@ -87,23 +88,41 @@ export class ViagemService {
         cargo = funcao;
       }
 
+      //SEPARAR
+
       if (parametrosEstadual.temPassagem === 'NAO') {
         const localizaViagem = await this.findOne(parametrosEstadual.idViagem);
-        const localizaCidade = await this.cidadeService.findOne(localizaViagem.cidade_destino_id,);
+
+        const localizaCidade = await this.cidadeService.findOne(localizaViagem.cidade_destino_id);        
         const uf = localizaCidade.estado.uf;
-
-
         const calculo = await this.cargoDiariaService.findDiariasPorCargo(cargo);
 
         const estadual = new CalculoEstadual();
-        const resultadoCalculo = estadual.servidores(localizaViagem, uf, localizaViagem.cidade_destino.descricao,calculo.valor_diarias, datasEvento);
-
-        console.log(resultadoCalculo);
+        const resultadoCalculo = estadual.servidores(localizaViagem, uf, localizaViagem.cidade_destino.descricao,calculo.valor_diarias, datasEvento);        
         
-        
-
+        console.log(resultadoCalculo);       
         
       }
+
+
+      //SEPARAR
+
+      
+      if (parametrosEstadual.temPassagem === 'SIM') {
+        const localizaViagem = await this.findOne(parametrosEstadual.idViagem);               
+
+        const localizaCidade = await this.aeroportoService.findOne(localizaViagem.destino.id);
+        const uf = localizaCidade.uf;
+
+        const calculo = await this.cargoDiariaService.findDiariasPorCargo(cargo);
+
+        const nacional = new CalculoNacional();
+        const resultadoCalculoNacional = nacional.servidores(localizaViagem, uf, calculo.valor_diarias, datasEvento, (await localizaEvento).tem_passagem);
+
+        console.log(resultadoCalculoNacional);        
+      }
+
+      
 
     }
 

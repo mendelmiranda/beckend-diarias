@@ -3,18 +3,18 @@ import { Acompanha, Local, Municipios, UF } from "./diarias-enum";
 import { valor_diarias, viagem, evento } from '@prisma/client';
 
 
-export default class ForaEstado {
+export default class CalculoNacional {
 
-    servidores(viagem: viagem, uf: string, cidade: string, valorDiaria: valor_diarias, evento: evento): number { 
-        
-        return this.viagemNacional(viagem, uf, valorDiaria, evento );        
+    servidores(viagem: viagem, uf: string, valorDiaria: valor_diarias, evento: evento, temPassagem: string): number { 
+
+        return this.viagemNacional(viagem, uf, valorDiaria, evento, temPassagem );        
       }
   
-      private viagemNacional(viagem: viagem, uf: string, valorDiaria: valor_diarias, evento: evento): number {
+      private viagemNacional(viagem: viagem, uf: string, valorDiaria: valor_diarias, evento: evento, temPassagem: string): number {
         const totalDias = Util.totalDeDias(evento.inicio, evento.fim)+2;
-        const diarias = totalDias - 1;
-
-        if (uf !== UF.AP && viagem.exterior === "NAO" && evento.tem_passagem === "SIM") {
+        const diarias = totalDias - 1;   
+        
+        if (uf !== UF.AP && viagem.exterior === "NAO" && temPassagem === "SIM") {            
             const meiaDiaria = this.valorServidoresForaAP(valorDiaria.fora, viagem.servidor_acompanhando) / 2;
             return diarias * this.valorServidoresForaAP(valorDiaria.fora, viagem.servidor_acompanhando) + meiaDiaria;
         }
