@@ -36,11 +36,7 @@ export class ViagemController {
     return await this.viagemService.calculaDiaria(idViagem, idEventoParticipante, eventoId);
   }
 
-  @Post('/simula-diaria/viagem/:viagemId/participate/:participanteId/dias/:quantidade')
-  async simula(@Param('viagemId') viagemId: number, @Param('participanteId') participanteId: number, @Param('quantidade') quantidade: number,) {
-    return await this.viagemService.calculaDiaria(viagemId, participanteId, quantidade);
-  }
-
+ 
   @Get('/evento/:id')
   findViagemEvento(@Param('id') id: number) {   
     return this.viagemParticipanteService.findParticipantesViagemDoEvento(+id);
