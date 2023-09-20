@@ -13,10 +13,15 @@ export default class CalculoEstadual {
     }
 
     private viagemOutrosMunicipios(viagem: viagem, uf: string, cidade: string, valorDiaria: valor_diarias, evento: evento): number {
-      if (uf === UF.AP && cidade !== Municipios.MACAPA && cidade !== Municipios.SANTANA && cidade !== Municipios.MAZAGAO) {
-        
+      
+      if (uf === UF.AP && 
+          cidade !== Municipios.MACAPA && 
+          cidade !== Municipios.SANTANA && 
+          cidade !== Municipios.MAZAGAO) {        
+
         const totalDias = Util.totalDeDias(evento.inicio, evento.fim);
         const diarias = totalDias - 1;
+
         const meiaDiaria = this.valorServidoresDentroAP(valorDiaria.dentro, viagem.servidor_acompanhando) / 2;
         
         return diarias * this.valorServidoresDentroAP(valorDiaria.dentro,  viagem.servidor_acompanhando) + meiaDiaria;

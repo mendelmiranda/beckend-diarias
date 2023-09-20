@@ -15,20 +15,23 @@ export default class CalculoInternacional {
         
         if (viagem.exterior === "SIM") {
             return  (diarias-1) * this.valorServidoresInternacional(valorDiaria.internacional, viagem.servidor_acompanhando);            
-        } 
-        
+        }         
         return 0;
       }
 
-      valoresAdicionais(viagem: viagem, valorDiaria: valor_diarias){
+      /*valoresAdicionais(viagem: viagem, valorDiaria: valor_diarias){
         const valorNacional = this.valorNacional(viagem, valorDiaria);
         const meiaDiaria = this.valorServidoresInternacional(valorDiaria.internacional, viagem.servidor_acompanhando) / 2; 
 
         return (valorNacional+meiaDiaria);
-      }
+      }*/
   
-      private valorNacional(viagem: viagem, valorDiaria: valor_diarias): number {
+      valorNacional(viagem: viagem, valorDiaria: valor_diarias): number {
         return  this.valorServidoresForaAP(valorDiaria.fora, viagem.servidor_acompanhando); 
+      }
+
+      valorNacionalMeia(viagem: viagem, valorDiaria: valor_diarias){
+        return this.valorServidoresInternacional(valorDiaria.internacional, viagem.servidor_acompanhando) / 2; 
       }
 
       private valorServidoresInternacional(valorDiaria: number, acompanha: string): number {    
