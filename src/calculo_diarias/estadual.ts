@@ -30,16 +30,16 @@ export default class CalculoEstadual {
     }
 
     private viagemSuperiorSeisHoras(viagem: viagem, uf: string, cidade: string,valorDiaria: valor_diarias): number {
-      if (uf === UF.AP && viagem.viagem_superior === "SIM" && cidade !== Municipios.MACAPA) {
+      /*if (uf === UF.AP && viagem.viagem_superior === "SIM" && cidade !== Municipios.MACAPA) {
         return this.valorServidoresDentroAP(valorDiaria.dentro, viagem.servidor_acompanhando) / 2;         
-      }
+      }*/
       return 0;
     }
 
     private viagemComPernoite(viagem: viagem, uf: string, cidade: string,valorDiaria: valor_diarias): number {
-      if(uf === UF.AP && viagem.viagem_pernoite === "SIM" && cidade !== Municipios.MACAPA){
+      /*if(uf === UF.AP && viagem.viagem_pernoite === "SIM" && cidade !== Municipios.MACAPA){
         return this.valorServidoresDentroAP(valorDiaria.dentro,  viagem.servidor_acompanhando);
-      }
+      }*/
       return 0;
     }
 
