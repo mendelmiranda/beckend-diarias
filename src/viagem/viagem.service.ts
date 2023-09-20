@@ -171,7 +171,6 @@ export class ViagemService {
   }
 
   async destinoMacapa(parametros: any) {
-    console.log('entrou macapa');
     if (parametros.temPassagem === 'NAO') {
       try {
         const localizaCidade = await this.cidadeService.findOne(parametros.viagem.localizaViagem.cidade_destino_id);
@@ -196,9 +195,6 @@ export class ViagemService {
       if(efetivo.trim() === "SERVIDORES EFETIVOS" && funcao !== ""){
         cargo = funcao;
       }
-
-      
-
       return cargo;
   }
 

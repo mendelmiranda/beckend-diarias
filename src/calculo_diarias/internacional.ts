@@ -18,14 +18,7 @@ export default class CalculoInternacional {
         }         
         return 0;
       }
-
-      /*valoresAdicionais(viagem: viagem, valorDiaria: valor_diarias){
-        const valorNacional = this.valorNacional(viagem, valorDiaria);
-        const meiaDiaria = this.valorServidoresInternacional(valorDiaria.internacional, viagem.servidor_acompanhando) / 2; 
-
-        return (valorNacional+meiaDiaria);
-      }*/
-  
+      
       valorNacional(viagem: viagem, valorDiaria: valor_diarias): number {
         return  this.valorServidoresForaAP(valorDiaria.fora, viagem.servidor_acompanhando); 
       }
