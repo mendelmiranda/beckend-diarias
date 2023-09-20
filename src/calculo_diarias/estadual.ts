@@ -18,7 +18,7 @@ export default class CalculoEstadual {
           cidade !== Municipios.MACAPA && 
           cidade !== Municipios.SANTANA && 
           cidade !== Municipios.MAZAGAO) {        
-
+        
         const totalDias = Util.totalDeDias(evento.inicio, evento.fim);
         const diarias = totalDias - 1;
 
