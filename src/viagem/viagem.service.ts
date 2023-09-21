@@ -54,52 +54,53 @@ export class ViagemService {
   }
 
   async calculaDiaria(idViagem: number, participanteId: number, eventoId: number) {
-
-    const localizaEvento             = await this.eventoService.findOne(eventoId);
-    const localizaViagem             = await this.findOne(idViagem); 
+    const localizaEvento = await this.eventoService.findOne(eventoId);
+    const localizaViagem = await this.findOne(idViagem);
     const localizaEventoParticipante = await this.eventoParticipanteService.findOne(+participanteId);
-    const localizaCidade             = await this.localizaCidadeOuAeroporto(localizaViagem.cidade_destino_id, localizaViagem.destino_id);
-    const cargo                      = await this.consultaCargo(participanteId);
-        
+    const localizaCidade = await this.localizaCidadeOuAeroporto(localizaViagem.cidade_destino_id, localizaViagem.destino_id);
+    const cargo = await this.consultaCargo(participanteId);
+
     const parametros: any = {
-      viagem: localizaViagem, 
+      viagem: localizaViagem,
       evento: localizaEvento,
       participante: localizaEventoParticipante,
       cargo: cargo,
-      localizaCidade: localizaCidade,      
-    }
-    
-    return await this.destinoMacapa(parametros) || 
-           await this.destinoEstadual(parametros) || 
-           await this.destinoNacional(parametros) || 
-           await this.destinoInternacional(parametros);
+      localizaCidade: localizaCidade,
+    };
+
+    return (
+      (await this.destinoMacapa(parametros)) ||
+      (await this.destinoEstadual(parametros)) ||
+      (await this.destinoNacional(parametros)) ||
+      (await this.destinoInternacional(parametros))
+    );
   }
 
-  async localizaCidadeOuAeroporto(cidadeId: number, aeroportoId: number) {    
-    return cidadeId === null ? await this.aeroportoService.findOne(aeroportoId) : await this.cidadeService.findOne(cidadeId);    
+  async localizaCidadeOuAeroporto(cidadeId: number, aeroportoId: number) {
+    return cidadeId === null ? await this.aeroportoService.findOne(aeroportoId) : await this.cidadeService.findOne(cidadeId);
   }
 
-  async destinoEstadual(parametros: any) {   
-      const evento = parametros.evento as evento;
+  async destinoEstadual(parametros: any) {
+    const evento = parametros.evento as evento;
 
-      if (evento.tem_passagem === 'NAO' && parametros.localizaCidade.descricao !== Municipios.MACAPA ) {       
-        const calculo = await this.cargoDiariaService.findDiariasPorCargo(parametros.cargo);
+    if (evento.tem_passagem === 'NAO' && parametros.localizaCidade.descricao !== Municipios.MACAPA) {
+      const calculo = await this.cargoDiariaService.findDiariasPorCargo(parametros.cargo);
 
-        const uf     = parametros.localizaCidade.estado.uf;
-        const viagem = parametros.viagem;
-        const cidade = parametros.viagem.cidade_destino.descricao;
+      const uf = parametros.localizaCidade.estado.uf;
+      const viagem = parametros.viagem;
+      const cidade = parametros.viagem.cidade_destino.descricao;
 
-        const calculoEstadual = new CalculoEstadual();
-        const estatual = calculoEstadual.servidores(viagem, uf, cidade,calculo.valor_diarias, evento);                
+      const calculoEstadual = new CalculoEstadual();
+      const estatual = calculoEstadual.servidores(viagem, uf, cidade, calculo.valor_diarias, evento);
 
-        const valorViagem: CreateValorViagemDto = {
-          viagem_id: parametros.viagem.id,
-          tipo: 'DIARIA',
-          destino: 'NACIONAL',
-          valor_individual: estatual,
-        };
+      const valorViagem: CreateValorViagemDto = {
+        viagem_id: parametros.viagem.id,
+        tipo: 'DIARIA',
+        destino: 'NACIONAL',
+        valor_individual: estatual,
+      };
 
-        return this.valorViagemService.create(valorViagem);        
+      return this.valorViagemService.create(valorViagem);
     }
     return 0;
   }
@@ -107,14 +108,14 @@ export class ViagemService {
   async destinoNacional(parametros: any) {
     const evento = parametros.evento as evento;
 
-    if (evento.tem_passagem === 'SIM' && evento.exterior === "NAO") {  
+    if (evento.tem_passagem === 'SIM' && evento.exterior === 'NAO') {
       const aeroporto = await this.aeroportoService.findOne(parametros.viagem.destino_id);
       const uf = aeroporto.uf;
 
       const calculo = await this.cargoDiariaService.findDiariasPorCargo(parametros.cargo);
 
       const calculoNacional = new CalculoNacional();
-      const  nacional = calculoNacional.servidores(parametros.viagem, uf, calculo.valor_diarias, evento, evento.tem_passagem);             
+      const nacional = calculoNacional.servidores(parametros.viagem, uf, calculo.valor_diarias, evento, evento.tem_passagem);
 
       const valorViagem: CreateValorViagemDto = {
         viagem_id: parametros.viagem.id,
@@ -124,23 +125,28 @@ export class ViagemService {
       };
 
       return this.valorViagemService.create(valorViagem);
-    }    
+    }
     return 0;
   }
 
-  async destinoInternacional(parametros: any){
+  async destinoInternacional(parametros: any) {
     const evento = parametros.evento as evento;
-    
-    if (evento.tem_passagem === 'SIM'  && evento.exterior === "SIM") {     
+
+    if (evento.tem_passagem === 'SIM' && evento.exterior === 'SIM') {
       console.log('entrou internacional');
 
       const calculo = await this.cargoDiariaService.findDiariasPorCargo(parametros.cargo);
-      
+
       const internacional = new CalculoInternacional();
-      const resultadoCalculoInternacional = internacional.servidores(parametros.viagem, calculo.valor_diarias, evento, evento.tem_passagem);
+      const resultadoCalculoInternacional = internacional.servidores(
+        parametros.viagem,
+        calculo.valor_diarias,
+        evento,
+        evento.tem_passagem,
+      );
       const inteira = internacional.valorNacional(parametros.viagem, calculo.valor_diarias);
-      const meia    = internacional.valorNacionalMeia(parametros.viagem, calculo.valor_diarias);
-      
+      const meia = internacional.valorNacionalMeia(parametros.viagem, calculo.valor_diarias);
+
       await this.salvaDiariaInternacional(parametros, resultadoCalculoInternacional);
       await this.salvaDiariaInteira(parametros, inteira);
       await this.salvaMeiaDiaria(parametros, meia);
@@ -150,17 +156,17 @@ export class ViagemService {
     return 0;
   }
 
-  async salvaDiariaInternacional(parametros: any, resultadoCalculoInternacional: number){
+  async salvaDiariaInternacional(parametros: any, resultadoCalculoInternacional: number) {
     const valorViagemInternacional: CreateValorViagemDto = {
       viagem_id: parametros.id,
       tipo: 'DIARIA',
-      destino: 'INTERNACIONAL' ,
+      destino: 'INTERNACIONAL',
       valor_individual: resultadoCalculoInternacional,
     };
     this.valorViagemService.create(valorViagemInternacional);
   }
 
-  async salvaDiariaInteira(parametros: any, inteira: number){
+  async salvaDiariaInteira(parametros: any, inteira: number) {
     const valorViagem: CreateValorViagemDto = {
       viagem_id: parametros.viagem.id,
       tipo: 'DIARIA',
@@ -170,7 +176,7 @@ export class ViagemService {
     this.valorViagemService.create(valorViagem);
   }
 
-  async salvaMeiaDiaria(parametros: any, meia: number){
+  async salvaMeiaDiaria(parametros: any, meia: number) {
     const valorViagemMeia: CreateValorViagemDto = {
       viagem_id: parametros.viagem.id,
       tipo: 'DIARIA',
@@ -184,28 +190,28 @@ export class ViagemService {
     if (parametros.temPassagem === 'NAO') {
       try {
         const localizaCidade = await this.cidadeService.findOne(parametros.viagem.localizaViagem.cidade_destino_id);
-  
-        if (localizaCidade.estado.uf === "AP" && localizaCidade.descricao === "Macapá") {
+
+        if (localizaCidade.estado.uf === 'AP' && localizaCidade.descricao === 'Macapá') {
           return null;
         }
       } catch (error) {
         console.error('Ocorreu um erro ao buscar informações da viagem ou da cidade:', error);
         throw error;
       }
-    }  
+    }
     return 0;
   }
 
   async consultaCargo(participanteId: number): Promise<string> {
     const localizaEventoParticipante = await this.eventoParticipanteService.findOne(+participanteId);
-      const funcao  = localizaEventoParticipante.participante.funcao;
-      let cargo     = localizaEventoParticipante.participante.cargo;
-      const efetivo = localizaEventoParticipante.participante.efetivo;      
-            
-      if(efetivo.trim() === "SERVIDORES EFETIVOS" && funcao !== ""){
-        cargo = funcao;
-      }
-      return cargo;
+    const funcao = localizaEventoParticipante.participante.funcao;
+    let cargo = localizaEventoParticipante.participante.cargo;
+    const efetivo = localizaEventoParticipante.participante.efetivo;
+
+    if (efetivo.trim() === 'SERVIDORES EFETIVOS' && funcao !== '') {
+      cargo = funcao;
+    }
+    return cargo;
   }
 
   findAll() {
