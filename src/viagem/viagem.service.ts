@@ -140,34 +140,44 @@ export class ViagemService {
       const resultadoCalculoInternacional = internacional.servidores(parametros.viagem, calculo.valor_diarias, evento, evento.tem_passagem);
       const inteira = internacional.valorNacional(parametros.viagem, calculo.valor_diarias);
       const meia    = internacional.valorNacionalMeia(parametros.viagem, calculo.valor_diarias);
-
-      const valorViagemInternacional: CreateValorViagemDto = {
-        viagem_id: parametros.id,
-        tipo: 'DIARIA',
-        destino: 'INTERNACIONAL' ,
-        valor_individual: resultadoCalculoInternacional,
-      };
-      this.valorViagemService.create(valorViagemInternacional);
-
-      const valorViagem: CreateValorViagemDto = {
-        viagem_id: parametros.viagem.id,
-        tipo: 'DIARIA',
-        destino: 'NACIONAL',
-        valor_individual: inteira,
-      };
-      this.valorViagemService.create(valorViagem);
-
-      const valorViagemMeia: CreateValorViagemDto = {
-        viagem_id: parametros.viagem.id,
-        tipo: 'DIARIA',
-        destino: 'NACIONAL',
-        valor_individual: meia,
-      };
-      this.valorViagemService.create(valorViagemMeia);
+      
+      await this.salvaDiariaInternacional(parametros, resultadoCalculoInternacional);
+      await this.salvaDiariaInteira(parametros, inteira);
+      await this.salvaMeiaDiaria(parametros, meia);
 
       return resultadoCalculoInternacional;
     }
     return 0;
+  }
+
+  async salvaDiariaInternacional(parametros: any, resultadoCalculoInternacional: number){
+    const valorViagemInternacional: CreateValorViagemDto = {
+      viagem_id: parametros.id,
+      tipo: 'DIARIA',
+      destino: 'INTERNACIONAL' ,
+      valor_individual: resultadoCalculoInternacional,
+    };
+    this.valorViagemService.create(valorViagemInternacional);
+  }
+
+  async salvaDiariaInteira(parametros: any, inteira: number){
+    const valorViagem: CreateValorViagemDto = {
+      viagem_id: parametros.viagem.id,
+      tipo: 'DIARIA',
+      destino: 'NACIONAL',
+      valor_individual: inteira,
+    };
+    this.valorViagemService.create(valorViagem);
+  }
+
+  async salvaMeiaDiaria(parametros: any, meia: number){
+    const valorViagemMeia: CreateValorViagemDto = {
+      viagem_id: parametros.viagem.id,
+      tipo: 'DIARIA',
+      destino: 'NACIONAL',
+      valor_individual: meia,
+    };
+    this.valorViagemService.create(valorViagemMeia);
   }
 
   async destinoMacapa(parametros: any) {
