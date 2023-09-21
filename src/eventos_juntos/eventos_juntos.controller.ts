@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
 import { EventosJuntosService } from './eventos_juntos.service';
 import { CreateEventosJuntoDto } from './dto/create-eventos_junto.dto';
 import { UpdateEventosJuntoDto } from './dto/update-eventos_junto.dto';
@@ -12,17 +12,17 @@ export class EventosJuntosController {
     return this.eventosJuntosService.create(createEventosJuntoDto);
   }
 
-  @Get()
-  findAll() {
-    return this.eventosJuntosService.findAll();
+  @Get('/solicitacao/:id')
+  findAll(@Param('id') id: string) {
+    return this.eventosJuntosService.findAllBySolicitacaoId(+id);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.eventosJuntosService.findOne(+id);
+    return null//this.eventosJuntosService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateEventosJuntoDto: UpdateEventosJuntoDto) {
     return this.eventosJuntosService.update(+id, updateEventosJuntoDto);
   }

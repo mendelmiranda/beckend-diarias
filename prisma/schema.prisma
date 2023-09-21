@@ -100,6 +100,7 @@ model solicitacao {
   tramite              tramite[]
   correcao_solicitacao correcao_solicitacao[]
   empenho_daofi        empenho_daofi[]
+  eventos_juntos       eventos_juntos[]
 
   @@id([id])
 }
@@ -201,11 +202,13 @@ model evento {
 }
 
 model eventos_juntos {
-  id           Int      @unique @default(autoincrement())
-  evento       evento   @relation(fields: [evento_id], references: [id])
-  evento_id    Int
-  data_inicial DateTime
-  data_final   DateTime
+  id             Int         @unique @default(autoincrement())
+  solicitacao_id Int
+  solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id])
+  evento         evento      @relation(fields: [evento_id], references: [id])
+  evento_id      Int
+  data_inicial   DateTime
+  data_final     DateTime
 
   datareg DateTime @default(now()) @db.Timestamptz(3)
 
