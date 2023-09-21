@@ -195,6 +195,19 @@ model evento {
 
   evento_participantes evento_participantes[]
   anexo_evento         anexo_evento[]
+  eventos_juntos       eventos_juntos[]
+
+  @@id([id])
+}
+
+model eventos_juntos {
+  id           Int      @unique @default(autoincrement())
+  evento       evento   @relation(fields: [evento_id], references: [id])
+  evento_id    Int
+  data_inicial DateTime
+  data_final   DateTime
+
+  datareg DateTime @default(now()) @db.Timestamptz(3)
 
   @@id([id])
 }

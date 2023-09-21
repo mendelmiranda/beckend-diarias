@@ -26,6 +26,7 @@ import { AnexoSolicitacaoModule } from './anexo_solicitacao/anexo_solicitacao.mo
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { EmailService } from './email/email.service';
+import { EventosJuntosModule } from './eventos_juntos/eventos_juntos.module';
 
 
 
@@ -77,6 +78,8 @@ import { EmailService } from './email/email.service';
         },
       }),
     }),
+
+    EventosJuntosModule,
   ],
   controllers: [AppController],
   providers: [AppService, EmailService],
