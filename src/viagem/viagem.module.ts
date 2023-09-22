@@ -15,5 +15,6 @@ import { EventoService } from 'src/evento/evento.service';
   controllers: [ViagemController],
   providers: [ViagemService, PrismaService, ViagemParticipantesService, 
     CidadeService, ParticipanteService, EventoParticipantesService, AeroportoService, CargoDiariasService, ValorViagemService, EventoService],
+  exports: [ViagemService],
 })
 export class ViagemModule {}

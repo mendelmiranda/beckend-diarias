@@ -202,13 +202,15 @@ model evento {
 }
 
 model eventos_juntos {
-  id             Int         @unique @default(autoincrement())
-  solicitacao_id Int
-  solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id])
-  evento         evento      @relation(fields: [evento_id], references: [id])
-  evento_id      Int
-  data_inicial   DateTime
-  data_final     DateTime
+  id              Int          @unique @default(autoincrement())
+  solicitacao_id  Int
+  solicitacao     solicitacao  @relation(fields: [solicitacao_id], references: [id])
+  evento          evento       @relation(fields: [evento_id], references: [id])
+  evento_id       Int
+  participante    participante? @relation(fields: [participante_id], references: [id])
+  participante_id Int?
+  data_inicial    DateTime
+  data_final      DateTime
 
   datareg DateTime @default(now()) @db.Timestamptz(3)
 
@@ -242,6 +244,7 @@ model participante {
 
   evento_participantes evento_participantes[]
   conta_diaria         conta_diaria[]
+  eventos_juntos       eventos_juntos[]
 }
 
 model evento_participantes {

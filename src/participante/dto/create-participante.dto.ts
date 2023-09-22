@@ -18,4 +18,5 @@ export class CreateParticipanteDto {
   contaDiariaModel?: conta_diaria;
   funcao?: string;
   efetivo?: string;
+  unificado?: string;
 }

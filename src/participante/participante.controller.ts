@@ -34,6 +34,7 @@ export class ParticipanteController {
     @Param('id') idEvento: number,
     @Body() createParticipanteDto: CreateParticipanteDto,
   ) {
+
     const dateString = createParticipanteDto.data_nascimento as any;
 
     let resultado;

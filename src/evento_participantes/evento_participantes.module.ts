@@ -5,6 +5,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 @Module({
   controllers: [EventoParticipantesController],
-  providers: [EventoParticipantesService, PrismaService]
+  providers: [EventoParticipantesService, PrismaService],
+  exports: [EventoParticipantesService],
 })
 export class EventoParticipantesModule {}

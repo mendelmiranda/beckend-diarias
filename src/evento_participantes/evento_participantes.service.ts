@@ -9,6 +9,7 @@ export class EventoParticipantesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(dto: CreateEventoParticipanteDto) {
+    
     const prop = 'evento';
     delete dto[prop];
 

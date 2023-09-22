@@ -1,12 +1,16 @@
 import { Module } from '@nestjs/common';
-import { ParticipanteService } from './participante.service';
+import { PrismaModule } from 'prisma/prisma.module';
+import { ContaDiariaModule } from 'src/conta_diaria/conta_diaria.module';
+import { EventoModule } from 'src/evento/evento.module';
+import { EventoParticipantesModule } from 'src/evento_participantes/evento_participantes.module';
+import { ViagemModule } from 'src/viagem/viagem.module';
 import { ParticipanteController } from './participante.controller';
-import { PrismaService } from 'prisma/prisma.service';
-import { ContaDiariaService } from 'src/conta_diaria/conta_diaria.service';
-import { EventoParticipantesService } from '../evento_participantes/evento_participantes.service';
+import { ParticipanteService } from './participante.service';
 
 @Module({
   controllers: [ParticipanteController],
-  providers: [ParticipanteService, PrismaService, ContaDiariaService, EventoParticipantesService],
+  providers: [ParticipanteService],
+  imports: [PrismaModule, ContaDiariaModule, EventoParticipantesModule, EventoModule, ViagemModule],
+  
 })
 export class ParticipanteModule {}

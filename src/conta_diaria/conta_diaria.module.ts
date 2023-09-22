@@ -6,5 +6,6 @@ import { PrismaService } from 'prisma/prisma.service';
 @Module({
   controllers: [ContaDiariaController],
   providers: [ContaDiariaService, PrismaService],
+  exports: [ContaDiariaService],
 })
 export class ContaDiariaModule {}

@@ -28,7 +28,7 @@ export class ViagemController {
     }
 
     await this.viagemParticipanteService.create(viagem_participante);   
-    
+
     return await this.cadastraValoresDaDiaria(viagem.id, id, eventoId);
   }
 
