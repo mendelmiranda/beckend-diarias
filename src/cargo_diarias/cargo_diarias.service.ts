@@ -14,7 +14,10 @@ export class CargoDiariasService {
   }
 
   findAll() {
-    return this.prisma.cargo_diarias.findMany();
+    return this.prisma.cargo_diarias.findMany({
+      where: {},
+      distinct: ['cargo']
+    });
   }
 
 async findDiariasPorCargo(cargo: string){
