@@ -61,7 +61,11 @@ export class ViagemParticipantesService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} viagemParticipante`;
+    return this.prisma.viagem_participantes.findFirst({
+      where: {
+        id: id
+      }
+    })
   }
 
   update(id: number, updateViagemParticipanteDto: UpdateViagemParticipanteDto) {
@@ -69,6 +73,26 @@ export class ViagemParticipantesService {
   }
 
   async remove(id: number) {
+
+    const consultar = await this.findOne(id);
+
+    if(consultar){
+      const viagemId = consultar.viagem_id;
+
+      const valorViagem = await this.prisma.valor_viagem.findFirst({
+        where: {
+          viagem_id: viagemId
+        }
+      });
+
+      await this.prisma.valor_viagem.delete({
+        where: {
+          id: valorViagem.id
+        }
+      });
+     
+    }
+
     return await this.prisma.viagem_participantes.delete({
       where: {
         id: id,
