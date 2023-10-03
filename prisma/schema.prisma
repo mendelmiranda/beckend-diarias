@@ -28,7 +28,7 @@ model anexo_evento {
   datareg      DateTime @default(now()) @db.Timestamptz(3)
   api_anexo_id Int
   filename     String
-  evento       evento   @relation(fields: [evento_id], references: [id])
+  evento       evento   @relation(fields: [evento_id], references: [id], onDelete: Cascade)
   evento_id    Int
 }
 
@@ -112,7 +112,7 @@ model empenho_daofi {
   saldo_inicial   Float
   valor_reservado Float
 
-  solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id])
+  solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id], onDelete: Cascade)
   solicitacao_id Int
 
   acao       String?
@@ -129,7 +129,7 @@ model tramite {
   lotacao_destino     String
   status              String
   datareg             DateTime      @default(now()) @db.Timestamptz(3)
-  solicitacao         solicitacao   @relation(fields: [solicitacao_id], references: [id])
+  solicitacao         solicitacao   @relation(fields: [solicitacao_id], references: [id], onDelete: Cascade)
   solicitacao_id      Int
   log_tramite         log_tramite[]
 
@@ -153,7 +153,7 @@ model log_tramite {
 
 model correcao_solicitacao {
   id             Int         @unique @default(autoincrement())
-  solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id])
+  solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id], onDelete: Cascade)
   solicitacao_id Int
   texto          String?
   status         String //AGUARDANDO_CORRECAO | CORRIGIDO
@@ -177,7 +177,7 @@ model evento {
   tipo_evento_id        Int
   tipo_evento           tipo_evento @relation(fields: [tipo_evento_id], references: [id])
   solicitacao_id        Int
-  solicitacao           solicitacao @relation(fields: [solicitacao_id], references: [id])
+  solicitacao           solicitacao @relation(fields: [solicitacao_id], references: [id], onDelete: Cascade)
   titulo                String
   inicio                DateTime
   fim                   DateTime
@@ -204,8 +204,8 @@ model evento {
 model eventos_juntos {
   id              Int          @unique @default(autoincrement())
   solicitacao_id  Int
-  solicitacao     solicitacao  @relation(fields: [solicitacao_id], references: [id])
-  evento          evento       @relation(fields: [evento_id], references: [id])
+  solicitacao     solicitacao  @relation(fields: [solicitacao_id], references: [id], onDelete: Cascade)
+  evento          evento       @relation(fields: [evento_id], references: [id], onDelete: Cascade)
   evento_id       Int
   participante    participante? @relation(fields: [participante_id], references: [id])
   participante_id Int?
