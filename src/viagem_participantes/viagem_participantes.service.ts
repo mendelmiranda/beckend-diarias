@@ -73,11 +73,10 @@ export class ViagemParticipantesService {
   }
 
   async remove(id: number) {
-
     const consultar = await this.findOne(id);
 
     if(consultar){
-      const viagemId = consultar.viagem_id;
+      const viagemId = consultar.viagem_id;      
 
       const valorViagem = await this.prisma.valor_viagem.findFirst({
         where: {
@@ -85,11 +84,13 @@ export class ViagemParticipantesService {
         }
       });
 
-      await this.prisma.valor_viagem.delete({
-        where: {
-          id: valorViagem.id
-        }
-      });
+      if(valorViagem !== null){
+        await this.prisma.valor_viagem.delete({
+          where: {
+            id: valorViagem.id
+          }
+        });
+      }      
      
     }
 
