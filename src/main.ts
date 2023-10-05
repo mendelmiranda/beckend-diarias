@@ -7,24 +7,24 @@ import {
 
 async function bootstrap() {
   const prisma = new PrismaClient();
-
-  const root = '/home/deployer/sslfiles';
-  const https = require('https');
   const fs = require('fs');
-  const { parse } = require('url');
-
-  const httpsOptions = {
+  
+ const root = '/home/deployer/sslfiles';
+ const httpsOptions = {
     key: fs.readFileSync(`${root}/tce.ap.gov.br.key`),
     cert: fs.readFileSync(`${root}/STAR_tce_ap_gov_br.crt`),
     ca: [fs.readFileSync(`${root}/CER - CRT Files/SectigoRSADomainValidationSecureServerCA.crt`)],
   };
 
   const app = await NestFactory.create(AppModule, {
-    //httpsOptions,
+    httpsOptions,
 });
 
   app.enableCors({
-    origin: true,
+    origin: [
+      'http://localhost:3000',
+      'https://s3i.tce.ap.gov.br',      
+    ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
