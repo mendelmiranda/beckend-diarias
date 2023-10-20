@@ -32,10 +32,7 @@ export class TipoEventoController {
   }
 
   @Put(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateTipoEventoDto: UpdateTipoEventoDto,
-  ) {
+  update(@Param('id') id: string, @Body() updateTipoEventoDto: UpdateTipoEventoDto ) {
     return this.tipoEventoService.update(+id, updateTipoEventoDto);
   }
 
