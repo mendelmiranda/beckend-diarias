@@ -1,9 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TipoEventoService } from './tipo_evento.service';
 
-
-
-describe('TipoEventoService', () => {
+describe('UsersService', () => {
   let service: TipoEventoService;
 
   beforeEach(async () => {
@@ -14,25 +12,11 @@ describe('TipoEventoService', () => {
     service = module.get<TipoEventoService>(TipoEventoService);
   });
 
-  it('deve ser definido', () => {
-    expect(service).toBeDefined();
-  });
+  it('should return all users', async () => {
+    const users = await service.findAll();
 
-  describe('findAll', () => {
-    it('deve retornar uma lista de tipos de eventos', async () => {
-      // Suponha que o método findAll no serviço retorne uma lista de tipos de eventos
-      const tiposDeEventos = await service.findAll();
-
-      // Realize asserções apropriadas com base nos resultados esperados
-      expect(Array.isArray(tiposDeEventos)).toBe(true);
-      expect(tiposDeEventos.length).toBeGreaterThan(0);
-
-      // Você também pode realizar asserções específicas com base em seus requisitos
-      // Por exemplo, verifique se os tipos de eventos têm propriedades específicas
-      tiposDeEventos.forEach((tipoEvento) => {
-        expect(tipoEvento).toHaveProperty('nome');
-        expect(tipoEvento).toHaveProperty('descricao');
-      });
-    });
+    expect(users).toHaveLength(1);
+    expect(users[0].descricao).toBe('APURAÇÃO DE ÍNDICE');
+    
   });
 });
