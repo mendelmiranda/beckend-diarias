@@ -3,6 +3,7 @@ import { CreateLogSistemaDto } from './dto/create-log_sistema.dto';
 import { UpdateLogSistemaDto } from './dto/update-log_sistema.dto';
 import { PrismaService } from 'prisma/prisma.service';
 import { DateTime } from "luxon";
+import { Operacao } from './log_enum';
 
 
 @Injectable()
@@ -15,18 +16,20 @@ export class LogSistemaService {
     });
   }
 
-  async createLog(dto: any, usuario: InfoUsuario){
+  async createLog(dto: any, usuario: InfoUsuario, operacao: Operacao){
     
     const logSistemaDto: CreateLogSistemaDto = {
       datareg: DateTime.now().toJSDate(),
       linha: Object.values(dto) + '',
       usuario:  usuario.nomeCompleto + ' '+ usuario.username,
-      operacao: 'INSERT',
+      operacao: operacao,
     }
     await this.prisma.log_sistema.create({
       data: logSistemaDto,
     });
+    
   }
+
 
   findAll() {
     return `This action returns all logSistema`;

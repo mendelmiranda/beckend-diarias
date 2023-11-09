@@ -5,6 +5,7 @@ import { UpdateSolicitacaoDto } from './dto/update-solicitacao.dto';
 import PesquisaSolicitacaoDTO from './dto/pesquisa-solicitacao.dto';
 import { InfoUsuario, LogSistemaService } from 'src/log_sistema/log_sistema.service';
 import { solicitacao } from '@prisma/client';
+import { Operacao } from 'src/log_sistema/log_enum';
 
 
 
@@ -14,8 +15,7 @@ export class SolicitacaoService {
     private logSistemaService: LogSistemaService) {}
 
   async create(dto: CreateSolicitacaoDto, usuario: InfoUsuario): Promise<CreateSolicitacaoDto> {
-
-    this.logSistemaService.createLog(dto, usuario);
+    this.logSistemaService.createLog(dto, usuario, Operacao.INSERT);
 
     return this.prisma.solicitacao.create({
       data: dto,
@@ -299,19 +299,28 @@ export class SolicitacaoService {
     )
   }
 
-  update(id: number, updateSolicitacaoDto: UpdateSolicitacaoDto) {
+  update(id: number, updateSolicitacaoDto: UpdateSolicitacaoDto, usuario: InfoUsuario) {
+    this.logSistemaService.createLog(updateSolicitacaoDto, usuario, Operacao.UPDATE);
+
     return this.prisma.solicitacao.update({
       where: { id },
       data: updateSolicitacaoDto,
     });
   }
 
-  async remove(id: number) {
-    return await this.prisma.solicitacao.delete({
+  async remove(id: number, usuario: InfoUsuario) {
+    const copia = await this.findOne(id);
+
+    this.logSistemaService.createLog(copia, usuario, Operacao.DELETE);
+
+
+    const resultado = await this.prisma.solicitacao.delete({
       where: {
         id: id
       }
-    })
+    });
+    
+    return resultado;
   }
 
 }

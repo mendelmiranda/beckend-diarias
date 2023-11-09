@@ -61,16 +61,18 @@ export class SolicitacaoController {
   }
 
   @Put(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateSolicitacaoDto: UpdateSolicitacaoDto,
-  ) {
-    return this.solicitacaoService.update(+id, updateSolicitacaoDto);
+  update( @Param('id') id: string, @Body() updateSolicitacaoDto: UpdateSolicitacaoDto, 
+  @Req() request: Request ) {
+    const usuario = JSON.parse(request.headers['dados_client']);
+
+    return this.solicitacaoService.update(+id, updateSolicitacaoDto, usuario);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.solicitacaoService.remove(+id);
+  remove(@Param('id') id: string, @Req() request: Request) {
+    const usuario = JSON.parse(request.headers['dados_client']);
+
+    return this.solicitacaoService.remove(+id, usuario);
   }
 
   @Post('/pesquisar')
