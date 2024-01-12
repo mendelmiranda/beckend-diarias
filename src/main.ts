@@ -26,7 +26,8 @@ async function bootstrap() {
     origin: [
       'http://localhost:3000',
       'http://localhost:5173',
-      'https://s3i.tce.ap.gov.br',      
+      'https://s3i.tce.ap.gov.br',
+      'http://10.10.18:8084',      
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
