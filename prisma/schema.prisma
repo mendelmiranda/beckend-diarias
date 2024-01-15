@@ -96,6 +96,7 @@ model solicitacao {
   nome_responsavel     String?
   cod_lotacao          Int?
   lotacao              String?
+  login                String?
   eventos              evento[]
   tramite              tramite[]
   correcao_solicitacao correcao_solicitacao[]
