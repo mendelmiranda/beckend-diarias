@@ -37,15 +37,13 @@ export class TramiteService {
         */
     
 
-    await this.enviarNotificacaoDoStatus(dto.status, dto.solicitacao_id);
+   // await this.enviarNotificacaoDoStatus(dto.status, dto.solicitacao_id);
 
     return resultado;
   }
 
   
   async enviarNotificacaoDoStatus(status: string, solicitacaoId: number) {
-
-    console.log('status', status);   
 
     const solicitacao = await this.prisma.solicitacao.findFirst({
       where: {id: solicitacaoId}
@@ -409,7 +407,7 @@ export class TramiteService {
 
     this.salvarLogTramite(dto as CreateTramiteDto, nome, id);
 
-    await this.enviarNotificacaoDoStatus(dto.status, dto.solicitacao_id);
+    //await this.enviarNotificacaoDoStatus(dto.status, dto.solicitacao_id);
 
     return this.prisma.tramite.update({
       where: { id },

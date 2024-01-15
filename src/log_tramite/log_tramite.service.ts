@@ -31,8 +31,11 @@ export class LogTramiteService {
       where: {
         tramite: {
           solicitacao_id: id,
-        },
+        },        
       },
+      include: {
+        tramite: true,
+      }
     });
   }
 
