@@ -22,26 +22,50 @@ export class TramiteService {
     await this.salvarLogTramite(dto, nome, id);
 
     //this.emailService.enviarEmail(dto.solicitacao_id+'', dto.status);
+    console.log(nome);
+    
+
+    await this.enviarNotificacaoDoStatus(dto.status, dto.solicitacao_id);
 
     return resultado;
   }
 
   
-  async enviarNotificacaoDoStatus(status: string, solicitacaoId: string) {
+  async enviarNotificacaoDoStatus(status: string, solicitacaoId: number) {
+
+    console.log('status', status);   
+
+    const solicitacao = await this.prisma.solicitacao.findFirst({
+      where: {id: solicitacaoId}
+    });
+
+
     //tem que ser as pessoas do permitidas do e-tce/protocolo
     if (status === 'SOLICITADO') {
       this.enviaPresidencia(status, solicitacaoId);
     }
 
+    if (status === 'APROVADO') {
+      this.enviaResposta(status, solicitacaoId, solicitacao.login);
+    }
+
     return null;
   }
 
-  async enviaPresidencia(status: string, solicitacaoId: string){
-    this.emailService.enviarEmail(solicitacaoId, status,'cons.michelhouat');
+  async enviaPresidencia(status: string, solicitacaoId: number){
+    this.emailService.enviarEmail(solicitacaoId, status,'wendell.sacramento');
+      /* this.emailService.enviarEmail(solicitacaoId, status,'cons.michelhouat');
       this.emailService.enviarEmail(solicitacaoId, status,'antonio.correa');
       this.emailService.enviarEmail(solicitacaoId, status,'luzia.coelho');
-      this.emailService.enviarEmail(solicitacaoId, status,'alana.castro');
+      this.emailService.enviarEmail(solicitacaoId, status,'alana.castro'); */
   }
+
+  async enviaResposta(status: string, solicitacaoId: number, resposta: string){
+    this.emailService.enviarEmail(solicitacaoId, status,resposta);
+}
+
+
+
 
   async salvarLogTramite(dto: CreateTramiteDto, nome: string, tramiteId: number) {
     const dados: CreateLogTramiteDto = {
@@ -367,10 +391,13 @@ export class TramiteService {
     });
   }
 
-  update(id: number, dto: UpdateTramiteDto, nome?: string) {
+  
+  async update(id: number, dto: UpdateTramiteDto, nome?: string) {
     const { solicitacao, ...dtoSemSolicitacao } = dto;
 
     this.salvarLogTramite(dto as CreateTramiteDto, nome, id);
+
+    await this.enviarNotificacaoDoStatus(dto.status, dto.solicitacao_id);
 
     return this.prisma.tramite.update({
       where: { id },

@@ -6,11 +6,11 @@ import { MailerService } from '@nestjs-modules/mailer';
 export class EmailService {
   constructor(private readonly mailerService: MailerService) {}
   
-  public enviarEmail(numero: string, status: string, to: string): void {
+  public enviarEmail(numero: number, status: string, to: string): void {
     this
       .mailerService
       .sendMail({
-        to: 'wendell.sacramento@tce.ap.gov.br', // list of receivers
+        to: to+'@tce.ap.gov.br', // list of receivers
         from: 'contato@tce.ap.gov.br', // sender address
         subject: 'SOLICITAÇÃO DE PASSAGENS E DIÁRIAS',
         template: '../template/index', // The `.pug` or `.hbs` extension is appended automatically.

@@ -72,7 +72,7 @@ export class TramiteController {
 
   @Get('/envia-email')
   enviaEmail() {
-    this.tramiteService.enviarNotificacaoDoStatus("SOLICITADO", "12");
+    //this.tramiteService.enviarNotificacaoDoStatus("SOLICITADO", "12");
     return HttpStatus.OK;
   }
 
