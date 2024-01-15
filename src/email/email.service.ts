@@ -6,7 +6,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 export class EmailService {
   constructor(private readonly mailerService: MailerService) {}
   
-  public enviarEmail(numero: string, status: string): void {
+  public enviarEmail(numero: string, status: string, to: string): void {
     this
       .mailerService
       .sendMail({

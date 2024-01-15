@@ -7,17 +7,15 @@ import { LogTramiteService } from 'src/log_tramite/log_tramite.service';
 import { EmailService } from 'src/email/email.service';
 import { StatusSolicitacao } from './status_enum';
 
-
 @Injectable()
 export class TramiteService {
-  constructor(private prisma: PrismaService, private logTramiteService: LogTramiteService,
-    private emailService: EmailService) {}
+  constructor(private prisma: PrismaService, private logTramiteService: LogTramiteService, private emailService: EmailService) {}
 
   async create(dto: CreateTramiteDto, nome: string) {
     const { solicitacao, ...dtoSemSolicitacao } = dto;
 
     const resultado = await this.prisma.tramite.create({
-      data: dtoSemSolicitacao,      
+      data: dtoSemSolicitacao,
     });
 
     const id = (await resultado).id;
@@ -28,30 +26,24 @@ export class TramiteService {
     return resultado;
   }
 
-  //TESTAR ESSA FUNÇÃO
+  
   async enviarNotificacaoDoStatus(status: string, solicitacaoId: string) {
-    this.emailService.enviarEmail(solicitacaoId, status);
+    //tem que ser as pessoas do permitidas do e-tce/protocolo
+    if (status === 'SOLICITADO') {
+      this.enviaPresidencia(status, solicitacaoId);
+    }
+
     return null;
-    /* const emailService = this.emailService; 
-  
-    switch (status) {
-      case StatusSolicitacao.SOLICITADO:
-        // Envia para a presidência
-        emailService.enviarEmail(solicitacaoId, status, '');
-        break;
-  
-      case StatusSolicitacao.APROVADO:
-      case StatusSolicitacao.RECUSADO:
-        // Envia para o solicitante
-        emailService.enviarEmail(solicitacaoId, status, '');
-        break;
-  
-      // Adicione outros casos conforme necessário
-    } */
   }
 
-  async salvarLogTramite(dto: CreateTramiteDto, nome: string, tramiteId: number){
+  async enviaPresidencia(status: string, solicitacaoId: string){
+    this.emailService.enviarEmail(solicitacaoId, status,'cons.michelhouat');
+      this.emailService.enviarEmail(solicitacaoId, status,'antonio.correa');
+      this.emailService.enviarEmail(solicitacaoId, status,'luzia.coelho');
+      this.emailService.enviarEmail(solicitacaoId, status,'alana.castro');
+  }
 
+  async salvarLogTramite(dto: CreateTramiteDto, nome: string, tramiteId: number) {
     const dados: CreateLogTramiteDto = {
       cod_lotacao_origem: dto.cod_lotacao_origem,
       cod_lotacao_destino: dto.cod_lotacao_destino,
@@ -60,8 +52,8 @@ export class TramiteService {
       lotacao_destino: dto.lotacao_destino,
       lotacao_origem: dto.lotacao_origem,
       status: dto.status,
-      tramite_id: tramiteId
-    }
+      tramite_id: tramiteId,
+    };
 
     return await this.logTramiteService.create(dados);
   }
@@ -69,21 +61,18 @@ export class TramiteService {
   findAll() {
     return this.prisma.tramite.findMany({
       include: {
-        solicitacao: true
+        solicitacao: true,
       },
       orderBy: {
-        id: "desc"
-      }
-    })
+        id: 'desc',
+      },
+    });
   }
 
-  findTramitePorLotacao(codLotacao: number){
+  findTramitePorLotacao(codLotacao: number) {
     return this.prisma.tramite.findMany({
       where: {
-        OR: [
-          {cod_lotacao_destino: codLotacao},
-          {cod_lotacao_origem: codLotacao}
-        ]
+        OR: [{ cod_lotacao_destino: codLotacao }, { cod_lotacao_origem: codLotacao }],
       },
       include: {
         solicitacao: {
@@ -103,34 +92,33 @@ export class TramiteService {
                             destino: true,
                             cidade_origem: true,
                             cidade_destino: true,
-                          }
-                        }
-                      }
-                    }
-                  }
+                          },
+                        },
+                      },
+                    },
+                  },
                 },
                 tipo_evento: true,
                 cidade: {
-                  include:{
+                  include: {
                     estado: true,
-                  }
+                  },
                 },
                 pais: true,
-              }
-            }
-          }
+              },
+            },
+          },
         },
       },
       orderBy: {
-        id: "desc"
-      }
-    })
+        id: 'desc',
+      },
+    });
   }
 
-  findTramitePorLotacaoAprovadosDaOrigem(codLotacao: number){
+  findTramitePorLotacaoAprovadosDaOrigem(codLotacao: number) {
     return this.prisma.tramite.findMany({
-      where: {cod_lotacao_origem: codLotacao,
-      },
+      where: { cod_lotacao_origem: codLotacao },
       include: {
         solicitacao: {
           include: {
@@ -149,31 +137,31 @@ export class TramiteService {
                             destino: true,
                             cidade_origem: true,
                             cidade_destino: true,
-                          }
-                        }
-                      }
-                    }
-                  }
+                          },
+                        },
+                      },
+                    },
+                  },
                 },
                 tipo_evento: true,
                 cidade: {
-                  include:{
+                  include: {
                     estado: true,
-                  }
+                  },
                 },
                 pais: true,
-              }
-            }
-          }
+              },
+            },
+          },
         },
       },
       orderBy: {
-        id: "desc"
-      }
-    })
+        id: 'desc',
+      },
+    });
   }
 
-  findTramitePresidencia(){
+  findTramitePresidencia() {
     return this.prisma.tramite.findMany({
       include: {
         solicitacao: {
@@ -193,51 +181,49 @@ export class TramiteService {
                             destino: true,
                             cidade_origem: true,
                             cidade_destino: true,
-                          }
-                        }
-                      }
-                    }
-                  }
+                          },
+                        },
+                      },
+                    },
+                  },
                 },
                 tipo_evento: true,
                 cidade: {
-                  include:{
+                  include: {
                     estado: true,
-                  }
+                  },
                 },
                 pais: true,
-              }
-            }
-          }
+              },
+            },
+          },
         },
       },
       orderBy: {
-        id: "desc"
-      }
-    })
+        id: 'desc',
+      },
+    });
   }
 
   findOne(id: number) {
     return this.prisma.tramite.findFirst({
       where: {
-        id: +id
-      }
-    })
+        id: +id,
+      },
+    });
   }
 
-  findOneSolicitacao(id: number) {    
+  findOneSolicitacao(id: number) {
     return this.prisma.tramite.findFirst({
       where: {
-        solicitacao_id: +id
+        solicitacao_id: +id,
       },
-      orderBy: [
-        { id: "desc"}
-       ],
+      orderBy: [{ id: 'desc' }],
       include: {
         log_tramite: {
           include: {
             tramite: true,
-          }
+          },
         },
         solicitacao: {
           include: {
@@ -247,18 +233,18 @@ export class TramiteService {
               include: {
                 tipo_evento: true,
                 pais: true,
-              }
-            }
-          }
-        }
-      }
-    })
+              },
+            },
+          },
+        },
+      },
+    });
   }
 
   findEmpenhados() {
     return this.prisma.tramite.findMany({
       where: {
-        status: 'EMPENHADO'
+        status: 'EMPENHADO',
       },
       include: {
         solicitacao: {
@@ -266,17 +252,17 @@ export class TramiteService {
             empenho_daofi: true,
             tramite: true,
             eventos: {
-              include: {                
+              include: {
                 evento_participantes: {
                   include: {
                     participante: {
                       include: {
                         conta_diaria: {
                           include: {
-                            banco: true
-                          }
-                        }
-                      }
+                            banco: true,
+                          },
+                        },
+                      },
                     },
                     viagem_participantes: {
                       include: {
@@ -288,46 +274,40 @@ export class TramiteService {
                             valor_viagem: true,
                             cidade_origem: {
                               include: {
-                                estado: true
-                              }
+                                estado: true,
+                              },
                             },
                             cidade_destino: {
                               include: {
-                                estado: true
-                              }
+                                estado: true,
+                              },
                             },
-                          }
-                        }
-                      }
-                    }
-                  }
+                          },
+                        },
+                      },
+                    },
+                  },
                 },
                 tipo_evento: true,
                 cidade: {
-                  include:{
+                  include: {
                     estado: true,
-                  }
+                  },
                 },
                 pais: true,
-              }
-            }
-          }
-        }
+              },
+            },
+          },
+        },
       },
-      orderBy: 
-        [
-          {id: 'desc'},
-          {datareg: 'desc'}
-      ],
-
-      
-    })
+      orderBy: [{ id: 'desc' }, { datareg: 'desc' }],
+    });
   }
 
   findConcluidas() {
     return this.prisma.tramite.findMany({
       where: {
-        status: 'CONCLUIDO'
+        status: 'CONCLUIDO',
       },
       include: {
         solicitacao: {
@@ -342,10 +322,10 @@ export class TramiteService {
                       include: {
                         conta_diaria: {
                           include: {
-                            banco: true
-                          }
-                        }
-                      }
+                            banco: true,
+                          },
+                        },
+                      },
                     },
                     viagem_participantes: {
                       include: {
@@ -357,81 +337,73 @@ export class TramiteService {
                             valor_viagem: true,
                             cidade_origem: {
                               include: {
-                                estado: true
-                              }
+                                estado: true,
+                              },
                             },
                             cidade_destino: {
                               include: {
-                                estado: true
-                              }
+                                estado: true,
+                              },
                             },
-                          }
-                        }
-                      }
-                    }
-                  }
+                          },
+                        },
+                      },
+                    },
+                  },
                 },
                 pais: true,
                 tipo_evento: true,
                 cidade: {
-                  include:{
+                  include: {
                     estado: true,
-                  }
-                }
-                
-              }
-            }
-          }
-        }
+                  },
+                },
+              },
+            },
+          },
+        },
       },
-      orderBy: 
-        [
-          {id: 'desc'},
-          {datareg: 'desc'}
-      ],
-
-      
-    })
+      orderBy: [{ id: 'desc' }, { datareg: 'desc' }],
+    });
   }
 
   update(id: number, dto: UpdateTramiteDto, nome?: string) {
     const { solicitacao, ...dtoSemSolicitacao } = dto;
 
     this.salvarLogTramite(dto as CreateTramiteDto, nome, id);
-    
+
     return this.prisma.tramite.update({
       where: { id },
       data: dtoSemSolicitacao,
     });
   }
 
-  updateStatus(id: number, status: string, nome: string, dto: CreateTramiteDto) {    
+  updateStatus(id: number, status: string, nome: string, dto: CreateTramiteDto) {
     /* const data = this.prisma.tramite.findUnique({
       where: {
         id: id,
       }
     }).then((dto) => { */
-      
-      const dados: CreateLogTramiteDto = {
-        cod_lotacao_origem: dto.cod_lotacao_origem,
-        cod_lotacao_destino: dto.cod_lotacao_destino,
-        datareg: new Date(),
-        nome: nome,
-        lotacao_destino: dto.lotacao_destino,
-        lotacao_origem: dto.lotacao_origem,
-        status: status,
-        tramite_id: id
-      }
 
-      this.salvarLogTramite(dto, nome, id);
+    const dados: CreateLogTramiteDto = {
+      cod_lotacao_origem: dto.cod_lotacao_origem,
+      cod_lotacao_destino: dto.cod_lotacao_destino,
+      datareg: new Date(),
+      nome: nome,
+      lotacao_destino: dto.lotacao_destino,
+      lotacao_origem: dto.lotacao_origem,
+      status: status,
+      tramite_id: id,
+    };
+
+    this.salvarLogTramite(dto, nome, id);
 
     //});
-
 
     return this.prisma.tramite.update({
       where: { id },
       data: {
-        status: status.toUpperCase()
+        status: status.toUpperCase(),
       },
     });
   }
