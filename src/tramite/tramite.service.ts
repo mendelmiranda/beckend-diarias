@@ -5,6 +5,7 @@ import { UpdateTramiteDto } from './dto/update-tramite.dto';
 import { CreateLogTramiteDto } from 'src/log_tramite/dto/create-log_tramite.dto';
 import { LogTramiteService } from 'src/log_tramite/log_tramite.service';
 import { EmailService } from 'src/email/email.service';
+import { StatusSolicitacao } from './status_enum';
 
 
 @Injectable()
@@ -25,6 +26,26 @@ export class TramiteService {
     //this.emailService.enviarEmail(dto.solicitacao_id+'', dto.status);
 
     return resultado;
+  }
+
+  //TESTAR ESSA FUNÇÃO
+  async enviarNotificacaoDoStatus(status: string, solicitacaoId: string) {
+    const emailService = this.emailService; // Supondo que emailService é um serviço disponível na instância
+  
+    switch (status) {
+      case StatusSolicitacao.SOLICITADO:
+        // Envia para a presidência
+        emailService.enviarEmail(solicitacaoId, status, '');
+        break;
+  
+      case StatusSolicitacao.APROVADO:
+      case StatusSolicitacao.RECUSADO:
+        // Envia para o solicitante
+        emailService.enviarEmail(solicitacaoId, status, '');
+        break;
+  
+      // Adicione outros casos conforme necessário
+    }
   }
 
   async salvarLogTramite(dto: CreateTramiteDto, nome: string, tramiteId: number){
@@ -203,6 +224,8 @@ export class TramiteService {
   }
 
   findOneSolicitacao(id: number) {
+    console.log('ID', id);
+    
     return this.prisma.tramite.findFirst({
       where: {
         solicitacao_id: +id
@@ -219,6 +242,7 @@ export class TramiteService {
         solicitacao: {
           include: {
             empenho_daofi: true,
+            correcao_solicitacao: true,
             eventos: {
               include: {
                 tipo_evento: true,
