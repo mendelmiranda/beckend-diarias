@@ -30,7 +30,9 @@ export class TramiteService {
 
   //TESTAR ESSA FUNÇÃO
   async enviarNotificacaoDoStatus(status: string, solicitacaoId: string) {
-    const emailService = this.emailService; // Supondo que emailService é um serviço disponível na instância
+    this.emailService.enviarEmail(solicitacaoId, status);
+    return null;
+    /* const emailService = this.emailService; 
   
     switch (status) {
       case StatusSolicitacao.SOLICITADO:
@@ -45,7 +47,7 @@ export class TramiteService {
         break;
   
       // Adicione outros casos conforme necessário
-    }
+    } */
   }
 
   async salvarLogTramite(dto: CreateTramiteDto, nome: string, tramiteId: number){
@@ -223,9 +225,7 @@ export class TramiteService {
     })
   }
 
-  findOneSolicitacao(id: number) {
-    console.log('ID', id);
-    
+  findOneSolicitacao(id: number) {    
     return this.prisma.tramite.findFirst({
       where: {
         solicitacao_id: +id

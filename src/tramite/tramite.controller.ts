@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpStatus,
   Param,
   Post,
   Put
@@ -67,6 +68,12 @@ export class TramiteController {
   @Get('/solicitacoes/concluidas')
   findConcluidas() {
     return this.tramiteService.findConcluidas();
+  }
+
+  @Get('/envia-email')
+  enviaEmail() {
+    this.tramiteService.enviarNotificacaoDoStatus("SOLICITADO", "12");
+    return HttpStatus.OK;
   }
 
   @Get(':id')
