@@ -23,6 +23,18 @@ export class TramiteService {
 
     //this.emailService.enviarEmail(dto.solicitacao_id+'', dto.status);
     console.log(nome);
+
+    /* DAOF 
+        Alessandra Patrícia Rodrigues dos Santos.
+        Cristiane Barbosa Dias.
+        Neuma Maria Almeida de Azevedo. 
+        
+        DARAD
+        Betânia da Silva Barros
+        Clarisse Dias Magalhães
+        Joanne Dias Quintas de Aguiar 
+        
+        */
     
 
     await this.enviarNotificacaoDoStatus(dto.status, dto.solicitacao_id);
