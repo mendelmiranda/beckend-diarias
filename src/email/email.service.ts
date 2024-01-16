@@ -6,7 +6,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 export class EmailService {
   constructor(private readonly mailerService: MailerService) {}
   
-  public enviarEmail(numero: number, status: string, to: string): void {
+  public enviarEmail(numero: number, status: string, to: string, mensagem?: string): void {
     this
       .mailerService
       .sendMail({
@@ -17,6 +17,7 @@ export class EmailService {
         context: {  // Data to be sent to template engine.
           code: numero,
           username: status,
+          mensagem: mensagem,
         },
       })
        .then((success) => {

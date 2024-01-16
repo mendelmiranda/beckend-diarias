@@ -21,61 +21,89 @@ export class TramiteService {
     const id = (await resultado).id;
     await this.salvarLogTramite(dto, nome, id);
 
-    //this.emailService.enviarEmail(dto.solicitacao_id+'', dto.status);
-    console.log(nome);
-
-    /* DAOF 
-        Alessandra Patrícia Rodrigues dos Santos.
-        Cristiane Barbosa Dias.
-        Neuma Maria Almeida de Azevedo. 
-        
-        DARAD
-        Betânia da Silva Barros
-        Clarisse Dias Magalhães
-        Joanne Dias Quintas de Aguiar 
-        
-        */
-    
-
-   // await this.enviarNotificacaoDoStatus(dto.status, dto.solicitacao_id);
+    await this.enviarNotificacaoDoStatus(dto.status, dto.solicitacao_id, dto.cod_lotacao_destino);
 
     return resultado;
   }
 
-  
-  async enviarNotificacaoDoStatus(status: string, solicitacaoId: number) {
-
+  async enviarNotificacaoDoStatus(status: string, solicitacaoId: number, destino?: number) {
     const solicitacao = await this.prisma.solicitacao.findFirst({
-      where: {id: solicitacaoId}
+      where: { id: solicitacaoId },
     });
 
-
-    //tem que ser as pessoas do permitidas do e-tce/protocolo
     if (status === 'SOLICITADO') {
       this.enviaPresidencia(status, solicitacaoId);
     }
 
+    if (destino === 65 && status === 'APROVADO') {
+      this.enviaESCOLA(status, solicitacaoId, 'Solicitação aprovada pela Presidência.');
+    }
+
     if (status === 'APROVADO') {
+      this.enviaResposta(status, solicitacaoId, solicitacao.login);
+      this.enviaDARAD(status, solicitacaoId, 'Solicitação aprovada pela Presidência.');
+    }
+
+    if (status === 'VALORES_ESCOLA') {
+      this.enviaDARAD(status, solicitacaoId, 'Valores informados pela Escola de Contas.');
+    }
+
+    if (status === 'CALCULADO') {
+      this.enviaDAOF(status, solicitacaoId, 'Valores informados pela DARAD.');
+    }
+
+    if (status === 'EMPENHADO') {
+      this.enviaDARAD(status, solicitacaoId, 'Empenho realizado pela DAOF.');
+    }
+
+    if (status === 'FINALIZADO') {
+      this.enviaPresidencia(status, solicitacaoId, 'Solicitação concluída, aguardando finalização.');
+    }
+
+    if (status === 'NEGADO') {
       this.enviaResposta(status, solicitacaoId, solicitacao.login);
     }
 
     return null;
   }
 
-  async enviaPresidencia(status: string, solicitacaoId: number){
-    this.emailService.enviarEmail(solicitacaoId, status,'wendell.sacramento');
-      /* this.emailService.enviarEmail(solicitacaoId, status,'cons.michelhouat');
+  async enviaPresidencia(status: string, solicitacaoId: number, mensagem?: string) {
+    this.emailService.enviarEmail(solicitacaoId, status, 'wendell.sacramento', mensagem);
+    /* this.emailService.enviarEmail(solicitacaoId, status,'cons.michelhouat');
       this.emailService.enviarEmail(solicitacaoId, status,'antonio.correa');
       this.emailService.enviarEmail(solicitacaoId, status,'luzia.coelho');
       this.emailService.enviarEmail(solicitacaoId, status,'alana.castro'); */
   }
 
-  async enviaResposta(status: string, solicitacaoId: number, resposta: string){
-    this.emailService.enviarEmail(solicitacaoId, status,resposta);
-}
+  async enviaDARAD(status: string, solicitacaoId: number, mensagem?: string) {
+    this.emailService.enviarEmail(solicitacaoId, status, 'wendell.sacramento', mensagem);
 
+    /* 
+      this.emailService.enviarEmail(solicitacaoId, status,'betania.silva');
+      this.emailService.enviarEmail(solicitacaoId, status,'clarisse.dias');
+      this.emailService.enviarEmail(solicitacaoId, status,'joanne.dias');
+       */
+  }
 
+  async enviaDAOF(status: string, solicitacaoId: number, mensagem?: string) {
+    this.emailService.enviarEmail(solicitacaoId, status, 'wendell.sacramento', mensagem);
 
+    /* this.emailService.enviarEmail(solicitacaoId, status,'alessandra.rodrigues');
+      this.emailService.enviarEmail(solicitacaoId, status,'cristiane.barbosa');
+      this.emailService.enviarEmail(solicitacaoId, status,'neuma.almeida');
+       */
+  }
+
+  async enviaESCOLA(status: string, solicitacaoId: number, mensagem?: string) {
+    this.emailService.enviarEmail(solicitacaoId, status, 'wendell.sacramento', mensagem);
+
+    /* this.emailService.enviarEmail(solicitacaoId, status,'cristiane.reis');
+     */
+  }
+
+  async enviaResposta(status: string, solicitacaoId: number, resposta: string) {
+    this.emailService.enviarEmail(solicitacaoId, status, resposta);
+  }
 
   async salvarLogTramite(dto: CreateTramiteDto, nome: string, tramiteId: number) {
     const dados: CreateLogTramiteDto = {
@@ -401,13 +429,12 @@ export class TramiteService {
     });
   }
 
-  
   async update(id: number, dto: UpdateTramiteDto, nome?: string) {
     const { solicitacao, ...dtoSemSolicitacao } = dto;
 
     this.salvarLogTramite(dto as CreateTramiteDto, nome, id);
 
-    //await this.enviarNotificacaoDoStatus(dto.status, dto.solicitacao_id);
+    await this.enviarNotificacaoDoStatus(dto.status, dto.solicitacao_id, dto.cod_lotacao_destino);
 
     return this.prisma.tramite.update({
       where: { id },
