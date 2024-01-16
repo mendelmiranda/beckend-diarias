@@ -2,21 +2,50 @@ import { Injectable } from '@nestjs/common';
 import { CreateCorrecaoSolicitacaoDto } from './dto/create-correcao_solicitacao.dto';
 import { UpdateCorrecaoSolicitacaoDto } from './dto/update-correcao_solicitacao.dto';
 import { PrismaService } from 'prisma/prisma.service';
+import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class CorrecaoSolicitacaoService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private emailService: EmailService) {}
   
-  create(dto: CreateCorrecaoSolicitacaoDto) {    
+  async create(dto: CreateCorrecaoSolicitacaoDto) {    
     const data: CreateCorrecaoSolicitacaoDto = {
       ...dto,
       datareg: new Date(),    
     }
 
+    this.notifica(dto.solicitacao_id, dto.status);
+
     return this.prisma.correcao_solicitacao.create({
       data: data,
     });
   }
+
+  async notifica(solicitacaoId: number, status: string){
+
+    const solicitacao = await this.prisma.solicitacao.findFirst({
+      where: {
+        id: solicitacaoId
+      }
+    });
+
+    if(status === "AGUARDANDO_CORRECAO"){
+      this.emailService.enviarEmail(solicitacaoId, status, solicitacao.login, "Solicitação de correção.");
+    }
+
+    if(status === "CORRIGIDO"){
+      this.enviaPresidencia(status, solicitacaoId, "Correção realizada na solicitação.");
+    }
+  }
+
+  async enviaPresidencia(status: string, solicitacaoId: number, mensagem?: string) {
+    this.emailService.enviarEmail(solicitacaoId, status, 'wendell.sacramento', mensagem);
+    /* this.emailService.enviarEmail(solicitacaoId, status,'cons.michelhouat');
+      this.emailService.enviarEmail(solicitacaoId, status,'antonio.correa');
+      this.emailService.enviarEmail(solicitacaoId, status,'luzia.coelho');
+      this.emailService.enviarEmail(solicitacaoId, status,'alana.castro'); */
+  }
+
 
   findAll() {
     return this.prisma.correcao_solicitacao.findMany();
