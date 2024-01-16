@@ -14,14 +14,14 @@ export class CorrecaoSolicitacaoService {
       datareg: new Date(),    
     }
 
-    this.notifica(dto.solicitacao_id, dto.status);
+    this.notifica(dto.solicitacao_id, dto.status, dto.texto);
 
     return this.prisma.correcao_solicitacao.create({
       data: data,
     });
   }
 
-  async notifica(solicitacaoId: number, status: string){
+  async notifica(solicitacaoId: number, status: string, texto: string){
 
     const solicitacao = await this.prisma.solicitacao.findFirst({
       where: {
@@ -30,7 +30,7 @@ export class CorrecaoSolicitacaoService {
     });
 
     if(status === "AGUARDANDO_CORRECAO"){
-      this.emailService.enviarEmail(solicitacaoId, status, solicitacao.login, "Solicitação de correção.");
+      this.emailService.enviarEmail(solicitacaoId, status, solicitacao.login, texto);
     }
 
     if(status === "CORRIGIDO"){
@@ -65,6 +65,8 @@ export class CorrecaoSolicitacaoService {
   }
 
   update(id: number, updateCorrecaoSolicitacaoDto: UpdateCorrecaoSolicitacaoDto) {
+    this.notifica(updateCorrecaoSolicitacaoDto.solicitacao_id, updateCorrecaoSolicitacaoDto.status, updateCorrecaoSolicitacaoDto.texto);
+
     return this.prisma.correcao_solicitacao.update({
       where: { id },
       data: updateCorrecaoSolicitacaoDto,
