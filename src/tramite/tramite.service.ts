@@ -76,7 +76,7 @@ export class TramiteService {
   }
 
   async enviaDARAD(status: string, solicitacaoId: number, mensagem?: string) {
-    this.emailService.enviarEmail(solicitacaoId, status, 'wendell.sacramento', mensagem);
+    //this.emailService.enviarEmail(solicitacaoId, status, 'wendell.sacramento', mensagem);
 
     /* this.emailService.enviarEmail(solicitacaoId, status,'betania.silva');
     this.emailService.enviarEmail(solicitacaoId, status,'clarisse.dias');
@@ -101,7 +101,7 @@ export class TramiteService {
   }
 
   async enviaResposta(status: string, solicitacaoId: number, resposta: string) {
-    this.emailService.enviarEmail(solicitacaoId, status, resposta);
+    //this.emailService.enviarEmail(solicitacaoId, status, resposta);
   }
 
   async salvarLogTramite(dto: CreateTramiteDto, nome: string, tramiteId: number) {
