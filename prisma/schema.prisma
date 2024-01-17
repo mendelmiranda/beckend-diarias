@@ -107,11 +107,12 @@ model solicitacao {
 }
 
 model empenho_daofi {
-  id              Int       @unique @default(autoincrement())
-  datareg         DateTime? @default(now()) @db.Timestamptz(3)
-  tipo            String
-  saldo_inicial   Float
-  valor_reservado Float
+  id                Int       @unique @default(autoincrement())
+  datareg           DateTime? @default(now()) @db.Timestamptz(3)
+  tipo              String
+  saldo_inicial     Float
+  valor_reservado   Float
+  valor_pos_reserva Float?
 
   solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id], onDelete: Cascade)
   solicitacao_id Int
@@ -203,10 +204,10 @@ model evento {
 }
 
 model eventos_juntos {
-  id              Int          @unique @default(autoincrement())
+  id              Int           @unique @default(autoincrement())
   solicitacao_id  Int
-  solicitacao     solicitacao  @relation(fields: [solicitacao_id], references: [id], onDelete: Cascade)
-  evento          evento       @relation(fields: [evento_id], references: [id], onDelete: Cascade)
+  solicitacao     solicitacao   @relation(fields: [solicitacao_id], references: [id], onDelete: Cascade)
+  evento          evento        @relation(fields: [evento_id], references: [id], onDelete: Cascade)
   evento_id       Int
   participante    participante? @relation(fields: [participante_id], references: [id])
   participante_id Int?
