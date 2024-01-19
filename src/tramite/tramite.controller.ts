@@ -40,6 +40,11 @@ export class TramiteController {
     return this.tramiteService.findAll();
   }
 
+  @Get('/verifica/notificacao')
+  findTramiteNotificacao() {
+    return this.tramiteService.findTramiteParaNoticiacao();
+  }
+
   @Get('/solicitacao/:id')
   findTramiteSolicitracao(@Param('id') id: string) {
     return this.tramiteService.findOneSolicitacao(+id);

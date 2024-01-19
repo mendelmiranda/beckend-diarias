@@ -130,6 +130,24 @@ export class TramiteService {
     });
   }
 
+  findTramiteParaNoticiacao() {
+    return this.prisma.tramite.findMany({
+      include: {
+        solicitacao: true,
+      },
+      where: {
+        status: {
+          not: "RECUSADO" 
+        }
+      },
+      orderBy: {
+        id: 'desc',
+      },
+    });
+  }
+
+
+
   findTramitePorLotacao(codLotacao: number) {
     return this.prisma.tramite.findMany({
       where: {
