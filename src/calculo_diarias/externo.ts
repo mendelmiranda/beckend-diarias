@@ -12,7 +12,7 @@ export default class CalculoNacional {
   }
 
   private viagemNacional(viagem: viagem, uf: string, valorDiaria: valor_diarias, evento: evento, temPassagem: string, mesmoDestino?: boolean): number {
-    const totalDias = Util.totalDeDias(evento.inicio, evento.fim);
+    const totalDias = Util.totalDeDias(viagem.data_ida, viagem.data_volta);
     const diarias = totalDias - 1;
 
     if (uf !== UF.AP && viagem.exterior === 'NAO' && temPassagem === 'SIM') {
