@@ -27,7 +27,12 @@ export class TramiteService {
   }
 
   async enviarNotificacaoDoStatus(status: string, solicitacaoId: number, destino?: number) {
-    const solicitacao = await this.prisma.solicitacao.findFirst({
+    if(process.env['ENVIA_EMAIL'] === "0") return;
+
+    console.log('passou');
+    
+
+    /* const solicitacao = await this.prisma.solicitacao.findFirst({
       where: { id: solicitacaoId },
     });
 
@@ -62,7 +67,7 @@ export class TramiteService {
 
     if (status === 'NEGADO') {
       this.enviaResposta(status, solicitacaoId, solicitacao.login);
-    }
+    } */
 
     return null;
   }
