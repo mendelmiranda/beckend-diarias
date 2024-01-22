@@ -69,39 +69,39 @@ export class TramiteService {
 
   async enviaPresidencia(status: string, solicitacaoId: number, mensagem?: string) {
      // this.emailService.enviarEmail(solicitacaoId, status, 'wendell.sacramento', mensagem);
-      /* this.emailService.enviarEmail(solicitacaoId, status,'cons.michelhouat');
+      this.emailService.enviarEmail(solicitacaoId, status,'cons.michelhouat');
       this.emailService.enviarEmail(solicitacaoId, status,'antonio.correa');
       this.emailService.enviarEmail(solicitacaoId, status,'luzia.coelho');
-      this.emailService.enviarEmail(solicitacaoId, status,'alana.castro'); */
+      this.emailService.enviarEmail(solicitacaoId, status,'alana.castro');
   }
 
   async enviaDARAD(status: string, solicitacaoId: number, mensagem?: string) {
     //this.emailService.enviarEmail(solicitacaoId, status, 'wendell.sacramento', mensagem);
 
-    /* this.emailService.enviarEmail(solicitacaoId, status,'betania.silva');
+    this.emailService.enviarEmail(solicitacaoId, status,'betania.silva');
     this.emailService.enviarEmail(solicitacaoId, status,'clarisse.dias');
-    this.emailService.enviarEmail(solicitacaoId, status,'joanne.dias'); */
+    this.emailService.enviarEmail(solicitacaoId, status,'joanne.dias');
       
   }
 
   async enviaDAOF(status: string, solicitacaoId: number, mensagem?: string) {
     //this.emailService.enviarEmail(solicitacaoId, status, 'wendell.sacramento', mensagem);
 
-      /* this.emailService.enviarEmail(solicitacaoId, status,'alessandra.rodrigues');
+      this.emailService.enviarEmail(solicitacaoId, status,'alessandra.rodrigues');
       this.emailService.enviarEmail(solicitacaoId, status,'cristiane.barbosa');
-      this.emailService.enviarEmail(solicitacaoId, status,'neuma.almeida'); */
-      
+      this.emailService.enviarEmail(solicitacaoId, status,'neuma.almeida');
+      this.emailService.enviarEmail(solicitacaoId, status,'ademir.santos');      
   }
 
   async enviaESCOLA(status: string, solicitacaoId: number, mensagem?: string) {
     //this.emailService.enviarEmail(solicitacaoId, status, 'wendell.sacramento', mensagem);
 
-    //this.emailService.enviarEmail(solicitacaoId, status,'cristiane.reis');
+    this.emailService.enviarEmail(solicitacaoId, status,'cristiane.reis');
     
   }
 
   async enviaResposta(status: string, solicitacaoId: number, resposta: string) {
-    //this.emailService.enviarEmail(solicitacaoId, status, resposta);
+    this.emailService.enviarEmail(solicitacaoId, status, resposta);
   }
 
   async salvarLogTramite(dto: CreateTramiteDto, nome: string, tramiteId: number) {

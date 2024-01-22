@@ -9,16 +9,16 @@ async function bootstrap() {
   const prisma = new PrismaClient();
   const fs = require('fs');
   
- /*COLOCAR ESSE COMENTADO EM PRODUÇÃO
+ /*COLOCAR ESSE COMENTADO EM PRODUÇÃO*/
  const root = '/home/deployer/sslfiles';
  const httpsOptions = {
     key: fs.readFileSync(`${root}/tce.ap.gov.br.key`),
     cert: fs.readFileSync(`${root}/STAR_tce_ap_gov_br.crt`),
     ca: [fs.readFileSync(`${root}/CER - CRT Files/SectigoRSADomainValidationSecureServerCA.crt`)],
   };
-*/
+
   const app = await NestFactory.create(AppModule, {
-   // httpsOptions,
+    httpsOptions,
 });
 
   app.enableCors({
