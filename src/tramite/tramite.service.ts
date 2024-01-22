@@ -27,7 +27,7 @@ export class TramiteService {
   }
 
   async enviarNotificacaoDoStatus(status: string, solicitacaoId: number, destino?: number) {
-    if(process.env['ENVIA_EMAIL'] === "0") return;
+    if(process.env['ENV'] === "DEV") return;
 
     const solicitacao = await this.prisma.solicitacao.findFirst({
       where: { id: solicitacaoId },
