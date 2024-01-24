@@ -1,4 +1,4 @@
-import { solicitacao } from '@prisma/client';
+import { log_tramite, solicitacao } from '@prisma/client';
 
 export class CreateTramiteDto {
   cod_lotacao_origem: number; 
@@ -9,4 +9,5 @@ export class CreateTramiteDto {
   datareg?: Date;
   solicitacao_id: number;
   solicitacao?: solicitacao;
+  log_tramite?: log_tramite;
 }

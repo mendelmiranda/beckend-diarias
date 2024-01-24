@@ -12,7 +12,7 @@ export class TramiteService {
   constructor(private prisma: PrismaService, private logTramiteService: LogTramiteService, private emailService: EmailService) {}
 
   async create(dto: CreateTramiteDto, nome: string) {
-    const { solicitacao, ...dtoSemSolicitacao } = dto;
+    const { solicitacao, log_tramite, ...dtoSemSolicitacao } = dto;
 
     const resultado = await this.prisma.tramite.create({
       data: dtoSemSolicitacao,
@@ -158,7 +158,11 @@ export class TramiteService {
       include: {
         solicitacao: {
           include: {
-            tramite: true,
+            tramite: {
+              include: {
+                log_tramite: true,
+              }
+            },
             empenho_daofi: true,
             eventos: {
               include: {
@@ -449,7 +453,7 @@ export class TramiteService {
   }
 
   async update(id: number, dto: UpdateTramiteDto, nome?: string) {
-    const { solicitacao, ...dtoSemSolicitacao } = dto;
+    const { solicitacao,log_tramite, ...dtoSemSolicitacao } = dto;
 
     this.salvarLogTramite(dto as CreateTramiteDto, nome, id);
 
