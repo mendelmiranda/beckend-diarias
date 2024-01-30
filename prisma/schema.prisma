@@ -102,6 +102,7 @@ model solicitacao {
   correcao_solicitacao correcao_solicitacao[]
   empenho_daofi        empenho_daofi[]
   eventos_juntos       eventos_juntos[]
+  aprovacao_definitiva aprovacao_definitiva[]
 
   @@id([id])
 }
@@ -353,4 +354,12 @@ model cargo_diarias {
   valor_diarias    valor_diarias @relation(fields: [valor_diarias_id], references: [id])
 
   @@id([id])
+}
+
+model aprovacao_definitiva {
+  id                   Int          @unique @default(autoincrement())
+  solicitacao_id       Int
+  solicitacao          solicitacao? @relation(fields: [solicitacao_id], references: [id], onDelete: Cascade)
+  presidente_exercicio String
+  datareg              DateTime     @default(now()) @db.Timestamptz(3)
 }
