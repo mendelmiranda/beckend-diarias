@@ -28,6 +28,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { EmailService } from './email/email.service';
 import { EventosJuntosModule } from './eventos_juntos/eventos_juntos.module';
 import { AprovacaoDefinitivaModule } from './aprovacao_definitiva/aprovacao_definitiva.module';
+import { AssinaturaModule } from './assinatura/assinatura.module';
 
 
 
@@ -83,6 +84,8 @@ import { AprovacaoDefinitivaModule } from './aprovacao_definitiva/aprovacao_defi
     EventosJuntosModule,
 
     AprovacaoDefinitivaModule,
+
+    AssinaturaModule,
   ],
   controllers: [AppController],
   providers: [AppService, EmailService],

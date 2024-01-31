@@ -357,9 +357,20 @@ model cargo_diarias {
 }
 
 model aprovacao_definitiva {
-  id                   Int          @unique @default(autoincrement())
-  solicitacao_id       Int
-  solicitacao          solicitacao? @relation(fields: [solicitacao_id], references: [id], onDelete: Cascade)
+  id Int @unique @default(autoincrement())
+
+  assinatura_id Int
+  assinatura    assinatura   @relation(fields: [assinatura_id], references: [id], onDelete: Cascade)
+  datareg       DateTime     @default(now()) @db.Timestamptz(3)
+  
+  solicitacao   solicitacao? @relation(fields: [solicitacaoId], references: [id])
+  solicitacaoId Int?
+}
+
+model assinatura {
+  id Int @unique @default(autoincrement())
   presidente_exercicio String
-  datareg              DateTime     @default(now()) @db.Timestamptz(3)
+  datareg              DateTime               @default(now()) @db.Timestamptz(3)
+  ativo                String                @db.Char(3)
+  aprovacao_definitiva aprovacao_definitiva[]
 }
