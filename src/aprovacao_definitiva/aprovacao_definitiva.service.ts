@@ -9,6 +9,10 @@ export class AprovacaoDefinitivaService {
   constructor(private prisma: PrismaService) {}
 
   create(dto: CreateAprovacaoDefinitivaDto) {
+    const dados: CreateAprovacaoDefinitivaDto = {
+      ...dto,
+      datareg: new Date(),
+    } 
     return this.prisma.aprovacao_definitiva.create({
       data: dto,
     });
@@ -22,6 +26,9 @@ export class AprovacaoDefinitivaService {
     return this.prisma.aprovacao_definitiva.findFirst({
       where: {
         solicitacao_id: solicitacaoId
+      },
+      include: {
+        assinatura: true
       }
     })
   }

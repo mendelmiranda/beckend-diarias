@@ -12,9 +12,9 @@ export class AprovacaoDefinitivaController {
     return this.aprovacaoDefinitivaService.create(createAprovacaoDefinitivaDto);
   }
 
-  @Get('/assinatura-presidente')
-  findAssinatura(@Param('id') id: number) {
-    return this.aprovacaoDefinitivaService.findAssinaturaPresidente(id);
+  @Get('/assinatura-presidente/solicitacao/:id')
+  findAssinatura(@Param('id') id: string) {
+    return this.aprovacaoDefinitivaService.findAssinaturaPresidente(parseInt(id));
   }
 
   @Get()
