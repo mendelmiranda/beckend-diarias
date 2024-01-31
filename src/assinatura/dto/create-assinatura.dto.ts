@@ -1,5 +1,5 @@
 export class CreateAssinaturaDto {
   presidente_exercicio: string;
-  datareg?: Date;
+  datareg: Date;
   ativo: string;
 }

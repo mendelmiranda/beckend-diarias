@@ -17,7 +17,7 @@ export class AssinaturaController {
     return this.assinaturaService.findAll();
   }
 
-  @Get('/assinatura-ativa')
+  @Get('/ativa')
   findAssinaturaAtiva() {
     return this.assinaturaService.findAssinaturaAtiva();
   }

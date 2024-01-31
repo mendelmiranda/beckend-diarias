@@ -16,7 +16,7 @@ export class AprovacaoDefinitivaService {
 
   findAll() {
     return `This action returns all aprovacaoDefinitiva`;
-  }
+  } 
 
   findAssinaturaPresidente(solicitacaoId: number){
     return this.prisma.aprovacao_definitiva.findFirst({
