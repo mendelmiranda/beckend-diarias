@@ -8,6 +8,7 @@ import { EmailService } from 'src/email/email.service';
 import { StatusSolicitacao } from './status_enum';
 import { Util } from 'src/util/Util';
 import { evento_participantes, participante } from '@prisma/client';
+import { ViagemService } from 'src/viagem/viagem.service';
 
 @Injectable()
 export class TramiteService {
@@ -16,22 +17,39 @@ export class TramiteService {
   async create(dto: CreateTramiteDto, nome: string) {
     const { solicitacao, log_tramite, ...dtoSemSolicitacao } = dto;
 
-    /* const resultado = await this.prisma.tramite.create({
+    const resultado = await this.prisma.tramite.create({
       data: dtoSemSolicitacao,
     });
 
     const id = (await resultado).id;
-    await this.salvarLogTramite(dto, nome, id); */
-    const dias = await this.calculaDiasParaDiaria(dto.solicitacao_id)
+    await this.salvarLogTramite(dto, nome, id);
+    
+    /* const dias = await this.calculaDiasParaDiaria(dto.solicitacao_id)
     console.log(dias);
     
 
+    dias.forEach(a => {
+      console.log(a.participante.nome, a.totalDias);      
+    }) */
 
-
-    //await this.enviarNotificacaoDoStatus(dto.status, dto.solicitacao_id, dto.cod_lotacao_destino);
+    await this.enviarNotificacaoDoStatus(dto.status, dto.solicitacao_id, dto.cod_lotacao_destino);
 
     return null;
   }
+
+  pesquisaViagemDoParticipante(id: number){
+    
+    /* this.prisma.viagem_participantes.findMany({
+      where: {
+        evento_participantes_id: id
+      }
+    }).then((data) => {
+      data.forEach(viagens => {
+        viagens
+      })
+    }) */
+  }
+
 
   calculaDiasParaDiaria(solicitacao_id: number): Promise<ParticipanteTotalDias[]> {  
     return this.prisma.evento.findMany({
