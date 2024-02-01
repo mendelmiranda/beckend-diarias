@@ -6,6 +6,8 @@ import { CreateLogTramiteDto } from 'src/log_tramite/dto/create-log_tramite.dto'
 import { LogTramiteService } from 'src/log_tramite/log_tramite.service';
 import { EmailService } from 'src/email/email.service';
 import { StatusSolicitacao } from './status_enum';
+import { Util } from 'src/util/Util';
+import { evento_participantes, participante } from '@prisma/client';
 
 @Injectable()
 export class TramiteService {
@@ -14,17 +16,63 @@ export class TramiteService {
   async create(dto: CreateTramiteDto, nome: string) {
     const { solicitacao, log_tramite, ...dtoSemSolicitacao } = dto;
 
-    const resultado = await this.prisma.tramite.create({
+    /* const resultado = await this.prisma.tramite.create({
       data: dtoSemSolicitacao,
     });
 
     const id = (await resultado).id;
-    await this.salvarLogTramite(dto, nome, id);
+    await this.salvarLogTramite(dto, nome, id); */
+    const dias = await this.calculaDiasParaDiaria(dto.solicitacao_id)
+    console.log(dias);
+    
 
-    await this.enviarNotificacaoDoStatus(dto.status, dto.solicitacao_id, dto.cod_lotacao_destino);
 
-    return resultado;
+
+    //await this.enviarNotificacaoDoStatus(dto.status, dto.solicitacao_id, dto.cod_lotacao_destino);
+
+    return null;
   }
+
+  calculaDiasParaDiaria(solicitacao_id: number): Promise<ParticipanteTotalDias[]> {
+    let total = 0;    
+  
+    return this.prisma.evento.findMany({
+      where: {
+        solicitacao_id: solicitacao_id
+      },
+      include: {
+        evento_participantes: {
+          include: {
+            participante: true
+          }
+        }
+      }
+    }).then((result) => {
+  
+      const participantes: ParticipanteTotalDias[] = [];
+      
+      result.forEach(eventos => {
+        eventos.evento_participantes.filter(ep => eventos.id === ep.evento_id).forEach(p => {    
+          const participante = participantes.find((next) => next.participante.cpf === p.participante.cpf);
+  
+          if (participante === undefined) {
+            participantes.push({
+              participante: p.participante,
+              totalDias: Util.totalDeDias(eventos.inicio, eventos.fim),
+            });
+          } else {
+            participante.totalDias += Util.totalDeDias(eventos.inicio, eventos.fim);
+          }
+        });
+        
+        
+      });      
+
+      return participantes;
+    });
+  }
+
+
 
   async enviarNotificacaoDoStatus(status: string, solicitacaoId: number, destino?: number) {
     if(process.env['ENV'] === "DEV") return;
@@ -505,3 +553,8 @@ export class TramiteService {
     return `This action removes a #${id} tramiteSolicitacao`;
   }
 }
+
+type ParticipanteTotalDias = {
+  participante: participante;
+  totalDias: number;
+};
