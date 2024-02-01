@@ -33,9 +33,7 @@ export class TramiteService {
     return null;
   }
 
-  calculaDiasParaDiaria(solicitacao_id: number): Promise<ParticipanteTotalDias[]> {
-    let total = 0;    
-  
+  calculaDiasParaDiaria(solicitacao_id: number): Promise<ParticipanteTotalDias[]> {  
     return this.prisma.evento.findMany({
       where: {
         solicitacao_id: solicitacao_id
@@ -47,8 +45,7 @@ export class TramiteService {
           }
         }
       }
-    }).then((result) => {
-  
+    }).then((result) => {  
       const participantes: ParticipanteTotalDias[] = [];
       
       result.forEach(eventos => {
@@ -63,8 +60,7 @@ export class TramiteService {
           } else {
             participante.totalDias += Util.totalDeDias(eventos.inicio, eventos.fim);
           }
-        });
-        
+        });        
         
       });      
 
