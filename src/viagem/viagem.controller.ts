@@ -27,10 +27,8 @@ export class ViagemController {
       datareg: new Date(),      
     }
 
-
-    //return await this.cadastraValoresDaDiaria(viagem.id, id, eventoId);
-
-    return await this.viagemParticipanteService.create(viagem_participante);       
+    await this.viagemParticipanteService.create(viagem_participante);       
+    return await this.cadastraValoresDaDiaria(viagem.id, id, eventoId);     
   }
 
   async cadastraValoresDaDiaria(idViagem: number, idEventoParticipante: number, eventoId: number){    
