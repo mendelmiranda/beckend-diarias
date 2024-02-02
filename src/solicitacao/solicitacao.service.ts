@@ -7,12 +7,9 @@ import { InfoUsuario, LogSistemaService } from 'src/log_sistema/log_sistema.serv
 import { solicitacao } from '@prisma/client';
 import { Operacao } from 'src/log_sistema/log_enum';
 
-
-
 @Injectable()
 export class SolicitacaoService {
-  constructor(private prisma: PrismaService,
-    private logSistemaService: LogSistemaService) {}
+  constructor(private prisma: PrismaService, private logSistemaService: LogSistemaService) {}
 
   async create(dto: CreateSolicitacaoDto, usuario: InfoUsuario): Promise<CreateSolicitacaoDto> {
     this.logSistemaService.createLog(dto, usuario, Operacao.INSERT);
@@ -38,7 +35,7 @@ export class SolicitacaoService {
         tramite: {
           include: {
             log_tramite: true,
-          }
+          },
         },
         eventos: {
           include: {
@@ -48,10 +45,10 @@ export class SolicitacaoService {
                   include: {
                     conta_diaria: {
                       include: {
-                        banco: true
-                      }
-                    }
-                  }
+                        banco: true,
+                      },
+                    },
+                  },
                 },
                 viagem_participantes: {
                   include: {
@@ -92,8 +89,8 @@ export class SolicitacaoService {
                   include: {
                     conta_diaria: {
                       include: {
-                        banco: true
-                      }
+                        banco: true,
+                      },
                     },
                   },
                 },
@@ -113,7 +110,7 @@ export class SolicitacaoService {
                         cidade_destino: {
                           include: {
                             estado: true,
-                          }
+                          },
                         },
                       },
                     },
@@ -144,7 +141,7 @@ export class SolicitacaoService {
         tramite: {
           include: {
             log_tramite: true,
-          }
+          },
         },
         empenho_daofi: true,
         correcao_solicitacao: true,
@@ -157,8 +154,8 @@ export class SolicitacaoService {
                   include: {
                     conta_diaria: {
                       include: {
-                        banco: true
-                      }
+                        banco: true,
+                      },
                     },
                   },
                 },
@@ -178,7 +175,7 @@ export class SolicitacaoService {
                         cidade_destino: {
                           include: {
                             estado: true,
-                          }
+                          },
                         },
                       },
                     },
@@ -199,31 +196,29 @@ export class SolicitacaoService {
     });
   }
 
-
-  pesquisarSolicitacoes(dto: PesquisaSolicitacaoDTO) {    
+  pesquisarSolicitacoes(dto: PesquisaSolicitacaoDTO) {
     return this.prisma.solicitacao.findMany({
       where: {
-            
-        AND: [{
-          cpf_responsavel: dto?.cpf_responsavel,
-          cod_lotacao: dto?.cod_lotacao
-        },
+        AND: [
+          {
+            cpf_responsavel: dto?.cpf_responsavel,
+            cod_lotacao: dto?.cod_lotacao,
+          },
 
-        {
-          datareg: {
-            gte: new Date(dto.dataInicio),
-            lte: new Date(dto.dataFim),
-          },            
-        },
-        {
-          tramite: {
-            some: {
-              status: dto.status
-            }
-          }
-        }
-        
-      ], 
+          {
+            datareg: {
+              gte: new Date(dto.dataInicio),
+              lte: new Date(dto.dataFim),
+            },
+          },
+          {
+            tramite: {
+              some: {
+                status: dto.status,
+              },
+            },
+          },
+        ],
 
         /* OR: [
           {
@@ -248,8 +243,8 @@ export class SolicitacaoService {
                   include: {
                     conta_diaria: {
                       include: {
-                        banco: true
-                      }
+                        banco: true,
+                      },
                     },
                   },
                 },
@@ -269,7 +264,7 @@ export class SolicitacaoService {
                         cidade_destino: {
                           include: {
                             estado: true,
-                          }
+                          },
                         },
                       },
                     },
@@ -291,16 +286,23 @@ export class SolicitacaoService {
   }
 
   pesquisarResponsaveis() {
-    return this.prisma.solicitacao.findMany(
-      {
-        distinct: ['nome_responsavel'],
-        orderBy: [{ nome_responsavel: 'asc' }]
-      }
-    )
+    return this.prisma.solicitacao.findMany({
+      distinct: ['nome_responsavel'],
+      orderBy: [{ nome_responsavel: 'asc' }],
+    });
   }
 
-  update(id: number, updateSolicitacaoDto: UpdateSolicitacaoDto, usuario: InfoUsuario) {
+  async update(id: number, updateSolicitacaoDto: UpdateSolicitacaoDto, usuario: InfoUsuario) {
     this.logSistemaService.createLog(updateSolicitacaoDto, usuario, Operacao.UPDATE);
+
+    if (updateSolicitacaoDto.status === 'PDF_GERADO') {
+      return this.prisma.solicitacao.update({
+        where: { id },
+        data: {
+          status: 'PDF_GERADO'
+        },
+      });
+    }
 
     return this.prisma.solicitacao.update({
       where: { id },
@@ -313,14 +315,12 @@ export class SolicitacaoService {
 
     this.logSistemaService.createLog(copia, usuario, Operacao.DELETE);
 
-
     const resultado = await this.prisma.solicitacao.delete({
       where: {
-        id: id
-      }
+        id: id,
+      },
     });
-    
+
     return resultado;
   }
-
 }
