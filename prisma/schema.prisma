@@ -371,7 +371,8 @@ model aprovacao_definitiva {
 
   assinatura_id Int
   assinatura    assinatura   @relation(fields: [assinatura_id], references: [id], onDelete: Cascade)
-  datareg       DateTime     @default(now()) @db.Timestamptz(3)
+  datareg DateTime @default(now())
+  hora String
   
   solicitacao   solicitacao? @relation(fields: [solicitacao_id], references: [id])
   solicitacao_id Int

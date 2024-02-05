@@ -44,6 +44,11 @@ const formataDataAmericanaBanco = (valor: Date | number) => {
     return moment(valor).format('yyyy-MM-DD');
 }
 
+const horaAtual = () => {
+    const data = new Date();
+    return moment(data).format('HH:mm');
+    }
+
 function convertToDateDB(dateString: string) {
     let d = dateString.split("/");
     let dat = new Date(d[0] + '-' + d[1] + '-' + d[2]);
@@ -51,5 +56,5 @@ function convertToDateDB(dateString: string) {
 }
 
 export const Util = {
-    dataAtual, convertToDate,totalDeDias, formataDataAmericana, formataDataAmericanaBanco, convertToDateDB, subtractDays, formataDataAmericanaComParametro
+    dataAtual, convertToDate,totalDeDias, formataDataAmericana, formataDataAmericanaBanco, convertToDateDB, subtractDays, formataDataAmericanaComParametro, horaAtual
 }

@@ -9,6 +9,7 @@ export class CreateAprovacaoDefinitivaDto {
   //assinatura: assinatura;
 
   datareg: Date; 
+  hora: string;
 
 }
 
