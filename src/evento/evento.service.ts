@@ -46,6 +46,12 @@ export class EventoService {
         solicitacao_id: idSolicitacao,
       },
       include: {
+        evento_participantes: {
+          include: {
+            participante: true,
+            evento: true,
+          }
+        },
         cidade: {
           include: {
             estado: true,
