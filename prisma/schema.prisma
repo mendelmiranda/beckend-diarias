@@ -302,6 +302,8 @@ model viagem {
 
   valor_passagem Float?
 
+  deslocamento String? @db.Char(3)
+
   viagem_participantes viagem_participantes[]
   valor_viagem         valor_viagem[]
 }

@@ -31,5 +31,7 @@ export class CreateViagemDto {
   justificativa_municipios?: string;
   valor_passagem?: number;
   valor_viagem?: valor_viagem[];
+
+  deslocamento?: string;
   //eventoId?: number; //transient
 }
