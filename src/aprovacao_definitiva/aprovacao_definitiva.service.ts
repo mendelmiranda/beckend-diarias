@@ -9,13 +9,13 @@ export class AprovacaoDefinitivaService {
   constructor(private prisma: PrismaService) {}
 
   create(dto: CreateAprovacaoDefinitivaDto) {
-    const dados: CreateAprovacaoDefinitivaDto = {
-      ...dto,
-      datareg: new Date(),
-      hora: Util.horaAtual(),
-    };
+    
     return this.prisma.aprovacao_definitiva.create({
-      data: dados,
+      data: {
+        ...dto,
+        datareg: new Date(),
+        hora: Util.horaAtual(),
+      },
     });
   }
 
