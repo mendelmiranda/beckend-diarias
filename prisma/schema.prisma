@@ -23,8 +23,8 @@ model log_sistema {
 
 model anexo_evento {
   id           Int      @id @default(autoincrement())
-  categoria    String
-  descricao    String
+  categoria    String?
+  descricao    String?
   datareg      DateTime @default(now()) @db.Timestamptz(3)
   api_anexo_id Int
   filename     String
