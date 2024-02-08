@@ -4,17 +4,16 @@ import { valor_diarias, viagem, evento } from '@prisma/client';
 
 export default class CalculoInternacional {
 
-    servidores(viagem: viagem, valorDiaria: valor_diarias, evento: evento, temPassagem: string): number { 
-
-        return this.viagemInternacional(viagem, valorDiaria, evento);        
+    servidores(viagem: viagem, valorDiaria: valor_diarias, evento: evento, total: number): number { 
+        return this.viagemInternacional(viagem, valorDiaria, evento, total);        
       }
   
-      private viagemInternacional(viagem: viagem, valorDiaria: valor_diarias, evento: evento): number {
-        const totalDias = Util.totalDeDias(evento.inicio, evento.fim)+2;
-        const diarias = totalDias - 1;   
+      private viagemInternacional(viagem: viagem, valorDiaria: valor_diarias, evento: evento, total: number): number {
+        //const totalDias = Util.totalDeDias(evento.inicio, evento.fim)+2;
+        const diarias = total;   
         
         if (viagem.exterior === "SIM") {
-            return  (diarias-1) * this.valorServidoresInternacional(valorDiaria.internacional, viagem.servidor_acompanhando);            
+            return  diarias * this.valorServidoresInternacional(valorDiaria.internacional, viagem.servidor_acompanhando);            
         }         
         return 0;
       }

@@ -55,19 +55,13 @@ export class ViagemService {
     }
   }
 
-  async calculaDiaria(idViagem: number, participanteId: number, eventoId: number) {
+  async calculaDiaria(idViagem: number, participanteId: number, eventoId: number, total: number) {
     const localizaEvento = await this.eventoService.findOne(eventoId);
     const localizaViagem = await this.findOne(idViagem);
     const localizaEventoParticipante = await this.eventoParticipanteService.findOne(+participanteId);
-    const localizaCidade = await this.localizaCidadeOuAeroporto(localizaViagem.cidade_destino_id, localizaViagem.destino_id);
+    const localizaCidade = await this.localizaCidadeOuAeroporto(localizaViagem.cidade_destino_id, localizaViagem.destino_id);    
 
-    console.log('consulta cargo id', participanteId);
-    
-
-    const cargo = await this.consultaCargo(participanteId);
-
-    console.log('cargo', cargo);
-    
+    const cargo = await this.consultaCargo(participanteId);    
 
     const parametros: any = {
       viagem: localizaViagem,
@@ -75,6 +69,7 @@ export class ViagemService {
       participante: localizaEventoParticipante,
       cargo: cargo,
       localizaCidade: localizaCidade,
+      total: total,
     };
 
     return (
@@ -100,7 +95,7 @@ export class ViagemService {
       const cidade = parametros.viagem.cidade_destino.descricao;
 
       const calculoEstadual = new CalculoEstadual();
-      const estatual = calculoEstadual.servidores(viagem, uf, cidade, calculo.valor_diarias, evento);
+      const estatual = calculoEstadual.servidores(viagem, uf, cidade, calculo.valor_diarias, evento, parametros.total);
 
       const valorViagem: CreateValorViagemDto = {
         viagem_id: parametros.viagem.id,
@@ -123,14 +118,8 @@ export class ViagemService {
 
       const calculo = await this.cargoDiariaService.findDiariasPorCargo(parametros.cargo);
 
-      const calculoNacional = new CalculoNacional();
-      const dias = await this.calculaDiasParaDiaria(parametros.viagem.solicitacao_id);
-
-      dias.forEach((a) => {
-        console.log(a.participante.nome, a.totalDias);
-        
-
-        const nacional = calculoNacional.servidores(parametros.viagem, uf, calculo.valor_diarias, evento, evento.tem_passagem, a.totalDias);
+      const calculoNacional = new CalculoNacional();            
+      const nacional = calculoNacional.servidores(parametros.viagem, uf, calculo.valor_diarias, evento, evento.tem_passagem, parametros.total);
 
         const valorViagem: CreateValorViagemDto = {
           viagem_id: parametros.viagem.id,
@@ -140,7 +129,6 @@ export class ViagemService {
         };
 
         return this.valorViagemService.create(valorViagem);
-      });
     }
     return 0;
   }
@@ -158,10 +146,10 @@ export class ViagemService {
         parametros.viagem,
         calculo.valor_diarias,
         evento,
-        evento.tem_passagem,
+        parametros.total
       );
       const inteira = internacional.valorNacional(parametros.viagem, calculo.valor_diarias);
-      const meia = internacional.valorNacionalMeia(parametros.viagem, calculo.valor_diarias);
+      const meia = internacional.valorNacionalMeia(parametros.viagem, calculo.valor_diarias);      
 
       await this.salvaDiariaInternacional(parametros, resultadoCalculoInternacional);
       await this.salvaDiariaInteira(parametros, inteira);
@@ -174,7 +162,7 @@ export class ViagemService {
 
   async salvaDiariaInternacional(parametros: any, resultadoCalculoInternacional: number) {
     const valorViagemInternacional: CreateValorViagemDto = {
-      viagem_id: parametros.id,
+      viagem_id: parametros.viagem.id,
       tipo: 'DIARIA',
       destino: 'INTERNACIONAL',
       valor_individual: resultadoCalculoInternacional,
@@ -220,8 +208,7 @@ export class ViagemService {
 
   
   calculaDiasParaDiaria(solicitacao_id: number): Promise<ParticipanteTotalDias[]> {
-    console.log('executou');
-    
+
     return this.prisma.evento
       .findMany({
         where: {
@@ -241,7 +228,6 @@ export class ViagemService {
         const participantes: ParticipanteTotalDias[] = [];
 
         result.forEach((eventos) => {
-
           eventos.evento_participantes
             .filter((ep) => eventos.id === ep.evento_id)
             .forEach((p) => {

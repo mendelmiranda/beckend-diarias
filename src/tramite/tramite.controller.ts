@@ -36,18 +36,16 @@ export class TramiteController {
       const solicitacaoId = resultado.solicitacao_id;      
 
       if(createTramiteDto.status === "SOLICITADO"){
-        (await this.viagemService.calculaDiasParaDiaria(solicitacaoId)).forEach(async result => {   
-          console.log('id do part',result.participante.id);
-          
-          this.cadastraValoresDaDiaria(result.viagem, result.participante.id, result.evento.id);
-         })
+        (await this.viagemService.calculaDiasParaDiaria(solicitacaoId)).map(async result => {  
+          this.cadastraValoresDaDiaria(result.viagem, result.participante.id, result.evento.id, result.totalDias);
+         });
       }
     }
     return 0;
   }
 
-  async cadastraValoresDaDiaria(idViagem: number, participanteId: number, eventoId: number){    
-    return await this.viagemService.calculaDiaria(idViagem, participanteId, eventoId);
+  async cadastraValoresDaDiaria(idViagem: number, participanteId: number, eventoId: number, total: number){    
+    return await this.viagemService.calculaDiaria(idViagem, participanteId, eventoId, total);
   } 
 
   @Get()

@@ -5,22 +5,21 @@ import { valor_diarias, viagem, evento } from '@prisma/client';
 
 export default class CalculoEstadual {
 
-    servidores(viagem: viagem, uf: string, cidade: string, valorDiaria: valor_diarias, evento: evento): number { 
+    servidores(viagem: viagem, uf: string, cidade: string, valorDiaria: valor_diarias, evento: evento, total: number): number { 
 
-      return this.viagemOutrosMunicipios(viagem, uf, cidade, valorDiaria, evento ) ||
+      return this.viagemOutrosMunicipios(viagem, uf, cidade, valorDiaria, evento, total ) ||
              this.viagemSuperiorSeisHoras(viagem, uf, cidade, valorDiaria) ||
              this.viagemComPernoite(viagem, uf, cidade, valorDiaria)        
     }
 
-    private viagemOutrosMunicipios(viagem: viagem, uf: string, cidade: string, valorDiaria: valor_diarias, evento: evento): number {
+    private viagemOutrosMunicipios(viagem: viagem, uf: string, cidade: string, valorDiaria: valor_diarias, evento: evento, total: number): number {
       
       if (uf === UF.AP && 
           cidade !== Municipios.MACAPA && 
           cidade !== Municipios.SANTANA && 
           cidade !== Municipios.MAZAGAO) {        
         
-        const totalDias = Util.totalDeDias(evento.inicio, evento.fim);
-        const diarias = totalDias - 1;
+        const diarias = total;
 
         const meiaDiaria = this.valorServidoresDentroAP(valorDiaria.dentro, viagem.servidor_acompanhando) / 2;
         
