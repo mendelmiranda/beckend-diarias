@@ -3,26 +3,16 @@ import { Acompanha, Local, Municipios, UF } from './diarias-enum';
 import { valor_diarias, viagem, evento } from '@prisma/client';
 
 export default class CalculoNacional {
-  servidores(viagem: viagem, uf: string, valorDiaria: valor_diarias, evento: evento, temPassagem: string): number {
-    let mesmoDestino = false;
-    if (viagem.origem_id === viagem.destino_id) {
-      mesmoDestino = true;
-    }
-    return this.viagemNacional(viagem, uf, valorDiaria, evento, temPassagem, mesmoDestino);
+  servidores(viagem: viagem, uf: string, valorDiaria: valor_diarias, evento: evento, temPassagem: string, total: number): number {   
+    return this.viagemNacional(viagem, uf, valorDiaria, evento, temPassagem, total);
   }
 
-  private viagemNacional(viagem: viagem, uf: string, valorDiaria: valor_diarias, evento: evento, temPassagem: string, mesmoDestino?: boolean): number {
-    const totalDias = Util.totalDeDias(viagem.data_ida, viagem.data_volta);
-    const diarias = totalDias - 1;
+  private viagemNacional(viagem: viagem, uf: string, valorDiaria: valor_diarias, evento: evento, temPassagem: string, total: number): number {
+    const totalDias = total;
+    const diarias = totalDias;// - 1;
 
     if (uf !== UF.AP && viagem.exterior === 'NAO' && temPassagem === 'SIM') {
-      let meiaDiaria = 0;
-
-      if(!mesmoDestino){
-        meiaDiaria = this.valorServidoresForaAP(valorDiaria.fora, viagem.servidor_acompanhando) / 2;
-      } else {
-        meiaDiaria = this.valorServidoresForaAP(valorDiaria.fora, viagem.servidor_acompanhando);
-      }
+      let meiaDiaria =  this.valorServidoresForaAP(valorDiaria.fora, viagem.servidor_acompanhando);
       
       return diarias * this.valorServidoresForaAP(valorDiaria.fora, viagem.servidor_acompanhando) + meiaDiaria;
     }

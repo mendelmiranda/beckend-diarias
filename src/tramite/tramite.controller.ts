@@ -11,10 +11,12 @@ import {
 import { CreateTramiteDto } from './dto/create-tramite.dto';
 import { UpdateTramiteDto } from './dto/update-tramite.dto';
 import { TramiteService } from './tramite.service';
+import { ViagemService } from 'src/viagem/viagem.service';
+import { EventoParticipantesService } from 'src/evento_participantes/evento_participantes.service';
 
 @Controller('tramite')
 export class TramiteController {
-  constructor(private readonly tramiteService: TramiteService) {}
+  constructor(private readonly tramiteService: TramiteService, private readonly viagemService: ViagemService, private readonly eParticipanteService: EventoParticipantesService) {}
 
   @Post('/:id/:nome')
   async create(
@@ -30,10 +32,23 @@ export class TramiteController {
     if (+id > 0) {
       await this.tramiteService.update(+id, createTramiteDto, nome);
     } else {
-      await this.tramiteService.create(createTramiteDto, nome);
+      const resultado = await this.tramiteService.create(createTramiteDto, nome);
+      const solicitacaoId = resultado.solicitacao_id;      
+
+      if(createTramiteDto.status === "SOLICITADO"){
+        (await this.viagemService.calculaDiasParaDiaria(solicitacaoId)).forEach(async result => {   
+          console.log('id do part',result.participante.id);
+          
+          this.cadastraValoresDaDiaria(result.viagem, result.participante.id, result.evento.id);
+         })
+      }
     }
     return 0;
   }
+
+  async cadastraValoresDaDiaria(idViagem: number, participanteId: number, eventoId: number){    
+    return await this.viagemService.calculaDiaria(idViagem, participanteId, eventoId);
+  } 
 
   @Get()
   findAll() {

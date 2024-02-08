@@ -103,6 +103,7 @@ model solicitacao {
   empenho_daofi        empenho_daofi[]
   eventos_juntos       eventos_juntos[]
   aprovacao_definitiva aprovacao_definitiva[]
+  viagem               viagem[]
 
   @@id([id])
 }
@@ -301,7 +302,11 @@ model viagem {
   justificativa_municipios String?
 
   valor_passagem Float?
+  
+  solicitacao    solicitacao? @relation(fields: [solicitacao_id], references: [id], onDelete: Cascade)
+  solicitacao_id Int?
 
+  trecho       String?
   deslocamento String? @db.Char(3)
 
   viagem_participantes viagem_participantes[]
@@ -358,13 +363,11 @@ model cargo_diarias {
   @@id([id])
 }
 
-
-
 model assinatura {
-  id Int @unique @default(autoincrement())
+  id                   Int                    @unique @default(autoincrement())
   presidente_exercicio String
   datareg              DateTime               @default(now()) @db.Timestamptz(3)
-  ativo                String                @db.Char(3)
+  ativo                String                 @db.Char(3)
   aprovacao_definitiva aprovacao_definitiva[]
 }
 
@@ -372,10 +375,10 @@ model aprovacao_definitiva {
   id Int @unique @default(autoincrement())
 
   assinatura_id Int
-  assinatura    assinatura   @relation(fields: [assinatura_id], references: [id], onDelete: Cascade)
-  datareg DateTime @default(now())
-  hora String
-  
-  solicitacao   solicitacao? @relation(fields: [solicitacao_id], references: [id])
+  assinatura    assinatura @relation(fields: [assinatura_id], references: [id], onDelete: Cascade)
+  datareg       DateTime   @default(now())
+  hora          String
+
+  solicitacao    solicitacao? @relation(fields: [solicitacao_id], references: [id])
   solicitacao_id Int
 }

@@ -34,6 +34,15 @@ export class EventoParticipantesService {
     });
   }
 
+  findOneParticipante(id: number) {
+    return this.prisma.participante.findUnique({
+      where: {
+        id: id
+      },
+    });
+  }
+
+
   findParticipantesDoEvento(idEvento: number) {
     return this.prisma.evento_participantes.findMany({
       where: {

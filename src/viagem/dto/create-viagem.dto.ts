@@ -32,6 +32,8 @@ export class CreateViagemDto {
   valor_passagem?: number;
   valor_viagem?: valor_viagem[];
 
+  solicitacao_id?: number;
+
   deslocamento?: string;
   //eventoId?: number; //transient
 }

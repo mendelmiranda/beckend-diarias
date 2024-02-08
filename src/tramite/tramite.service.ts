@@ -23,35 +23,13 @@ export class TramiteService {
 
     const id = (await resultado).id;
     await this.salvarLogTramite(dto, nome, id);
-    
-    /* const dias = await this.calculaDiasParaDiaria(dto.solicitacao_id)
-    console.log(dias);
-    
-
-    dias.forEach(a => {
-      console.log(a.participante.nome, a.totalDias);      
-    }) */
 
     await this.enviarNotificacaoDoStatus(dto.status, dto.solicitacao_id, dto.cod_lotacao_destino);
 
-    return null;
+    return resultado;
   }
 
-  pesquisaViagemDoParticipante(id: number){
-    
-    /* this.prisma.viagem_participantes.findMany({
-      where: {
-        evento_participantes_id: id
-      }
-    }).then((data) => {
-      data.forEach(viagens => {
-        viagens
-      })
-    }) */
-  }
-
-
-  calculaDiasParaDiaria(solicitacao_id: number): Promise<ParticipanteTotalDias[]> {  
+  /* calculaDiasParaDiaria(solicitacao_id: number): Promise<ParticipanteTotalDias[]> {  
     return this.prisma.evento.findMany({
       where: {
         solicitacao_id: solicitacao_id
@@ -84,9 +62,7 @@ export class TramiteService {
 
       return participantes;
     });
-  }
-
-
+  } */
 
   async enviarNotificacaoDoStatus(status: string, solicitacaoId: number, destino?: number) {
     if(process.env['ENV'] === "DEV") return;

@@ -12,12 +12,14 @@ import { AeroportoService } from '../aeroporto/aeroporto.service';
 import { CargoDiariasService } from '../cargo_diarias/cargo_diarias.service';
 import { ValorViagemService } from 'src/valor_viagem/valor_viagem.service';
 import { CreateValorViagemDto } from 'src/valor_viagem/dto/create-valor_viagem.dto';
-import { viagem, evento, valor_diarias, participante, evento_participantes } from '@prisma/client';
+import { viagem, evento, valor_diarias, participante, evento_participantes, viagem_participantes } from '@prisma/client';
 import { EventoService } from 'src/evento/evento.service';
 import CalculoEstadual from 'src/calculo_diarias/estadual';
 import CalculoNacional from 'src/calculo_diarias/externo';
 import CalculoInternacional from 'src/calculo_diarias/internacional';
 import { Municipios } from 'src/calculo_diarias/diarias-enum';
+import { Util } from 'src/util/Util';
+
 
 @Injectable()
 export class ViagemService {
@@ -58,7 +60,14 @@ export class ViagemService {
     const localizaViagem = await this.findOne(idViagem);
     const localizaEventoParticipante = await this.eventoParticipanteService.findOne(+participanteId);
     const localizaCidade = await this.localizaCidadeOuAeroporto(localizaViagem.cidade_destino_id, localizaViagem.destino_id);
+
+    console.log('consulta cargo id', participanteId);
+    
+
     const cargo = await this.consultaCargo(participanteId);
+
+    console.log('cargo', cargo);
+    
 
     const parametros: any = {
       viagem: localizaViagem,
@@ -115,16 +124,23 @@ export class ViagemService {
       const calculo = await this.cargoDiariaService.findDiariasPorCargo(parametros.cargo);
 
       const calculoNacional = new CalculoNacional();
-      const nacional = calculoNacional.servidores(parametros.viagem, uf, calculo.valor_diarias, evento, evento.tem_passagem);
+      const dias = await this.calculaDiasParaDiaria(parametros.viagem.solicitacao_id);
 
-      const valorViagem: CreateValorViagemDto = {
-        viagem_id: parametros.viagem.id,
-        tipo: 'DIARIA',
-        destino: 'NACIONAL',
-        valor_individual: nacional,
-      };
+      dias.forEach((a) => {
+        console.log(a.participante.nome, a.totalDias);
+        
 
-      return this.valorViagemService.create(valorViagem);
+        const nacional = calculoNacional.servidores(parametros.viagem, uf, calculo.valor_diarias, evento, evento.tem_passagem, a.totalDias);
+
+        const valorViagem: CreateValorViagemDto = {
+          viagem_id: parametros.viagem.id,
+          tipo: 'DIARIA',
+          destino: 'NACIONAL',
+          valor_individual: nacional,
+        };
+
+        return this.valorViagemService.create(valorViagem);
+      });
     }
     return 0;
   }
@@ -202,11 +218,60 @@ export class ViagemService {
     return 0;
   }
 
-  async consultaCargo(participanteId: number): Promise<string> {
-    const localizaEventoParticipante = await this.eventoParticipanteService.findOne(+participanteId);
-    const funcao = localizaEventoParticipante.participante.funcao;
-    let cargo = localizaEventoParticipante.participante.cargo;
-    const efetivo = localizaEventoParticipante.participante.efetivo;
+  
+  calculaDiasParaDiaria(solicitacao_id: number): Promise<ParticipanteTotalDias[]> {
+    console.log('executou');
+    
+    return this.prisma.evento
+      .findMany({
+        where: {
+          solicitacao_id: solicitacao_id,
+        },
+        include: {
+          evento_participantes: {
+            include: {
+              viagem_participantes: true,
+              participante: true,
+              
+            },
+          },
+        },
+      })
+      .then((result) => {
+        const participantes: ParticipanteTotalDias[] = [];
+
+        result.forEach((eventos) => {
+
+          eventos.evento_participantes
+            .filter((ep) => eventos.id === ep.evento_id)
+            .forEach((p) => {
+              const participante = participantes.find((next) => next.participante.cpf === p.participante.cpf);
+              
+              const viagem = p.viagem_participantes.find((next) => next.evento_participantes_id === p.id);
+
+              //SÓ DEVE CALCULAR DIÁRIAS SE TIVER VIAGEM
+              if (participante === undefined) {
+                participantes.push({
+                  participante: p.participante,
+                  totalDias: Util.totalDeDias(eventos.inicio, eventos.fim),
+                  evento: eventos,
+                  viagem: viagem.viagem_id === undefined ? 0 : viagem.viagem_id,
+                });
+              } else {
+                participante.totalDias += Util.totalDeDias(eventos.inicio, eventos.fim);
+              }
+            });
+        });
+
+        return participantes;
+      });
+  }
+
+  async consultaCargo(participanteId: number): Promise<string> {    
+    const localizaEventoParticipante = await this.eventoParticipanteService.findOneParticipante(+participanteId);
+    const funcao = localizaEventoParticipante.funcao;
+    let cargo = localizaEventoParticipante.cargo;
+    const efetivo = localizaEventoParticipante.efetivo;
 
     if (efetivo.trim() === 'SERVIDORES EFETIVOS' && funcao !== '') {
       cargo = funcao;
@@ -232,6 +297,28 @@ export class ViagemService {
         valor_viagem: true,
       },
     });
+  }
+
+  findViagemPorSolicitacaoId(id: number, eventoId: number) {
+    /* return this.prisma.viagem.findFirst({
+      where: {
+        solicitacao_id: id,
+      }
+    }); */
+
+    return this.prisma.evento_participantes.findFirst({
+      where: {
+        participante_id: +id,
+        evento_id: +eventoId,
+      },
+      include: {
+        viagem_participantes:{
+          include: {
+            viagem: true,
+          }
+        }
+      }
+    })
   }
 
   update(id: number, updateViagemDto: UpdateViagemDto) {
@@ -263,3 +350,12 @@ export class ViagemService {
     }); */
   }
 }
+
+//async cadastraValoresDaDiaria(idViagem: number, idEventoParticipante: number, eventoId: number){    
+
+type ParticipanteTotalDias = {
+  participante: participante;
+  totalDias: number;
+  evento: evento;
+  viagem: number;
+};
