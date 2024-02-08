@@ -149,11 +149,10 @@ export class ViagemService {
         parametros.total
       );
       const inteira = internacional.valorNacional(parametros.viagem, calculo.valor_diarias);
-      const meia = internacional.valorNacionalMeia(parametros.viagem, calculo.valor_diarias);      
 
       await this.salvaDiariaInternacional(parametros, resultadoCalculoInternacional);
       await this.salvaDiariaInteira(parametros, inteira);
-      await this.salvaMeiaDiaria(parametros, meia);
+      
 
       return resultadoCalculoInternacional;
     }
@@ -179,17 +178,7 @@ export class ViagemService {
     };
     this.valorViagemService.create(valorViagem);
   }
-
-  async salvaMeiaDiaria(parametros: any, meia: number) {
-    const valorViagemMeia: CreateValorViagemDto = {
-      viagem_id: parametros.viagem.id,
-      tipo: 'DIARIA',
-      destino: 'NACIONAL',
-      valor_individual: meia,
-    };
-    this.valorViagemService.create(valorViagemMeia);
-  }
-
+  
   async destinoMacapa(parametros: any) {
     if (parametros.temPassagem === 'NAO') {
       try {
