@@ -10,12 +10,28 @@ export default class CalculoNacional {
   private viagemNacional(viagem: viagem, uf: string, valorDiaria: valor_diarias, evento: evento, temPassagem: string, total: number): number {
     const diarias = total;
 
-    if (uf !== UF.AP && viagem.exterior === 'NAO' && temPassagem === 'SIM') {
-      const meiaDiaria =  this.valorNacionalMeia(viagem, valorDiaria);      
-      return diarias * this.valorServidoresForaAP(valorDiaria.fora, viagem.servidor_acompanhando) + meiaDiaria;
-    }
+    /* if(this.verificaDeslocamentoEMesmoLocal(viagem, evento)){
+      if (uf !== UF.AP && viagem.exterior === 'NAO' && temPassagem === 'SIM') {
+        return diarias * this.valorServidoresForaAP(valorDiaria.fora, viagem.servidor_acompanhando);
+      } 
+      
+    } else { */
+      if (uf !== UF.AP && viagem.exterior === 'NAO' && temPassagem === 'SIM') {
+        const meiaDiaria =  this.valorNacionalMeia(viagem, valorDiaria);      
+        return diarias * this.valorServidoresForaAP(valorDiaria.fora, viagem.servidor_acompanhando) + meiaDiaria;
+      }
+    //}
+
+    
 
     return 0;
+  }
+
+  verificaDeslocamentoEMesmoLocal(viagem: viagem, evento: evento): boolean{
+    if(evento.cidade_id === viagem.cidade_destino_id || viagem.deslocamento === "SIM"){
+      return true;
+    }
+    return false;
   }
 
   valorNacional(viagem: viagem, uf: string, valorDiaria: valor_diarias): number {
