@@ -79,6 +79,16 @@ export class LogTramiteService {
                 eventos: {
                   include: {
                     tipo_evento: true,
+                    evento_participantes: {
+                      include: {
+                        viagem_participantes: {
+                          include: {
+                            viagem: true
+                          }
+                        },
+                        participante: true
+                      }
+                    }
                   },
                 },
               },
