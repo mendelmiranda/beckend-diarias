@@ -313,14 +313,30 @@ export class SolicitacaoService {
   async remove(id: number, usuario: InfoUsuario) {
     const copia = await this.findOne(id);
 
-    this.logSistemaService.createLog(copia, usuario, Operacao.DELETE);
+    await this.logSistemaService.createLog(copia, usuario, Operacao.DELETE);
 
-    const resultado = await this.prisma.solicitacao.delete({
+    /* const resultado = await this.prisma.solicitacao.delete({
       where: {
         id: id,
       },
-    });
+    }); */
 
-    return resultado;
+    const result = await this.removerDadosPorSolicitacao(id);
+
+    return result;
   }
+
+
+  async removerDadosPorSolicitacao(solicitacaoId: number) {    
+    try {
+      const result = await this.prisma.$executeRaw`SELECT diarias.public.remover_dados_por_solicitacao(${solicitacaoId}::INTEGER)`;
+      //console.log(result); 
+    } catch (error) {
+      console.error('Erro ao executar a função:', error);
+    } finally {
+      await this.prisma.$disconnect();
+    }
+  }
+
+
 }
