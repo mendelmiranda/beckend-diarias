@@ -215,6 +215,7 @@ export class ViagemService {
       })
       .then((result) => {
         const participantes: ParticipanteTotalDias[] = [];
+        let somaDias = 0;
 
         const eventosSort = result.sort((a, b) => a.inicio.getTime() - b.inicio.getTime());
 
@@ -229,12 +230,18 @@ export class ViagemService {
               //SÓ DEVE CALCULAR DIÁRIAS SE TIVER VIAGEM
               if (participante === undefined) {
 
-                /* const diferenca = this.diferencaEmDias(eventos.inicio, eventos.fim);
-                console.log('diferença', diferenca); */
+                const diferencaEntreEventos = this.calcularDiferencaEntreEventos(eventosSort);
+                //console.log("Diferença em dias entre os eventos:", diferencaEntreEventos);
+
+                if(diferencaEntreEventos.length > 0){
+                  somaDias = diferencaEntreEventos[0];
+                } 
+                
+                const total = somaDias-1;
 
                 participantes.push({
                   participante: p.participante,
-                  totalDias: Util.totalDeDias(eventos.inicio, eventos.fim),
+                  totalDias: Util.totalDeDias(eventos.inicio, eventos.fim)+total,
                   evento: eventos,
                   viagem: viagem.viagem_id === undefined ? 0 : viagem.viagem_id,
                 });
@@ -248,16 +255,22 @@ export class ViagemService {
       });
   }
 
-  diferencaEmDias(dataInicio: Date, dataFim: Date): number {
-    // Calcula a diferença em milissegundos entre as datas
-    const diferencaEmMilissegundos = Math.abs(dataFim.getTime() - dataInicio.getTime());
+  calcularDiferencaEntreEventos(eventos: { inicio: Date, fim: Date }[]): number[] {
+    const diferencas: number[] = [];
+    for (let i = 0; i < eventos.length - 1; i++) {
+        const fimEventoAtual = eventos[i].fim;
+        const inicioProximoEvento = eventos[i + 1].inicio;
+        const diferencaEmDias = this.calcularDiferencaEmDias(fimEventoAtual, inicioProximoEvento);
+        diferencas.push(diferencaEmDias);
+    }
+    return diferencas;
+}
 
-    // Converte a diferença em dias
+  calcularDiferencaEmDias(dataInicio: Date, dataFim: Date): number {
     const umDiaEmMilissegundos = 1000 * 60 * 60 * 24;
-    const diferencaEmDias = Math.floor(diferencaEmMilissegundos / umDiaEmMilissegundos);
-
-    return diferencaEmDias;
-  }
+    const diferencaEmMilissegundos = dataFim.getTime() - dataInicio.getTime();
+    return Math.floor(diferencaEmMilissegundos / umDiaEmMilissegundos);
+}
 
   async consultaCargo(participanteId: number): Promise<string> {
     const localizaEventoParticipante = await this.eventoParticipanteService.findOneParticipante(+participanteId);

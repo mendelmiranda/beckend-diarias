@@ -36,7 +36,7 @@ export class TramiteController {
       const solicitacaoId = resultado.solicitacao_id;
 
       if (createTramiteDto.status === "SOLICITADO") {
-        (await this.viagemService.calculaDiasParaDiaria(solicitacaoId)).map(async result => {
+        (await this.viagemService.calculaDiasParaDiaria(solicitacaoId)).map(async result => {          
           this.cadastraValoresDaDiaria(result.viagem, result.participante.id, result.evento.id, result.totalDias);
         });
       }
