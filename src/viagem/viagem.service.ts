@@ -197,7 +197,6 @@ export class ViagemService {
 
   
   calculaDiasParaDiaria(solicitacao_id: number): Promise<ParticipanteTotalDias[]> {
-
     return this.prisma.evento
       .findMany({
         where: {
