@@ -31,7 +31,7 @@ export class ViagemService {
     private cargoDiariaService: CargoDiariasService,
     private valorViagemService: ValorViagemService,
     private eventoService: EventoService,
-  ) {}
+  ) { }
 
   async create(dto: CreateViagemDto) {
     if (dto.destino_id > 0) {
@@ -59,9 +59,9 @@ export class ViagemService {
     const localizaEvento = await this.eventoService.findOne(eventoId);
     const localizaViagem = await this.findOne(idViagem);
     const localizaEventoParticipante = await this.eventoParticipanteService.findOne(+participanteId);
-    const localizaCidade = await this.localizaCidadeOuAeroporto(localizaViagem.cidade_destino_id, localizaViagem.destino_id);    
+    const localizaCidade = await this.localizaCidadeOuAeroporto(localizaViagem.cidade_destino_id, localizaViagem.destino_id);
 
-    const cargo = await this.consultaCargo(participanteId);    
+    const cargo = await this.consultaCargo(participanteId);
 
     const parametros: any = {
       viagem: localizaViagem,
@@ -118,17 +118,17 @@ export class ViagemService {
 
       const calculo = await this.cargoDiariaService.findDiariasPorCargo(parametros.cargo);
 
-      const calculoNacional = new CalculoNacional();            
+      const calculoNacional = new CalculoNacional();
       const nacional = calculoNacional.servidores(parametros.viagem, uf, calculo.valor_diarias, evento, evento.tem_passagem, parametros.total);
 
-        const valorViagem: CreateValorViagemDto = {
-          viagem_id: parametros.viagem.id,
-          tipo: 'DIARIA',
-          destino: 'NACIONAL',
-          valor_individual: nacional,
-        };
+      const valorViagem: CreateValorViagemDto = {
+        viagem_id: parametros.viagem.id,
+        tipo: 'DIARIA',
+        destino: 'NACIONAL',
+        valor_individual: nacional,
+      };
 
-        return this.valorViagemService.create(valorViagem);
+      return this.valorViagemService.create(valorViagem);
     }
     return 0;
   }
@@ -152,7 +152,7 @@ export class ViagemService {
 
       await this.salvaDiariaInternacional(parametros, resultadoCalculoInternacional);
       await this.salvaDiariaInteira(parametros, inteira);
-      
+
 
       return resultadoCalculoInternacional;
     }
@@ -178,7 +178,7 @@ export class ViagemService {
     };
     this.valorViagemService.create(valorViagem);
   }
-  
+
   async destinoMacapa(parametros: any) {
     if (parametros.temPassagem === 'NAO') {
       try {
@@ -195,8 +195,9 @@ export class ViagemService {
     return 0;
   }
 
-  
+
   calculaDiasParaDiaria(solicitacao_id: number): Promise<ParticipanteTotalDias[]> {
+    ""
     return this.prisma.evento
       .findMany({
         where: {
@@ -207,7 +208,7 @@ export class ViagemService {
             include: {
               viagem_participantes: true,
               participante: true,
-              
+
             },
           },
         },
@@ -215,16 +216,22 @@ export class ViagemService {
       .then((result) => {
         const participantes: ParticipanteTotalDias[] = [];
 
-        result.forEach((eventos) => {
+        const eventosSort = result.sort((a, b) => a.inicio.getTime() - b.inicio.getTime());
+
+        eventosSort.forEach((eventos) => {
           eventos.evento_participantes
             .filter((ep) => eventos.id === ep.evento_id)
             .forEach((p) => {
               const participante = participantes.find((next) => next.participante.cpf === p.participante.cpf);
-              
+
               const viagem = p.viagem_participantes.find((next) => next.evento_participantes_id === p.id);
 
               //SÓ DEVE CALCULAR DIÁRIAS SE TIVER VIAGEM
               if (participante === undefined) {
+
+                /* const diferenca = this.diferencaEmDias(eventos.inicio, eventos.fim);
+                console.log('diferença', diferenca); */
+
                 participantes.push({
                   participante: p.participante,
                   totalDias: Util.totalDeDias(eventos.inicio, eventos.fim),
@@ -241,7 +248,18 @@ export class ViagemService {
       });
   }
 
-  async consultaCargo(participanteId: number): Promise<string> {    
+  diferencaEmDias(dataInicio: Date, dataFim: Date): number {
+    // Calcula a diferença em milissegundos entre as datas
+    const diferencaEmMilissegundos = Math.abs(dataFim.getTime() - dataInicio.getTime());
+
+    // Converte a diferença em dias
+    const umDiaEmMilissegundos = 1000 * 60 * 60 * 24;
+    const diferencaEmDias = Math.floor(diferencaEmMilissegundos / umDiaEmMilissegundos);
+
+    return diferencaEmDias;
+  }
+
+  async consultaCargo(participanteId: number): Promise<string> {
     const localizaEventoParticipante = await this.eventoParticipanteService.findOneParticipante(+participanteId);
     const funcao = localizaEventoParticipante.funcao;
     let cargo = localizaEventoParticipante.cargo;
@@ -286,7 +304,7 @@ export class ViagemService {
         evento_id: +eventoId,
       },
       include: {
-        viagem_participantes:{
+        viagem_participantes: {
           include: {
             viagem: true,
           }
