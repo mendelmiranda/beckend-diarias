@@ -342,12 +342,6 @@ export class SolicitacaoService {
 
     await this.logSistemaService.createLog(copia, usuario, Operacao.DELETE);
 
-    /* const resultado = await this.prisma.solicitacao.delete({
-      where: {
-        id: id,
-      },
-    }); */
-
     const result = await this.removerDadosPorSolicitacaoDARAD(id);
 
     return result;
