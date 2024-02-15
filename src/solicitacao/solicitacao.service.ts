@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
-import { CreateSolicitacaoDto } from './dto/create-solicitacao.dto';
-import { UpdateSolicitacaoDto } from './dto/update-solicitacao.dto';
-import PesquisaSolicitacaoDTO from './dto/pesquisa-solicitacao.dto';
-import { InfoUsuario, LogSistemaService } from 'src/log_sistema/log_sistema.service';
-import { solicitacao } from '@prisma/client';
 import { Operacao } from 'src/log_sistema/log_enum';
+import { InfoUsuario, LogSistemaService } from 'src/log_sistema/log_sistema.service';
+import { CreateSolicitacaoDto } from './dto/create-solicitacao.dto';
+import PesquisaSolicitacaoDTO from './dto/pesquisa-solicitacao.dto';
+import { UpdateSolicitacaoDto } from './dto/update-solicitacao.dto';
 
 @Injectable()
 export class SolicitacaoService {
@@ -331,6 +330,32 @@ export class SolicitacaoService {
     try {
       const result = await this.prisma.$executeRaw`SELECT remover_dados_por_solicitacao(${solicitacaoId}::INTEGER)`;
       //console.log(result); 
+    } catch (error) {
+      console.error('Erro ao executar a função:', error);
+    } finally {
+      await this.prisma.$disconnect();
+    }
+  }
+
+  async removeDARAD(id: number, usuario: InfoUsuario) {
+    const copia = await this.findOne(id);
+
+    await this.logSistemaService.createLog(copia, usuario, Operacao.DELETE);
+
+    /* const resultado = await this.prisma.solicitacao.delete({
+      where: {
+        id: id,
+      },
+    }); */
+
+    const result = await this.removerDadosPorSolicitacaoDARAD(id);
+
+    return result;
+  }
+
+  async removerDadosPorSolicitacaoDARAD(solicitacaoId: number) {    
+    try {
+      const result = await this.prisma.$executeRaw`SELECT remover_geral_darad(${solicitacaoId}::INTEGER)`;
     } catch (error) {
       console.error('Erro ao executar a função:', error);
     } finally {

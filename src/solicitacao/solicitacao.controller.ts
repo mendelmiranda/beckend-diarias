@@ -75,6 +75,14 @@ export class SolicitacaoController {
     return this.solicitacaoService.remove(+id, usuario);
   }
 
+  @Delete('/remover-tudo/:id')
+  removeDARAD(@Param('id') id: string, @Req() request: Request) {
+    const usuario = JSON.parse(request.headers['dados_client']);
+
+    return this.solicitacaoService.removeDARAD(+id, usuario);
+  }
+
+
   @Post('/pesquisar')
   pesquisarSolicitacoes(@Body() dto: PesquisaSolicitacaoDTO) {
     return this.solicitacaoService.pesquisarSolicitacoes(dto);

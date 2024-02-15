@@ -168,7 +168,44 @@ export class TramiteService {
   findAll() {
     return this.prisma.tramite.findMany({
       include: {
-        solicitacao: true,
+        solicitacao: {
+          include: {
+            tramite: {
+              include: {
+                log_tramite: true,
+              }
+            },
+            empenho_daofi: true,
+            eventos: {
+              include: {
+                evento_participantes: {
+                  include: {
+                    participante: true,
+                    viagem_participantes: {
+                      include: {
+                        viagem: {
+                          include: {
+                            origem: true,
+                            destino: true,
+                            cidade_origem: true,
+                            cidade_destino: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+                tipo_evento: true,
+                cidade: {
+                  include: {
+                    estado: true,
+                  },
+                },
+                pais: true,
+              },
+            },
+          },
+        },
       },
       orderBy: {
         id: 'desc',
