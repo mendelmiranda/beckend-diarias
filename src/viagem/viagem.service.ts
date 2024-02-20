@@ -326,6 +326,65 @@ export class ViagemService {
     })
   }
 
+  findViagemPorSolicitacao(id: number) {
+    return this.prisma.viagem_participantes.findMany({
+
+      where: {
+        viagem: {
+          solicitacao_id: id
+        }
+      },
+      
+      include: {        
+        viagem: {
+          include: {
+            valor_viagem: true,
+            origem: true,
+            destino: true,
+            cidade_destino: {
+              include: {
+                estado: true
+              }
+            },
+            cidade_origem: {
+              include: {
+                estado: true
+              }
+            },
+
+          }
+        },
+        evento_participantes: {
+          include:{
+            participante: true,
+            evento: true,
+          }
+        }
+
+
+       /*  viagem_participantes: {
+          include: {
+            viagem: {
+              include: {
+                viagem_participantes: {
+                  include: {
+                    evento_participantes: {
+                      include: {
+                        participante: true
+                      }
+                    }
+                  }
+                },
+                valor_viagem: true
+              }
+            },
+          }
+        }
+      } */
+    }
+  })
+  }
+
   update(id: number, updateViagemDto: UpdateViagemDto) {
     const prop = 'id';
     delete updateViagemDto[prop];
