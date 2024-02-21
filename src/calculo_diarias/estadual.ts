@@ -8,7 +8,7 @@ export default class CalculoEstadual {
     servidores(viagem: viagem, uf: string, cidade: string, valorDiaria: valor_diarias, evento: evento, total: number): number { 
 
       return this.viagemOutrosMunicipios(viagem, uf, cidade, valorDiaria, evento, total ) ||
-             this.viagemSuperiorSeisHoras(viagem, uf, cidade, valorDiaria) ||
+             this.viagemSuperiorSeisHoras(viagem, uf, cidade, valorDiaria, total) ||
              this.viagemComPernoite(viagem, uf, cidade, valorDiaria)        
     }
 
@@ -28,9 +28,13 @@ export default class CalculoEstadual {
       return 0;
     }
 
-    private viagemSuperiorSeisHoras(viagem: viagem, uf: string, cidade: string,valorDiaria: valor_diarias): number {
+    private viagemSuperiorSeisHoras(viagem: viagem, uf: string, cidade: string,valorDiaria: valor_diarias, total: number): number {
       if (uf === UF.AP && viagem.viagem_superior === "SIM" && cidade !== Municipios.MACAPA) {
-        return this.valorServidoresDentroAP(valorDiaria.dentro, viagem.servidor_acompanhando) / 2;         
+        const meiaDiaria = this.valorServidoresDentroAP(valorDiaria.dentro, viagem.servidor_acompanhando) / 2;
+
+        const resultado = total+1;
+
+        return meiaDiaria * resultado;         
       }
       return 0;
     }

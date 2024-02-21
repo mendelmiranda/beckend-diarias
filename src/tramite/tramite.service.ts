@@ -29,43 +29,8 @@ export class TramiteService {
     return resultado;
   }
 
-  /* calculaDiasParaDiaria(solicitacao_id: number): Promise<ParticipanteTotalDias[]> {  
-    return this.prisma.evento.findMany({
-      where: {
-        solicitacao_id: solicitacao_id
-      },
-      include: {
-        evento_participantes: {
-          include: {
-            participante: true
-          }
-        }
-      }
-    }).then((result) => {  
-      const participantes: ParticipanteTotalDias[] = [];
-      
-      result.forEach(eventos => {
-        eventos.evento_participantes.filter(ep => eventos.id === ep.evento_id).forEach(p => {    
-          const participante = participantes.find((next) => next.participante.cpf === p.participante.cpf);
-  
-          if (participante === undefined) {
-            participantes.push({
-              participante: p.participante,
-              totalDias: Util.totalDeDias(eventos.inicio, eventos.fim),
-            });
-          } else {
-            participante.totalDias += Util.totalDeDias(eventos.inicio, eventos.fim);
-          }
-        });        
-        
-      });      
-
-      return participantes;
-    });
-  } */
-
   async enviarNotificacaoDoStatus(status: string, solicitacaoId: number, destino?: number) {
-    if(process.env['ENV'] === "DEV") return;
+    if (process.env['ENV'] === 'DEV') return;
 
     const solicitacao = await this.prisma.solicitacao.findFirst({
       where: { id: solicitacaoId },
@@ -108,46 +73,44 @@ export class TramiteService {
   }
 
   async enviaPresidencia(status: string, solicitacaoId: number, mensagem?: string) {
-     // this.emailService.enviarEmail(solicitacaoId, status, 'wendell.sacramento', mensagem);
-      this.emailService.enviarEmail(solicitacaoId, status,'cons.michelhouat', mensagem);
-      this.emailService.enviarEmail(solicitacaoId, status,'antonio.correa', mensagem);
-      this.emailService.enviarEmail(solicitacaoId, status,'luzia.coelho', mensagem);
-      this.emailService.enviarEmail(solicitacaoId, status,'alana.castro', mensagem);
+    // this.emailService.enviarEmail(solicitacaoId, status, 'wendell.sacramento', mensagem);
+    this.emailService.enviarEmail(solicitacaoId, status, 'cons.michelhouat', mensagem);
+    this.emailService.enviarEmail(solicitacaoId, status, 'antonio.correa', mensagem);
+    this.emailService.enviarEmail(solicitacaoId, status, 'luzia.coelho', mensagem);
+    this.emailService.enviarEmail(solicitacaoId, status, 'alana.castro', mensagem);
   }
 
   async enviaDARAD(status: string, solicitacaoId: number, mensagem?: string) {
     //this.emailService.enviarEmail(solicitacaoId, status, 'wendell.sacramento', mensagem);
 
-    this.emailService.enviarEmail(solicitacaoId, status,'betania.silva', mensagem);
-    this.emailService.enviarEmail(solicitacaoId, status,'clarisse.dias'), mensagem;
-    this.emailService.enviarEmail(solicitacaoId, status,'joanne.dias', mensagem);
-      
+    this.emailService.enviarEmail(solicitacaoId, status, 'betania.silva', mensagem);
+    this.emailService.enviarEmail(solicitacaoId, status, 'clarisse.dias'), mensagem;
+    this.emailService.enviarEmail(solicitacaoId, status, 'joanne.dias', mensagem);
   }
 
   async enviaDAOF(status: string, solicitacaoId: number, mensagem?: string) {
     //this.emailService.enviarEmail(solicitacaoId, status, 'wendell.sacramento', mensagem);
 
-      this.emailService.enviarEmail(solicitacaoId, status,'alessandra.rodrigues', mensagem);
-      this.emailService.enviarEmail(solicitacaoId, status,'cristiane.barbosa', mensagem);
-      this.emailService.enviarEmail(solicitacaoId, status,'neuma.almeida', mensagem);
-      this.emailService.enviarEmail(solicitacaoId, status,'ademir.santos', mensagem);      
+    this.emailService.enviarEmail(solicitacaoId, status, 'alessandra.rodrigues', mensagem);
+    this.emailService.enviarEmail(solicitacaoId, status, 'cristiane.barbosa', mensagem);
+    this.emailService.enviarEmail(solicitacaoId, status, 'neuma.almeida', mensagem);
+    this.emailService.enviarEmail(solicitacaoId, status, 'ademir.santos', mensagem);
   }
 
   async enviaESCOLA(status: string, solicitacaoId: number, mensagem?: string) {
     //this.emailService.enviarEmail(solicitacaoId, status, 'wendell.sacramento', mensagem);
 
-    this.emailService.enviarEmail(solicitacaoId, status,'cristiane.reis', mensagem);    
+    this.emailService.enviarEmail(solicitacaoId, status, 'cristiane.reis', mensagem);
   }
 
   async enviaResposta(status: string, solicitacaoId: number, resposta: string) {
     this.emailService.enviarEmail(solicitacaoId, status, resposta);
   }
 
-  async encaminhaSolicitacaoParaPresidenteExercicio(solicitacaoId: number){
-    const setor = "";
-    const mensagem = "Solicitação para Aprovação";
+  async encaminhaSolicitacaoParaPresidenteExercicio(solicitacaoId: number) {
+    const setor = '';
+    const mensagem = 'Solicitação para Aprovação';
     this.emailService.enviarEmail(solicitacaoId, status, setor, mensagem);
-
   }
 
   async salvarLogTramite(dto: CreateTramiteDto, nome: string, tramiteId: number) {
@@ -173,7 +136,7 @@ export class TramiteService {
             tramite: {
               include: {
                 log_tramite: true,
-              }
+              },
             },
             empenho_daofi: true,
             eventos: {
@@ -220,16 +183,14 @@ export class TramiteService {
       },
       where: {
         status: {
-          not: "RECUSADO" 
-        }
+          not: 'RECUSADO',
+        },
       },
       orderBy: {
         id: 'desc',
       },
     });
   }
-
-
 
   findTramitePorLotacao(codLotacao: number) {
     return this.prisma.tramite.findMany({
@@ -242,7 +203,7 @@ export class TramiteService {
             tramite: {
               include: {
                 log_tramite: true,
-              }
+              },
             },
             empenho_daofi: true,
             eventos: {
@@ -534,7 +495,7 @@ export class TramiteService {
   }
 
   async update(id: number, dto: UpdateTramiteDto, nome?: string) {
-    const { solicitacao,log_tramite, ...dtoSemSolicitacao } = dto;
+    const { solicitacao, log_tramite, ...dtoSemSolicitacao } = dto;
 
     this.salvarLogTramite(dto as CreateTramiteDto, nome, id);
 
