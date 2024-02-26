@@ -200,6 +200,7 @@ export class TramiteService {
       include: {
         solicitacao: {
           include: {
+            correcao_solicitacao: true,
             tramite: {
               include: {
                 log_tramite: true,
