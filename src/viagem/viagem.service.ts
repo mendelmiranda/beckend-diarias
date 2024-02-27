@@ -137,8 +137,6 @@ export class ViagemService {
     const evento = parametros.evento as evento;
 
     if (evento.tem_passagem === 'SIM' && evento.exterior === 'SIM') {
-      console.log('entrou internacional');
-
       const calculo = await this.cargoDiariaService.findDiariasPorCargo(parametros.cargo);
 
       const internacional = new CalculoInternacional();

@@ -19,7 +19,7 @@ export default class CalculoEstadual {
           cidade !== Municipios.SANTANA && 
           cidade !== Municipios.MAZAGAO) {        
         
-        const diarias = total;
+        const diarias = total+1;
 
         const meiaDiaria = this.valorServidoresDentroAP(valorDiaria.dentro, viagem.servidor_acompanhando) / 2;
         

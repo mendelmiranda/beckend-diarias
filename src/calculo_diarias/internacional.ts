@@ -9,7 +9,7 @@ export default class CalculoInternacional {
   }
 
   private viagemInternacional(viagem: viagem, valorDiaria: valor_diarias, evento: evento, total: number): number {
-    return total * this.valorServidoresInternacional(valorDiaria.internacional, viagem.servidor_acompanhando);
+    return total * this.valorServidoresInternacional(valorDiaria.internacional, viagem.servidor_acompanhando)+1;
   }
 
   valorNacional(viagem: viagem, valorDiaria: valor_diarias): number {
