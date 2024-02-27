@@ -19,11 +19,7 @@ export class TramiteController {
   constructor(private readonly tramiteService: TramiteService, private readonly viagemService: ViagemService, private readonly eParticipanteService: EventoParticipantesService) { }
 
   @Post('/:id/:nome')
-  async create(
-    @Param('id') id: string,
-    @Param('nome') nome: string,
-    @Body() createTramiteDto: CreateTramiteDto,
-  ) {
+  async create(@Param('id') id: string,@Param('nome') nome: string,@Body() createTramiteDto: CreateTramiteDto) {
     const data: CreateTramiteDto = {
       ...createTramiteDto,
       datareg: new Date(),

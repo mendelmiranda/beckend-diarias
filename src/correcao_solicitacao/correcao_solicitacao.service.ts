@@ -6,12 +6,12 @@ import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class CorrecaoSolicitacaoService {
-  constructor(private prisma: PrismaService, private emailService: EmailService) {}
-  
-  async create(dto: CreateCorrecaoSolicitacaoDto) {    
+  constructor(private prisma: PrismaService, private emailService: EmailService) { }
+
+  async create(dto: CreateCorrecaoSolicitacaoDto) {
     const data: CreateCorrecaoSolicitacaoDto = {
       ...dto,
-      datareg: new Date(),    
+      datareg: new Date(),
     }
 
     this.notifica(dto.solicitacao_id, dto.status, dto.texto);
@@ -21,7 +21,7 @@ export class CorrecaoSolicitacaoService {
     });
   }
 
-  async notifica(solicitacaoId: number, status: string, texto: string){
+  async notifica(solicitacaoId: number, status: string, texto: string) {
 
     const solicitacao = await this.prisma.solicitacao.findFirst({
       where: {
@@ -29,11 +29,11 @@ export class CorrecaoSolicitacaoService {
       }
     });
 
-    if(status === "AGUARDANDO_CORRECAO"){
+    if (status === "AGUARDANDO_CORRECAO") {
       this.emailService.enviarEmail(solicitacaoId, status, solicitacao.login, texto);
     }
 
-    if(status === "CORRIGIDO"){
+    if (status === "CORRIGIDO") {
       this.enviaPresidencia(status, solicitacaoId, "Correção realizada na solicitação.");
     }
   }
@@ -55,12 +55,16 @@ export class CorrecaoSolicitacaoService {
     return `This action returns a #${id} correcaoSolicitacao`;
   }
 
-  carregarSolicitacaoParaCorrecao(idSolicitacao: number){
+  carregarSolicitacaoParaCorrecao(idSolicitacao: number) {
+    if (isNaN(idSolicitacao)) {
+      throw new Error('idSolicitacao não é um número válido.');
+    }
+
     return this.prisma.correcao_solicitacao.findMany({
       where: {
         solicitacao_id: idSolicitacao
       },
-      orderBy: [{id: 'desc'}]
+      orderBy: [{ id: 'desc' }]
     });
   }
 
