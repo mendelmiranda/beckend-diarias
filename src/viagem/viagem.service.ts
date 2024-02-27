@@ -330,9 +330,19 @@ export class ViagemService {
     return this.prisma.viagem_participantes.findMany({
 
       where: {
-        viagem: {
+        OR: [
+          {
+            viagem: {
+              solicitacao_id: id
+            },
+          },
+          { evento_participantes: { evento: {
+            solicitacao_id: id
+          } } },
+        ],
+        /* viagem: {
           solicitacao_id: id
-        }
+        } */
       },
       
       include: {        
