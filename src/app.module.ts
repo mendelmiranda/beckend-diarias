@@ -29,6 +29,8 @@ import { EmailService } from './email/email.service';
 import { EventosJuntosModule } from './eventos_juntos/eventos_juntos.module';
 import { AprovacaoDefinitivaModule } from './aprovacao_definitiva/aprovacao_definitiva.module';
 import { AssinaturaModule } from './assinatura/assinatura.module';
+import { CondutoresModule } from './condutores/condutores.module';
+import { SolicitacaoCondutoresModule } from './solicitacao_condutores/solicitacao_condutores.module';
 
 
 
@@ -86,6 +88,10 @@ import { AssinaturaModule } from './assinatura/assinatura.module';
     AprovacaoDefinitivaModule,
 
     AssinaturaModule,
+
+    CondutoresModule,
+
+    SolicitacaoCondutoresModule,
   ],
   controllers: [AppController],
   providers: [AppService, EmailService],

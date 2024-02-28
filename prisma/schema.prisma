@@ -88,22 +88,23 @@ model cidade {
 }
 
 model solicitacao {
-  id                   Int                    @default(autoincrement())
-  datareg              DateTime?              @default(now()) @db.Timestamptz(3)
-  justificativa        String
-  status               String
-  cpf_responsavel      String?
-  nome_responsavel     String?
-  cod_lotacao          Int?
-  lotacao              String?
-  login                String?
-  eventos              evento[]
-  tramite              tramite[]
-  correcao_solicitacao correcao_solicitacao[]
-  empenho_daofi        empenho_daofi[]
-  eventos_juntos       eventos_juntos[]
-  aprovacao_definitiva aprovacao_definitiva[]
-  viagem               viagem[]
+  id                     Int                      @default(autoincrement())
+  datareg                DateTime?                @default(now()) @db.Timestamptz(3)
+  justificativa          String
+  status                 String
+  cpf_responsavel        String?
+  nome_responsavel       String?
+  cod_lotacao            Int?
+  lotacao                String?
+  login                  String?
+  eventos                evento[]
+  tramite                tramite[]
+  correcao_solicitacao   correcao_solicitacao[]
+  empenho_daofi          empenho_daofi[]
+  eventos_juntos         eventos_juntos[]
+  aprovacao_definitiva   aprovacao_definitiva[]
+  viagem                 viagem[]
+  solicitacao_condutores solicitacao_condutores[]
 
   @@id([id])
 }
@@ -302,7 +303,7 @@ model viagem {
   justificativa_municipios String?
 
   valor_passagem Float?
-  
+
   solicitacao    solicitacao? @relation(fields: [solicitacao_id], references: [id], onDelete: Cascade)
   solicitacao_id Int?
 
@@ -381,4 +382,30 @@ model aprovacao_definitiva {
 
   solicitacao    solicitacao? @relation(fields: [solicitacao_id], references: [id])
   solicitacao_id Int
+}
+
+model condutores {
+  id Int @unique @default(autoincrement())
+  nome                   String
+  cpf                    String
+  validade_cnh           DateTime
+  categoria_cnh          String
+  matricula              String
+  celular                String
+  endereco               String
+  banco                  String
+  agencia                String
+  conta                  String
+  solicitacao_condutores solicitacao_condutores[]
+}
+
+model solicitacao_condutores {
+  id            Int        @unique @default(autoincrement())
+  condutores_id Int
+  condutores    condutores @relation(fields: [condutores_id], references: [id], onDelete: Cascade)
+
+  solicitacao_id Int
+  solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id], onDelete: Cascade)
+
+  @@id([id, condutores_id, solicitacao_id])
 }
