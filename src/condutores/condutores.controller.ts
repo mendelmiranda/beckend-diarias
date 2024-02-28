@@ -31,4 +31,5 @@ export class CondutoresController {
   remove(@Param('id') id: string) {
     return this.condutoresService.remove(+id);
   }
+  
 }

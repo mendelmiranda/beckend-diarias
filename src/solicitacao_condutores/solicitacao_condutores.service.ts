@@ -1,26 +1,42 @@
 import { Injectable } from '@nestjs/common';
 import { CreateSolicitacaoCondutoreDto } from './dto/create-solicitacao_condutore.dto';
 import { UpdateSolicitacaoCondutoreDto } from './dto/update-solicitacao_condutore.dto';
+import { PrismaService } from 'prisma/prisma.service';
 
 @Injectable()
 export class SolicitacaoCondutoresService {
-  create(createSolicitacaoCondutoreDto: CreateSolicitacaoCondutoreDto) {
-    return 'This action adds a new solicitacaoCondutore';
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(dto: CreateSolicitacaoCondutoreDto) {
+    return this.prisma.solicitacao_condutores.create({
+      data: dto,
+    });
   }
 
   findAll() {
-    return `This action returns all solicitacaoCondutores`;
+    return this.prisma.condutores.findMany();
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} solicitacaoCondutore`;
+    return this.prisma.condutores.findUnique({
+      where: {
+        id: id,
+      },
+    });
   }
 
-  update(id: number, updateSolicitacaoCondutoreDto: UpdateSolicitacaoCondutoreDto) {
-    return `This action updates a #${id} solicitacaoCondutore`;
+  async update(id: number, updateEventoDto: UpdateSolicitacaoCondutoreDto) {
+    return this.prisma.solicitacao_condutores.update({
+      where: { id },
+      data: updateEventoDto,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} solicitacaoCondutore`;
+  async remove(id: number) {
+    return await this.prisma.solicitacao_condutores.delete({
+      where: {
+        id: id,
+      },
+    });
   }
 }
