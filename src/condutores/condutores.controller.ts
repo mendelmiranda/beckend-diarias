@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
 import { CondutoresService } from './condutores.service';
 import { CreateCondutoreDto } from './dto/create-condutore.dto';
 import { UpdateCondutoreDto } from './dto/update-condutore.dto';
@@ -22,7 +22,7 @@ export class CondutoresController {
     return this.condutoresService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateCondutoreDto: UpdateCondutoreDto) {
     return this.condutoresService.update(+id, updateCondutoreDto);
   }
