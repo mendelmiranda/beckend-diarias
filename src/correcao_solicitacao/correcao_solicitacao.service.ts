@@ -14,7 +14,7 @@ export class CorrecaoSolicitacaoService {
       datareg: new Date(),
     }
 
-    //this.notifica(dto.solicitacao_id, dto.status, dto.texto);
+    this.notifica(dto.solicitacao_id, dto.status, dto.texto);
 
     return this.prisma.correcao_solicitacao.create({
       data: data,
@@ -69,7 +69,7 @@ export class CorrecaoSolicitacaoService {
   }
 
   update(id: number, updateCorrecaoSolicitacaoDto: UpdateCorrecaoSolicitacaoDto) {
-    //this.notifica(updateCorrecaoSolicitacaoDto.solicitacao_id, updateCorrecaoSolicitacaoDto.status, updateCorrecaoSolicitacaoDto.texto);
+    this.notifica(updateCorrecaoSolicitacaoDto.solicitacao_id, updateCorrecaoSolicitacaoDto.status, updateCorrecaoSolicitacaoDto.texto);
 
     return this.prisma.correcao_solicitacao.update({
       where: { id },
