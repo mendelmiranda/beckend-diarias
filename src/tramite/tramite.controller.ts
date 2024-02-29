@@ -19,22 +19,22 @@ export class TramiteController {
   constructor(private readonly tramiteService: TramiteService, private readonly viagemService: ViagemService, private readonly eParticipanteService: EventoParticipantesService) { }
 
   @Post('/:id/:nome')
-  async create(@Param('id') id: string,@Param('nome') nome: string,@Body() createTramiteDto: CreateTramiteDto) {
-    const data: CreateTramiteDto = {
-      ...createTramiteDto,
-      datareg: new Date(),
-    };
+  async create(@Param('id') id: string, @Param('nome') nome: string, @Body() createTramiteDto: CreateTramiteDto) {
+    const parsedId = +id;
 
-    if (+id > 0) {
-      await this.tramiteService.update(+id, createTramiteDto, nome);
+    if (parsedId > 0) {
+      await this.tramiteService.update(parsedId, createTramiteDto, nome);
     } else {
       const resultado = await this.tramiteService.create(createTramiteDto, nome);
       const solicitacaoId = resultado.solicitacao_id;
 
       if (createTramiteDto.status === "SOLICITADO") {
-        (await this.viagemService.calculaDiasParaDiaria(solicitacaoId)).map(async result => {          
-          this.cadastraValoresDaDiaria(result.viagem, result.participante.id, result.evento.id, result.totalDias);
-        });
+        const resultadosViagem = await this.viagemService.calculaDiasParaDiaria(solicitacaoId);
+        await Promise.all(
+          resultadosViagem.map(async result => {
+            await this.cadastraValoresDaDiaria(result.viagem, result.participante.id, result.evento.id, result.totalDias);
+          })
+        );
       }
     }
     return 0;
