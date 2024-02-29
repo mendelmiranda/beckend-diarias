@@ -1,26 +1,16 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { PrismaClient, prisma } from '@prisma/client';
-import {
-  FastifyAdapter,
-} from '@nestjs/platform-fastify';
+import { PrismaClient } from '@prisma/client';
+import { FastifyAdapter } from '@nestjs/platform-fastify';
+import * as fs from 'fs';
 
 async function bootstrap() {
   const prisma = new PrismaClient();
-  const fs = require('fs');
   
- /*COLOCAR ESSE COMENTADO EM PRODUÇÃO 
- const root = '/home/deployer/sslfiles';
- const httpsOptions = {
-    key: fs.readFileSync(`${root}/tce.ap.gov.br.key`),
-    cert: fs.readFileSync(`${root}/STAR_tce_ap_gov_br.crt`),
-    ca: [fs.readFileSync(`${root}/CER - CRT Files/SectigoRSADomainValidationSecureServerCA.crt`)],
-  };
-  */
-
-  const app = await NestFactory.create(AppModule, {
-    //httpsOptions,
-});
+  const app = await NestFactory.create(
+    AppModule,
+    new FastifyAdapter()
+  );
 
   app.enableCors({
     origin: [
@@ -35,15 +25,20 @@ async function bootstrap() {
     credentials: true,
   });
 
-  await app
-    .listen(4000)
-    .then(async () => {
-      await prisma.$disconnect();
-    })
-    .catch(async (e) => {
-      console.error(e);
-      await prisma.$disconnect();
+  if (process.env.NODE_ENV === 'PROD') {
+    const root = '/home/deployer/sslfiles';
+    const httpsOptions = () => ({
+      key: fs.readFileSync(`${root}/tce.ap.gov.br.key`),
+      cert: fs.readFileSync(`${root}/STAR_tce_ap_gov_br.crt`),
+      ca: [fs.readFileSync(`${root}/CER - CRT Files/SectigoRSADomainValidationSecureServerCA.crt`)],
     });
 
+    await app.listen(4000, '0.0.0.0', httpsOptions);
+  } else {
+    await app.listen(4000);
+  }
+
+  await prisma.$disconnect();
 }
+
 bootstrap();
