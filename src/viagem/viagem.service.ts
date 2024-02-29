@@ -204,7 +204,11 @@ export class ViagemService {
         include: {
           evento_participantes: {
             include: {
-              viagem_participantes: true,
+              viagem_participantes: {
+                include: {
+                  viagem: true
+                }
+              },
               participante: true,
 
             },
@@ -225,6 +229,18 @@ export class ViagemService {
 
               const viagem = p.viagem_participantes.find((next) => next.evento_participantes_id === p.id);
 
+              const viagens = p.viagem_participantes;
+              const menorData: Date = new Date(Math.min(...viagens.map(data => data.viagem.data_ida.getTime())));
+
+              const diferenca = Util.totalDeDias(menorData, eventos.inicio) -1;
+              let diasMaiorQuePermitido = 0;
+
+              /*SE HOUVER DIFERENÇA ENTRE AS DATAS, DEVE SUBTRAIR PARA FICAR EXATAMENTE IGUAL A (menorData, eventos.fim)*/
+              if(diferenca > 1) {
+                const novoValor = diferenca-1;
+                diasMaiorQuePermitido = -novoValor;
+              }
+
               //SÓ DEVE CALCULAR DIÁRIAS SE TIVER VIAGEM
               if (participante === undefined) {
 
@@ -235,16 +251,16 @@ export class ViagemService {
                   somaDias = diferencaEntreEventos[0];
                 } 
                 
-                const total = somaDias-1;
+                const total = somaDias-1;                
 
                 participantes.push({
                   participante: p.participante,
-                  totalDias: Util.totalDeDias(eventos.inicio, eventos.fim)+total,
+                  totalDias: Util.totalDeDias(menorData, eventos.fim)+total+diasMaiorQuePermitido,
                   evento: eventos,
                   viagem: viagem.viagem_id === undefined ? 0 : viagem.viagem_id,
                 });
               } else {
-                participante.totalDias += Util.totalDeDias(eventos.inicio, eventos.fim);
+                participante.totalDias += Util.totalDeDias(menorData, eventos.fim);
               }
             });
         });
