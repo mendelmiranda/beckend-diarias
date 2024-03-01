@@ -44,7 +44,12 @@ export class ValorViagemService {
   }
 
   update(id: number, updateValorViagemDto: UpdateValorViagemDto) {
-    return `This action updates a #${id} valorViagem`;
+    return this.prisma.valor_viagem.update({
+      where: { id },
+      data: {
+        valor_individual: updateValorViagemDto.valor_individual
+      },
+    })
   }
 
   updateCotacao(id: number, cotacao: string) {
