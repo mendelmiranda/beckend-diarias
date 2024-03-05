@@ -305,7 +305,9 @@ export class SolicitacaoService {
 
     return this.prisma.solicitacao.update({
       where: { id },
-      data: updateSolicitacaoDto,
+      data: {
+        justificativa: updateSolicitacaoDto.justificativa,
+      },
     });
   }
 
