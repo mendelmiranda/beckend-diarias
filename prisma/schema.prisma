@@ -388,14 +388,15 @@ model condutores {
   id Int @unique @default(autoincrement())
   nome                   String
   cpf                    String
-  validade_cnh           DateTime
-  categoria_cnh          String
-  matricula              String
-  celular                String
-  endereco               String
-  banco                  String
-  agencia                String
-  conta                  String
+  validade_cnh           DateTime?
+  categoria_cnh          String?
+  matricula              String?
+  celular                String?
+  endereco               String?
+  banco                  String?
+  agencia                String?
+  conta                  String?
+  tipo                   String? @db.Char(1)
   solicitacao_condutores solicitacao_condutores[]
 }
 

@@ -13,8 +13,15 @@ export class SolicitacaoCondutoresService {
     });
   }
 
-  findAll() {
-    return this.prisma.condutores.findMany();
+  findAll( solicitacapId: number) {
+    return this.prisma.solicitacao_condutores.findMany({
+      where: {
+        solicitacao_id: +solicitacapId
+      },
+      include: {
+        condutores: true
+      }
+    });
   }
 
   findOne(id: number) {
