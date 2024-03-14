@@ -34,7 +34,15 @@ export class LogTramiteService {
         },        
       },
       include: {
-        tramite: true,
+        tramite: {
+          include: {
+            solicitacao: {
+              include: {
+                eventos: true,
+              }
+            },
+          }
+        },
       }
     });
   }
