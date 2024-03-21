@@ -27,10 +27,13 @@ export class ValorViagemService {
   }
 
   findValorDaDiariaColaborador(id: number) {
-    return this.prisma.valor_viagem.findFirst({
+    return this.prisma.valor_viagem.findMany({
       where: {
         viagem_id: id,
         tipo: 'DIARIA'
+      },
+      orderBy: {
+        id: 'desc' // Ordena pela data de criação em ordem decrescente
       }
     });
   }
