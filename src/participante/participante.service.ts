@@ -11,10 +11,9 @@ export class ParticipanteService {
 
   async create(dto: CreateParticipanteDto) {
 
-    if(dto.tipo === "C"){
+    if(dto.tipo === "C" || dto.tipo === "T"){
       return this.cadastraColaborador(dto);
-    } 
-    
+    }     
 
     return this.prisma.participante.create({
       data: dto,

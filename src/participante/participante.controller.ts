@@ -33,11 +33,7 @@ export class ParticipanteController {
   async create(
     @Param('id') idEvento: number,
     @Body() createParticipanteDto: CreateParticipanteDto,
-  ) {
-
-
-    console.log('createParticipanteDto', createParticipanteDto);
-    
+  ) {    
 
     const dateString = createParticipanteDto.data_nascimento as any;
 
@@ -77,10 +73,12 @@ export class ParticipanteController {
 
       this.eventoParticipanteService.create(eventoPaticipanteDto);
     } else {
+
       const data: CreateParticipanteDto = {
         ...createParticipanteDto,
         data_nascimento: new Date(dateString),
       };
+
       resultado = await (await this.participanteService.create(data)).id;
 
       const eventoPaticipanteDto: CreateEventoParticipanteDto = {
