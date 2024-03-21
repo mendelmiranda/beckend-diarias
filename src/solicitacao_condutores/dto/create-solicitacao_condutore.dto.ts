@@ -5,5 +5,6 @@ export class CreateSolicitacaoCondutoreDto {
   //condutores?: condutores;
 
   solicitacao_id: number;
+  veiculo?: string;
   //solicitacao?: solicitacao;
 }

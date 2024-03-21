@@ -385,7 +385,7 @@ model aprovacao_definitiva {
 }
 
 model condutores {
-  id Int @unique @default(autoincrement())
+  id                     Int                      @unique @default(autoincrement())
   nome                   String
   cpf                    String
   validade_cnh           DateTime?
@@ -396,7 +396,7 @@ model condutores {
   banco                  String?
   agencia                String?
   conta                  String?
-  tipo                   String? @db.Char(1)
+  tipo                   String?                  @db.Char(1)
   solicitacao_condutores solicitacao_condutores[]
 }
 
@@ -407,6 +407,7 @@ model solicitacao_condutores {
 
   solicitacao_id Int
   solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id], onDelete: Cascade)
+  veiculo        String?
 
   @@id([id, condutores_id, solicitacao_id])
 }

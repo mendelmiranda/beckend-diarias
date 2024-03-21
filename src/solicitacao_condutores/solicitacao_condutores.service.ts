@@ -32,10 +32,12 @@ export class SolicitacaoCondutoresService {
     });
   }
 
-  async update(id: number, updateEventoDto: UpdateSolicitacaoCondutoreDto) {
+  async update(id: number, updateEventoDto: UpdateSolicitacaoCondutoreDto) {    
     return this.prisma.solicitacao_condutores.update({
       where: { id },
-      data: updateEventoDto,
+      data: {
+        veiculo: updateEventoDto.veiculo,
+      },
     });
   }
 
