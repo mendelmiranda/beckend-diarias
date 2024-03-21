@@ -35,6 +35,10 @@ export class ParticipanteController {
     @Body() createParticipanteDto: CreateParticipanteDto,
   ) {
 
+
+    console.log('createParticipanteDto', createParticipanteDto);
+    
+
     const dateString = createParticipanteDto.data_nascimento as any;
 
     let resultado;
