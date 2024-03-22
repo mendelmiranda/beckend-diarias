@@ -369,6 +369,25 @@ export class TramiteService {
     });
   }
 
+  findOneSolicitacaoColaborador(id: number) {
+    return this.prisma.solicitacao.findMany({
+      where: {
+        id: id
+      },
+      include: {
+        eventos: {
+          include: {
+            evento_participantes: {
+              include: {
+                participante: true,
+              }
+            }
+          }
+        }
+      }
+    })
+  }
+
   findEmpenhados() {
     return this.prisma.tramite.findMany({
       where: {

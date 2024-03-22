@@ -28,6 +28,8 @@ export class TramiteController {
       const resultado = await this.tramiteService.create(createTramiteDto, nome);
       const solicitacaoId = resultado.solicitacao_id;
 
+      if(!this.verificaColaborador(resultado.solicitacao_id)){
+
       if (createTramiteDto.status === "SOLICITADO") {
         const resultadosViagem = await this.viagemService.calculaDiasParaDiaria(solicitacaoId);
         await Promise.all(
@@ -36,12 +38,32 @@ export class TramiteController {
           })
         );
       }
+
+    }
     }
     return 0;
   }
 
   async cadastraValoresDaDiaria(idViagem: number, participanteId: number, eventoId: number, total: number) {
     return await this.viagemService.calculaDiaria(idViagem, participanteId, eventoId, total);
+  }
+
+  async verificaColaborador(solicitacaoId: number): Promise<boolean> {
+    try {
+      const resultado = await this.tramiteService.findOneSolicitacaoColaborador(solicitacaoId);
+  
+      // Verifica se algum dos eventos contém um participante do tipo 'S'.
+      const temParticipanteTipoS = resultado.some(eventos =>
+        eventos.eventos.some(ep =>
+          ep.evento_participantes.some(part => part.participante.tipo === 'S')
+        )
+      );
+  
+      return temParticipanteTipoS;
+    } catch (error) {
+      console.error("Erro ao verificar colaborador", error);
+      throw error; // Relança o erro ou trata conforme necessário.
+    }
   }
 
   @Get()
