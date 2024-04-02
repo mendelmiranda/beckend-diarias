@@ -32,8 +32,6 @@ export class TramiteService {
 
   async enviarNotificacaoDoStatus(status: string, solicitacaoId: number, destino?: number) {
 
-    this.pesquisaDetalhesDaSolicitacao(solicitacaoId);
-
     if (process.env['ENV'] === 'DEV') return;
 
     const solicitacao = await this.prisma.solicitacao.findFirst({
@@ -42,7 +40,7 @@ export class TramiteService {
 
     if (status === 'SOLICITADO') {
       this.enviaPresidencia(status, solicitacaoId);
-      
+      this.pesquisaDetalhesDaSolicitacao(solicitacaoId);      
     }
 
     if (destino === 65 && status === 'APROVADO') {
