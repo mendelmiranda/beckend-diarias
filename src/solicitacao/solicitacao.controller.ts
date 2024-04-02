@@ -9,6 +9,7 @@ import {
   Put,
   Request,
   Req,
+  HttpStatus,
 } from '@nestjs/common';
 import { SolicitacaoService } from './solicitacao.service';
 import { CreateSolicitacaoDto } from './dto/create-solicitacao.dto';
@@ -32,7 +33,13 @@ export class SolicitacaoController {
       datareg: d,
       status: 'NAO',
     };
-    return this.solicitacaoService.create(solicitacao, usuario);
+    
+    const novoDado = this.solicitacaoService.create(solicitacao, usuario);
+
+    return {
+      statusCode: HttpStatus.CREATED,
+      data: novoDado,
+    };
   }
 
   @Get()

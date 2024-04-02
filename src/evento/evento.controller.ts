@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, HttpStatus } from '@nestjs/common';
 import { EventoService } from './evento.service';
 import { CreateEventoDto } from './dto/create-evento.dto';
 import { UpdateEventoDto } from './dto/update-evento.dto';
@@ -20,7 +20,12 @@ export class EventoController {
       datareg: d,
       cidade_id: cid,
     }
-    return this.eventoService.create(data);
+    const novoDado = this.eventoService.create(data);
+
+    return {
+      statusCode: HttpStatus.CREATED,
+      data: novoDado,
+    };
   }
 
   @Get()

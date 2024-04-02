@@ -31,6 +31,7 @@ import { AprovacaoDefinitivaModule } from './aprovacao_definitiva/aprovacao_defi
 import { AssinaturaModule } from './assinatura/assinatura.module';
 import { CondutoresModule } from './condutores/condutores.module';
 import { SolicitacaoCondutoresModule } from './solicitacao_condutores/solicitacao_condutores.module';
+import { PrismaExceptionFilter } from './PrismaExceptionFilter';
 
 
 
@@ -94,6 +95,10 @@ import { SolicitacaoCondutoresModule } from './solicitacao_condutores/solicitaca
     SolicitacaoCondutoresModule,
   ],
   controllers: [AppController],
-  providers: [AppService, EmailService],
+  providers: [AppService, EmailService, 
+  {
+    provide: 'APP_FILTER',
+    useClass: PrismaExceptionFilter,
+  }],
 })
 export class AppModule {}
