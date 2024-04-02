@@ -330,7 +330,7 @@ export class SolicitacaoService {
 
   async removerDadosPorSolicitacao(solicitacaoId: number) {    
     try {
-      const result = await this.prisma.$executeRaw`SELECT remover_dados_por_solicitacao(${solicitacaoId}::INTEGER)`;
+      const result = await this.prisma.$executeRaw`SELECT remover_geral_darad(${solicitacaoId}::INTEGER)`;
       //console.log(result); 
     } catch (error) {
       console.error('Erro ao executar a função:', error);

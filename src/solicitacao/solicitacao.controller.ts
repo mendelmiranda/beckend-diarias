@@ -34,12 +34,7 @@ export class SolicitacaoController {
       status: 'NAO',
     };
     
-    const novoDado = this.solicitacaoService.create(solicitacao, usuario);
-
-    return {
-      statusCode: HttpStatus.CREATED,
-      data: novoDado,
-    };
+    return this.solicitacaoService.create(solicitacao, usuario);    
   }
 
   @Get()

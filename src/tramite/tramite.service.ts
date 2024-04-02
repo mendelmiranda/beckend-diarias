@@ -1,18 +1,19 @@
+import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
+import { participante } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
-import { CreateTramiteDto } from './dto/create-tramite.dto';
-import { UpdateTramiteDto } from './dto/update-tramite.dto';
+import { EmailService } from 'src/email/email.service';
 import { CreateLogTramiteDto } from 'src/log_tramite/dto/create-log_tramite.dto';
 import { LogTramiteService } from 'src/log_tramite/log_tramite.service';
-import { EmailService } from 'src/email/email.service';
-import { StatusSolicitacao } from './status_enum';
-import { Util } from 'src/util/Util';
-import { evento_participantes, participante } from '@prisma/client';
-import { ViagemService } from 'src/viagem/viagem.service';
+import { CreateTramiteDto } from './dto/create-tramite.dto';
+import { UpdateTramiteDto } from './dto/update-tramite.dto';
 
 @Injectable()
 export class TramiteService {
-  constructor(private prisma: PrismaService, private logTramiteService: LogTramiteService, private emailService: EmailService) {}
+  constructor(private prisma: PrismaService, 
+    private logTramiteService: LogTramiteService, 
+    private emailService: EmailService,
+    private readonly httpService: HttpService,) {}
 
   async create(dto: CreateTramiteDto, nome: string) {
     const { solicitacao, log_tramite, ...dtoSemSolicitacao } = dto;
@@ -30,6 +31,9 @@ export class TramiteService {
   }
 
   async enviarNotificacaoDoStatus(status: string, solicitacaoId: number, destino?: number) {
+
+    this.pesquisaDetalhesDaSolicitacao(solicitacaoId);
+
     if (process.env['ENV'] === 'DEV') return;
 
     const solicitacao = await this.prisma.solicitacao.findFirst({
@@ -38,6 +42,7 @@ export class TramiteService {
 
     if (status === 'SOLICITADO') {
       this.enviaPresidencia(status, solicitacaoId);
+      
     }
 
     if (destino === 65 && status === 'APROVADO') {
@@ -112,6 +117,63 @@ export class TramiteService {
     const mensagem = 'Solicitação para Aprovação';
     this.emailService.enviarEmail(solicitacaoId, status, setor, mensagem);
   }
+
+  async avisaParticipantesDoEvento(solicitacaoId: number, login: string) {
+    console.log(login);
+    
+    const setor = '';
+    const mensagem = 'Você foi adicionado para participar de um evento. Favor verificar detalhes da solicitação no S3i.';
+                                          
+    await this.emailService.enviarEmail(solicitacaoId, "SOLICITADO", login,  mensagem);
+  }
+
+  async pesquisaDetalhesDaSolicitacao(solicitadaoId: number) {
+    const solicitacao = await this.prisma.solicitacao.findMany({
+      where: {
+        id: solicitadaoId,
+      },
+      include: {
+        eventos: {
+          include: {
+            evento_participantes: {
+              include: {
+                participante: true,
+                evento: {
+                  include: {
+                    evento_participantes: true,                    
+                  },
+                },
+              }
+            }
+          }
+        }
+      }
+    });
+
+    solicitacao.map((sol) => {
+      sol.eventos.map((evento) => {
+        evento.evento_participantes.map(async (participante) => {
+          await this.pesquisaServidorGOVBR(participante.participante.cpf).then((result) => {
+            this.avisaParticipantesDoEvento(solicitadaoId, result.login);
+          });
+        });
+      });
+    })
+
+    return solicitacao;
+  }
+
+  async pesquisaServidorGOVBR(cpf: string){
+    return await this.httpService.axiosRef
+        .get('https://arquivos.tce.ap.gov.br:3000/consultas/servidor-cpf?cpf='+cpf , {
+          headers: {
+            Accept: '/',
+            'X-API-KEY': 'PeJ22414DQr4zMR64PqQQvtKIu0yzxQi9uwh+G2E7v8=',
+          },
+        })
+        .then((result) => result.data);
+  }
+
 
   async salvarLogTramite(dto: CreateTramiteDto, nome: string, tramiteId: number) {
     const dados: CreateLogTramiteDto = {

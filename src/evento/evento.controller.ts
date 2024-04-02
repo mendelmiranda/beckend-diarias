@@ -20,12 +20,7 @@ export class EventoController {
       datareg: d,
       cidade_id: cid,
     }
-    const novoDado = this.eventoService.create(data);
-
-    return {
-      statusCode: HttpStatus.CREATED,
-      data: novoDado,
-    };
+    return this.eventoService.create(data);    
   }
 
   @Get()

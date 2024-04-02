@@ -99,4 +99,6 @@ export class AnexoSolicitacaoService {
         .then((result) => result.data)
         .catch((err) => console.log('removendo upload...'));
   }
+
+
 }

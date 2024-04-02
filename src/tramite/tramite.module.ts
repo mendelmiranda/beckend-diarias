@@ -12,12 +12,13 @@ import { EventoParticipantesService } from 'src/evento_participantes/evento_part
 import { CargoDiariasService } from 'src/cargo_diarias/cargo_diarias.service';
 import { ValorViagemService } from 'src/valor_viagem/valor_viagem.service';
 import { EventoService } from 'src/evento/evento.service';
+import { HttpModule, HttpService } from '@nestjs/axios';
 
 
 @Module({
   controllers: [TramiteController],
   providers: [TramiteService, PrismaService, LogTramiteService, EmailService, ViagemService, CidadeService, AeroportoService, EventoParticipantesService, CargoDiariasService, ValorViagemService,
   EventoService],
-  imports: [EmailModule]
+  imports: [EmailModule, HttpModule]
 })
 export class TramiteModule {}
