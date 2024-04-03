@@ -3,11 +3,11 @@ import { PrismaService } from 'prisma/prisma.service';
 import { CreateEventoDto } from './dto/create-evento.dto';
 import { UpdateEventoDto } from './dto/update-evento.dto';
 
-@Injectable() 
+@Injectable()
 export class EventoService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(dto: CreateEventoDto) {   
+  async create(dto: CreateEventoDto) {
     return this.prisma.evento.create({
       data: dto,
     });
@@ -22,22 +22,20 @@ export class EventoService {
       distinct: ['titulo'],
       where: {
         inicio: {
-          gte: new Date()
-        }        
+          gte: new Date(),
+        },
       },
       include: {
         tipo_evento: true,
         pais: true,
         cidade: {
           include: {
-            estado: true
-          }
-        }
+            estado: true,
+          },
+        },
       },
-      orderBy: [
-        { inicio: "desc"}
-       ]
-    })
+      orderBy: [{ inicio: 'desc' }],
+    });
   }
 
   findEventosDaSolicitacao(idSolicitacao: number) {
@@ -50,26 +48,26 @@ export class EventoService {
           include: {
             participante: true,
             evento: true,
-          }
+          },
         },
         cidade: {
           include: {
             estado: true,
-          }
+          },
         },
         pais: true,
         tipo_evento: true,
       },
-      orderBy: [
-       { id: "asc"}
-      ]
+      orderBy: [{ id: 'asc' }],
     });
   }
 
   findOne(id: number) {
-    return this.prisma.evento.findFirst({where: {
-      id: id
-    }})
+    return this.prisma.evento.findFirst({
+      where: {
+        id: id,
+      },
+    });
   }
 
   update(id: number, updateEventoDto: UpdateEventoDto) {
@@ -85,16 +83,36 @@ export class EventoService {
       data: {
         valor_evento: updateEventoDto.valor_evento,
         valor_total_inscricao: updateEventoDto.valor_total_inscricao,
-        observacao_valor: updateEventoDto.observacao_valor ?? ''
+        observacao_valor: updateEventoDto.observacao_valor ?? '',
       },
     });
   }
 
   async remove(id: number) {
-    return await this.prisma.evento.delete({
+    try {
+      const result = await this.prisma.$executeRaw`SELECT remover_evento(${id}::INTEGER)`;
+      //console.log(result);
+    } catch (error) {
+      console.error('Erro ao executar a função:', error);
+    } finally {
+      await this.prisma.$disconnect();
+    }
+
+    /* return await this.prisma.evento.delete({
       where: {
         id: id
       }
-    })
+    }) */
   }
 }
+
+/* async removerDadosPorSolicitacao(solicitacaoId: number) {    
+  try {
+    const result = await this.prisma.$executeRaw`SELECT remover_geral_darad(${solicitacaoId}::INTEGER)`;
+    //console.log(result); 
+  } catch (error) {
+    console.error('Erro ao executar a função:', error);
+  } finally {
+    await this.prisma.$disconnect();
+  }
+} */
