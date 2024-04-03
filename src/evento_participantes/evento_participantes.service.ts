@@ -54,6 +54,34 @@ export class EventoParticipantesService {
     });
   }
 
+  findParticipanteDoEventoInfo(cpf: string) {
+    return this.prisma.evento_participantes.findMany({
+      where: {
+        participante: {
+          cpf: cpf,        
+        },
+      },
+      include: {
+        participante: true,
+        evento: {
+          include: {
+            solicitacao: true,
+          },        
+        },
+
+        
+        
+      },
+      orderBy: [{
+        evento: {
+          solicitacao: {
+            id: 'desc',
+          }
+        }      
+      }]
+    });
+  }
+
   update(id: number, updateEventoParticipanteDto: UpdateEventoParticipanteDto) {
     return `This action updates a #${id} eventoParticipante`;
   }

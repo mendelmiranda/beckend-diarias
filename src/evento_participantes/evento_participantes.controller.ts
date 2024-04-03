@@ -37,6 +37,11 @@ export class EventoParticipantesController {
     return this.eventoParticipantesService.findOne(+id);
   }
 
+  @Get('/participante/cpf/:cpf')
+  findParticipantesDoEventoInfo(@Param('cpf') cpf: string) {
+    return this.eventoParticipantesService.findParticipanteDoEventoInfo(cpf);
+  }
+
   @Patch(':id')
   update(
     @Param('id') id: string,
