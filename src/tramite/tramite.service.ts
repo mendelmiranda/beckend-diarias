@@ -10,10 +10,12 @@ import { UpdateTramiteDto } from './dto/update-tramite.dto';
 
 @Injectable()
 export class TramiteService {
-  constructor(private prisma: PrismaService, 
-    private logTramiteService: LogTramiteService, 
+  constructor(
+    private prisma: PrismaService,
+    private logTramiteService: LogTramiteService,
     private emailService: EmailService,
-    private readonly httpService: HttpService,) {}
+    private readonly httpService: HttpService,
+  ) {}
 
   async create(dto: CreateTramiteDto, nome: string) {
     const { solicitacao, log_tramite, ...dtoSemSolicitacao } = dto;
@@ -31,7 +33,6 @@ export class TramiteService {
   }
 
   async enviarNotificacaoDoStatus(status: string, solicitacaoId: number, destino?: number) {
-
     if (process.env['ENV'] === 'DEV') return;
 
     const solicitacao = await this.prisma.solicitacao.findFirst({
@@ -40,7 +41,7 @@ export class TramiteService {
 
     if (status === 'SOLICITADO') {
       this.enviaPresidencia(status, solicitacaoId);
-      this.pesquisaDetalhesDaSolicitacao(solicitacaoId);      
+      this.pesquisaDetalhesDaSolicitacao(solicitacaoId);
     }
 
     if (destino === 65 && status === 'APROVADO') {
@@ -118,11 +119,11 @@ export class TramiteService {
 
   async avisaParticipantesDoEvento(solicitacaoId: number, login: string) {
     console.log(login);
-    
+
     const setor = '';
     const mensagem = 'Você foi adicionado para participar de um evento. Favor verificar detalhes da solicitação no S3i.';
-                                          
-    await this.emailService.enviarEmail(solicitacaoId, "SOLICITADO", login,  mensagem);
+
+    await this.emailService.enviarEmail(solicitacaoId, 'SOLICITADO', login, mensagem);
   }
 
   async pesquisaDetalhesDaSolicitacao(solicitadaoId: number) {
@@ -138,14 +139,14 @@ export class TramiteService {
                 participante: true,
                 evento: {
                   include: {
-                    evento_participantes: true,                    
+                    evento_participantes: true,
                   },
                 },
-              }
-            }
-          }
-        }
-      }
+              },
+            },
+          },
+        },
+      },
     });
 
     solicitacao.map((sol) => {
@@ -156,22 +157,21 @@ export class TramiteService {
           });
         });
       });
-    })
+    });
 
     return solicitacao;
   }
 
-  async pesquisaServidorGOVBR(cpf: string){
+  async pesquisaServidorGOVBR(cpf: string) {
     return await this.httpService.axiosRef
-        .get('https://arquivos.tce.ap.gov.br:3000/consultas/servidor-cpf?cpf='+cpf , {
-          headers: {
-            Accept: '/',
-            'X-API-KEY': 'PeJ22414DQr4zMR64PqQQvtKIu0yzxQi9uwh+G2E7v8=',
-          },
-        })
-        .then((result) => result.data);
+      .get('https://arquivos.tce.ap.gov.br:3000/consultas/servidor-cpf?cpf=' + cpf, {
+        headers: {
+          Accept: '/',
+          'X-API-KEY': 'PeJ22414DQr4zMR64PqQQvtKIu0yzxQi9uwh+G2E7v8=',
+        },
+      })
+      .then((result) => result.data);
   }
-
 
   async salvarLogTramite(dto: CreateTramiteDto, nome: string, tramiteId: number) {
     const dados: CreateLogTramiteDto = {
@@ -432,7 +432,7 @@ export class TramiteService {
   findOneSolicitacaoColaborador(id: number) {
     return this.prisma.solicitacao.findMany({
       where: {
-        id: id
+        id: id,
       },
       include: {
         eventos: {
@@ -440,12 +440,12 @@ export class TramiteService {
             evento_participantes: {
               include: {
                 participante: true,
-              }
-            }
-          }
-        }
-      }
-    })
+              },
+            },
+          },
+        },
+      },
+    });
   }
 
   findEmpenhados() {
@@ -571,6 +571,22 @@ export class TramiteService {
         },
       },
       orderBy: [{ id: 'desc' }, { datareg: 'desc' }],
+    });
+  }
+
+  findTramitesDaSolicitacao(id: number) {
+    return this.prisma.tramite.findMany({
+      where: {
+        solicitacao_id: +id,
+      },
+      orderBy: [{ id: 'asc' }],
+      include: {
+        log_tramite: {
+          include: {
+            tramite: true,
+          },
+        },
+      },
     });
   }
 

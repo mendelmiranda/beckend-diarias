@@ -81,6 +81,11 @@ export class TramiteController {
     return this.tramiteService.findOneSolicitacao(+id);
   }
 
+  @Get('/todas/solicitacao/:id')
+  findTramitesDaSolicitracao(@Param('id') id: string) {
+    return this.tramiteService.findTramitesDaSolicitacao(+id);
+  }
+
   @Get('/lotacao/:id')
   findTramitePorLocatacao(@Param('id') id: string) {
     return this.tramiteService.findTramitePorLotacao(+id);
