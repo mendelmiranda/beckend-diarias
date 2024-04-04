@@ -8,20 +8,7 @@ export class OrganogramaService {
 
   constructor(private prisma: PrismaService) {}
   
-  async create(dto: CreateOrganogramaDto) {
-    console.log(dto);
-
-    const setorPaiExiste = await this.prisma.organograma.findUnique({
-      where: { id: dto.filho_id },
-    });
-  
-    if (!setorPaiExiste) {
-      throw new Error('Setor pai não existe.');
-    }
-
-    
-    
-  
+  async create(dto: CreateOrganogramaDto) {  
     return this.prisma.organograma.create({
       data: dto,
     });  
