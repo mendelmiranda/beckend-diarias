@@ -105,6 +105,7 @@ model solicitacao {
   aprovacao_definitiva   aprovacao_definitiva[]
   viagem                 viagem[]
   solicitacao_condutores solicitacao_condutores[]
+  encaminhar_solicitacao encaminhar_solicitacao[]
 
   @@id([id])
 }
@@ -410,4 +411,15 @@ model solicitacao_condutores {
   veiculo        String?
 
   @@id([id, condutores_id, solicitacao_id])
+}
+
+model encaminhar_solicitacao {
+  id Int @unique @default(autoincrement())
+  solicitacao_id Int
+  solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id], onDelete: Cascade)
+  datareg        DateTime    @default(now()) @db.Timestamptz(3)
+  usuario        String
+  justificativa  String
+
+  @@id([id, solicitacao_id])
 }

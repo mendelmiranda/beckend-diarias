@@ -32,6 +32,7 @@ import { AssinaturaModule } from './assinatura/assinatura.module';
 import { CondutoresModule } from './condutores/condutores.module';
 import { SolicitacaoCondutoresModule } from './solicitacao_condutores/solicitacao_condutores.module';
 import { PrismaExceptionFilter } from './PrismaExceptionFilter';
+import { EncaminharSolicitacaoModule } from './encaminhar_solicitacao/encaminhar_solicitacao.module';
 
 
 
@@ -93,6 +94,8 @@ import { PrismaExceptionFilter } from './PrismaExceptionFilter';
     CondutoresModule,
 
     SolicitacaoCondutoresModule,
+
+    EncaminharSolicitacaoModule,
   ],
   controllers: [AppController],
   providers: [AppService, EmailService, 
