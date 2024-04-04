@@ -414,7 +414,7 @@ model solicitacao_condutores {
 }
 
 model encaminhar_solicitacao {
-  id Int @unique @default(autoincrement())
+  id             Int         @unique @default(autoincrement())
   solicitacao_id Int
   solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id], onDelete: Cascade)
   datareg        DateTime    @default(now()) @db.Timestamptz(3)
@@ -425,11 +425,14 @@ model encaminhar_solicitacao {
 }
 
 model organograma {
-  id          Int      @id @default(autoincrement())
-  nome        String
-  setorPaiId  Int?     @map("setor_pai_id")
-  setorPai    organograma?   @relation("SetorParaSetorPai", fields: [setorPaiId], references: [id])
-  setoresFilhos organograma[] @relation("SetorParaSetorPai")
+  id     Int          @unique @default(autoincrement())
 
-  @@map("Organograma")
+  pai_id Int
+  pai_nome String
+
+  filho_id Int
+  filho_nome   String
+
+  @@id([id])
+
 }

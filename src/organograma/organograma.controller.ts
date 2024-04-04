@@ -14,12 +14,22 @@ export class OrganogramaController {
 
   @Get()
   findAll() {
-    return this.organogramaService.findAll();
+    return this.organogramaService.findAll().catch((error) => {
+      console.log('error', error);
+      
+    });
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.organogramaService.findOne(+id);
+  }
+
+  @Get('/setor/nome/:nome')
+  findOneByNome(@Param('nome') nome: string) {
+    console.log(nome);
+    
+    return this.organogramaService.findOneByNome(nome);
   }
 
   @Patch(':id')

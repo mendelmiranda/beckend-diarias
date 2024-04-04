@@ -1,26 +1,68 @@
 import { Injectable } from '@nestjs/common';
 import { CreateOrganogramaDto } from './dto/create-organograma.dto';
 import { UpdateOrganogramaDto } from './dto/update-organograma.dto';
+import { PrismaService } from 'prisma/prisma.service';
 
 @Injectable()
 export class OrganogramaService {
-  create(createOrganogramaDto: CreateOrganogramaDto) {
-    return 'This action adds a new organograma';
+
+  constructor(private prisma: PrismaService) {}
+  
+  async create(dto: CreateOrganogramaDto) {
+    console.log(dto);
+
+    const setorPaiExiste = await this.prisma.organograma.findUnique({
+      where: { id: dto.filho_id },
+    });
+  
+    if (!setorPaiExiste) {
+      throw new Error('Setor pai não existe.');
+    }
+
+    
+    
+  
+    return this.prisma.organograma.create({
+      data: dto,
+    });  
   }
 
   findAll() {
-    return `This action returns all organograma`;
+    return this.prisma.organograma.findMany({
+      orderBy: [{
+        pai_nome: 'asc'
+      }]
+    });
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} organograma`;
+    return this.prisma.organograma.findUnique({
+      where: {
+        id: id
+      }
+    });
+  }
+
+  findOneByNome(nome: string) {
+    return this.prisma.organograma.findFirst({
+      where: {
+        filho_nome: nome
+      }
+    }).catch((error) => {
+      console.log('error', error);
+      
+    });
   }
 
   update(id: number, updateOrganogramaDto: UpdateOrganogramaDto) {
     return `This action updates a #${id} organograma`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} organograma`;
+  async remove(id: number) {
+    return await this.prisma.organograma.delete({
+      where: {
+        id: id
+      }
+    })
   }
 }
