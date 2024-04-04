@@ -9,7 +9,10 @@ export class EncaminharSolicitacaoService {
 
   create(dto: CreateEncaminharSolicitacaoDto) {
     return this.prisma.encaminhar_solicitacao.create({
-      data: dto,
+      data: {
+        ...dto,
+        datareg: new Date(),
+      },
     });
   }
 

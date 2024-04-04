@@ -423,3 +423,13 @@ model encaminhar_solicitacao {
 
   @@id([id, solicitacao_id])
 }
+
+model organograma {
+  id          Int      @id @default(autoincrement())
+  nome        String
+  setorPaiId  Int?     @map("setor_pai_id")
+  setorPai    organograma?   @relation("SetorParaSetorPai", fields: [setorPaiId], references: [id])
+  setoresFilhos organograma[] @relation("SetorParaSetorPai")
+
+  @@map("Organograma")
+}

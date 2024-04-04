@@ -33,6 +33,7 @@ import { CondutoresModule } from './condutores/condutores.module';
 import { SolicitacaoCondutoresModule } from './solicitacao_condutores/solicitacao_condutores.module';
 import { PrismaExceptionFilter } from './PrismaExceptionFilter';
 import { EncaminharSolicitacaoModule } from './encaminhar_solicitacao/encaminhar_solicitacao.module';
+import { OrganogramaModule } from './organograma/organograma.module';
 
 
 
@@ -96,6 +97,8 @@ import { EncaminharSolicitacaoModule } from './encaminhar_solicitacao/encaminhar
     SolicitacaoCondutoresModule,
 
     EncaminharSolicitacaoModule,
+
+    OrganogramaModule,
   ],
   controllers: [AppController],
   providers: [AppService, EmailService, 
