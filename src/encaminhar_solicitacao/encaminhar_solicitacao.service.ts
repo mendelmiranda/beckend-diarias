@@ -5,19 +5,27 @@ import { PrismaService } from 'prisma/prisma.service';
 
 @Injectable()
 export class EncaminharSolicitacaoService {
-
   constructor(private prisma: PrismaService) {}
 
-  create(createEncaminharSolicitacaoDto: CreateEncaminharSolicitacaoDto) {
-    return 'This action adds a new encaminharSolicitacao';
+  create(dto: CreateEncaminharSolicitacaoDto) {
+    return this.prisma.encaminhar_solicitacao.create({
+      data: dto,
+    });
   }
 
   findAll() {
-    return `This action returns all encaminharSolicitacao`;
+    return this.prisma.encaminhar_solicitacao.findMany({
+      include: {
+        solicitacao: true,
+      },
+      orderBy:[{id:'desc'}]
+    });
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} encaminharSolicitacao`;
+    return this.prisma.encaminhar_solicitacao.findUnique({
+      where: { id: id },
+    });
   }
 
   update(id: number, updateEncaminharSolicitacaoDto: UpdateEncaminharSolicitacaoDto) {
