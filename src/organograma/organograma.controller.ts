@@ -25,11 +25,9 @@ export class OrganogramaController {
     return this.organogramaService.findOne(+id);
   }
 
-  @Get('/setor/nome/:nome')
-  findOneByNome(@Param('nome') nome: string) {
-    console.log(nome);
-    
-    return this.organogramaService.findOneByNome(nome);
+  @Get('/setor/:codLotacao')
+  findOneByNome(@Param('codLotacao') codLotacao: number) {    
+    return this.organogramaService.findOneByCodLotacao(codLotacao);
   }
 
   @Patch(':id')

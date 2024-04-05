@@ -30,10 +30,10 @@ export class OrganogramaService {
     });
   }
 
-  findOneByNome(nome: string) {
-    return this.prisma.organograma.findFirst({
+  findOneByCodLotacao(codLotacao: number) {
+    return this.prisma.organograma.findMany({
       where: {
-        filho_nome: nome
+        filho_id: +codLotacao
       }
     }).catch((error) => {
       console.log('error', error);
