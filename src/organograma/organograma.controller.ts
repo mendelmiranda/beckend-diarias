@@ -30,6 +30,12 @@ export class OrganogramaController {
     return this.organogramaService.findOneByCodLotacao(codLotacao);
   }
 
+  @Get('/setor/pai/:codLotacao')
+  findSetoresFilhosPeloPaiId(@Param('codLotacao') codLotacao: number) {    
+    return this.organogramaService.findOneByLotacoesDoPai(codLotacao);
+  }
+
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateOrganogramaDto: UpdateOrganogramaDto) {
     return this.organogramaService.update(+id, updateOrganogramaDto);

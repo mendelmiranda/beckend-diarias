@@ -5,40 +5,66 @@ import { PrismaService } from 'prisma/prisma.service';
 
 @Injectable()
 export class OrganogramaService {
-
   constructor(private prisma: PrismaService) {}
-  
-  async create(dto: CreateOrganogramaDto) {  
+
+  async create(dto: CreateOrganogramaDto) {
     return this.prisma.organograma.create({
       data: dto,
-    });  
+    });
   }
 
   findAll() {
     return this.prisma.organograma.findMany({
-      orderBy: [{
-        pai_nome: 'asc'
-      }]
+      orderBy: [
+        {
+          pai_nome: 'asc',
+        },
+      ],
     });
   }
 
   findOne(id: number) {
     return this.prisma.organograma.findUnique({
       where: {
-        id: id
-      }
+        id: id,
+      },
     });
   }
 
   findOneByCodLotacao(codLotacao: number) {
-    return this.prisma.organograma.findMany({
+    return this.prisma.organograma
+      .findMany({
+        where: {
+          filho_id: +codLotacao,
+        },
+      })
+      .catch((error) => {
+        console.log('error', error);
+      });
+  }
+
+  async findOneByLotacoesDoPai(codLotacao: number) {
+    const resultado = await this.prisma.organograma.findMany({
       where: {
-        filho_id: +codLotacao
-      }
-    }).catch((error) => {
-      console.log('error', error);
-      
+        pai_id: +codLotacao,
+      },
     });
+
+    const resultadoFilho = this.prisma.organograma
+      .findMany({
+        where: {
+          filho_id: +codLotacao,
+        },
+      })
+      .catch((error) => {
+        console.log('error', error);
+      });
+
+    if (resultado.length > 0) {
+      return resultado;
+    } else {
+      return resultadoFilho;
+    }
   }
 
   update(id: number, updateOrganogramaDto: UpdateOrganogramaDto) {
@@ -48,8 +74,8 @@ export class OrganogramaService {
   async remove(id: number) {
     return await this.prisma.organograma.delete({
       where: {
-        id: id
-      }
-    })
+        id: id,
+      },
+    });
   }
 }
