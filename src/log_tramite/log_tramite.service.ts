@@ -111,7 +111,11 @@ export class LogTramiteService {
     return `This action updates a #${id} logTramite`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} logTramite`;
+  async remove(id: number) {
+    return await this.prisma.log_tramite.delete({
+      where: {
+        id: id
+      }
+    })
   }
 }
