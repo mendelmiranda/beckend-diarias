@@ -414,25 +414,28 @@ model solicitacao_condutores {
 }
 
 model encaminhar_solicitacao {
-  id             Int         @unique @default(autoincrement())
-  solicitacao_id Int
-  solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id], onDelete: Cascade)
-  datareg        DateTime    @default(now()) @db.Timestamptz(3)
-  usuario        String
-  justificativa  String
+  id                  Int         @unique @default(autoincrement())
+  solicitacao_id      Int
+  solicitacao         solicitacao @relation(fields: [solicitacao_id], references: [id], onDelete: Cascade)
+  datareg             DateTime    @default(now()) @db.Timestamptz(3)
+  usuario             String
+  justificativa       String
+  cod_lotacao_origem  Int
+  lotacao_origem      String
+  cod_lotacao_destino Int
+  lotacao_destino     String  
 
   @@id([id, solicitacao_id])
 }
 
 model organograma {
-  id     Int          @unique @default(autoincrement())
+  id Int @unique @default(autoincrement())
 
-  pai_id Int
+  pai_id   Int
   pai_nome String
 
-  filho_id Int
-  filho_nome   String
+  filho_id   Int
+  filho_nome String
 
   @@id([id])
-
 }

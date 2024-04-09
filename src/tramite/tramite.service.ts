@@ -633,8 +633,23 @@ export class TramiteService {
     });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} tramiteSolicitacao`;
+
+  updateStatusAoReverterTramite(id: number, dto: UpdateTramiteDto) {
+
+    const { solicitacao, log_tramite, ...dtoSemSolicitacao } = dto;
+
+    return this.prisma.tramite.update({
+      where: { id },
+      data: dtoSemSolicitacao,
+    });
+  }
+
+  async remove(id: number) {
+    return await this.prisma.tramite.delete({
+      where: {
+        id: id
+      }
+    })
   }
 }
 
