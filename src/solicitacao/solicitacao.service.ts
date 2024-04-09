@@ -5,6 +5,7 @@ import { InfoUsuario, LogSistemaService } from 'src/log_sistema/log_sistema.serv
 import { CreateSolicitacaoDto } from './dto/create-solicitacao.dto';
 import PesquisaSolicitacaoDTO from './dto/pesquisa-solicitacao.dto';
 import { UpdateSolicitacaoDto } from './dto/update-solicitacao.dto';
+import { ConsultaSetoresDto } from './dto/consulta-setores.dto';
 
 @Injectable()
 export class SolicitacaoService {
@@ -22,6 +23,37 @@ export class SolicitacaoService {
     return this.prisma.solicitacao.findMany({
       orderBy: [{ id: 'desc' }],
     });
+  }
+
+  findSolicitacoesDeAcordoComSetor(consulta: ConsultaSetoresDto) {
+    const resultado = this.prisma.solicitacao.findMany({
+      where: {
+        datareg: {
+          gte: new Date(consulta.dataInicio),
+          lte: new Date(consulta.dataFim),
+        },
+
+        cod_lotacao: {
+          in: consulta.ids,
+        },
+      },
+      orderBy: [{ id: 'desc' }],
+    });
+
+    const todos = this.prisma.solicitacao.findMany({
+      where: {
+        cod_lotacao: {
+          in: consulta.ids,
+        },
+      },
+      orderBy: [{ id: 'desc' }],
+    });
+
+    if (consulta.dataInicio && consulta.dataFim) {
+      return resultado;
+    } else {
+      return todos;
+    }
   }
 
   findOne(id: number) {
@@ -298,7 +330,7 @@ export class SolicitacaoService {
       return this.prisma.solicitacao.update({
         where: { id },
         data: {
-          status: 'PDF_GERADO'
+          status: 'PDF_GERADO',
         },
       });
     }
@@ -327,11 +359,10 @@ export class SolicitacaoService {
     return result;
   }
 
-
-  async removerDadosPorSolicitacao(solicitacaoId: number) {    
+  async removerDadosPorSolicitacao(solicitacaoId: number) {
     try {
       const result = await this.prisma.$executeRaw`SELECT remover_geral_darad(${solicitacaoId}::INTEGER)`;
-      //console.log(result); 
+      //console.log(result);
     } catch (error) {
       console.error('Erro ao executar a função:', error);
     } finally {
@@ -349,7 +380,7 @@ export class SolicitacaoService {
     return result;
   }
 
-  async removerDadosPorSolicitacaoDARAD(solicitacaoId: number) {    
+  async removerDadosPorSolicitacaoDARAD(solicitacaoId: number) {
     try {
       const result = await this.prisma.$executeRaw`SELECT remover_geral_darad(${solicitacaoId}::INTEGER)`;
     } catch (error) {
@@ -358,6 +389,4 @@ export class SolicitacaoService {
       await this.prisma.$disconnect();
     }
   }
-
-
 }

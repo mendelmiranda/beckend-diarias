@@ -24,7 +24,7 @@ export class OrganogramaController {
   findOne(@Param('id') id: string) {
     return this.organogramaService.findOne(+id);
   }
-
+  
   @Get('/setor/:codLotacao')
   findOneByNome(@Param('codLotacao') codLotacao: number) {    
     return this.organogramaService.findOneByCodLotacao(codLotacao);

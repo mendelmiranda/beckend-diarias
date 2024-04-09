@@ -16,6 +16,7 @@ import { CreateSolicitacaoDto } from './dto/create-solicitacao.dto';
 import { UpdateSolicitacaoDto } from './dto/update-solicitacao.dto';
 import PesquisaSolicitacaoDTO from './dto/pesquisa-solicitacao.dto';
 import { InfoUsuario } from 'src/log_sistema/log_sistema.service';
+import { ConsultaSetoresDto } from './dto/consulta-setores.dto';
 
 @Controller('solicitacao')
 export class SolicitacaoController {
@@ -35,6 +36,11 @@ export class SolicitacaoController {
     };
     
     return this.solicitacaoService.create(solicitacao, usuario);    
+  }
+
+  @Post('/consulta/setores')
+  listarSolicitacaoPorSetores(@Body() consulta: ConsultaSetoresDto) {    
+    return this.solicitacaoService.findSolicitacoesDeAcordoComSetor(consulta);
   }
 
   @Get()
