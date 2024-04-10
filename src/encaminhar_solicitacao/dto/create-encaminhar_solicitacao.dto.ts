@@ -9,4 +9,6 @@ export class CreateEncaminharSolicitacaoDto {
   lotacao_origem: string;
   cod_lotacao_destino: number;
   lotacao_destino: string;
+  lido: string;
+
 }

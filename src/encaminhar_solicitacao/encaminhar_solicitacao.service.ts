@@ -21,7 +21,7 @@ export class EncaminharSolicitacaoService {
       include: {
         solicitacao: true,
       },
-      orderBy:[{id:'desc'}]
+      orderBy: [{ id: 'desc' }],
     });
   }
 
@@ -31,8 +31,22 @@ export class EncaminharSolicitacaoService {
     });
   }
 
+  findAvisoDoTramite(codLotacao: number) {
+    return this.prisma.encaminhar_solicitacao.findMany({
+      where: {
+        AND: {
+          cod_lotacao_destino: codLotacao,
+          lido: 'NAO',
+        },
+      },
+    });
+  }
+
   update(id: number, updateEncaminharSolicitacaoDto: UpdateEncaminharSolicitacaoDto) {
-    return `This action updates a #${id} encaminharSolicitacao`;
+    return this.prisma.encaminhar_solicitacao.update({
+      where: { id },
+      data: updateEncaminharSolicitacaoDto,
+    });
   }
 
   remove(id: number) {

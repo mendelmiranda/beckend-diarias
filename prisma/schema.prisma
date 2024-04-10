@@ -423,7 +423,8 @@ model encaminhar_solicitacao {
   cod_lotacao_origem  Int
   lotacao_origem      String
   cod_lotacao_destino Int
-  lotacao_destino     String  
+  lotacao_destino     String
+  lido                String      @db.Char(3)
 
   @@id([id, solicitacao_id])
 }

@@ -141,7 +141,7 @@ export class TramiteController {
     return this.tramiteService.updateStatus(+id, 'RECUSADO', nome, dto);
   }
 
-  @Put('/:id/reverter')
+  @Put('/:id/reverter/status')
   updateStatusAoReverterTramite(
     @Param('id') id: string,
     @Body() dto: UpdateTramiteDto,

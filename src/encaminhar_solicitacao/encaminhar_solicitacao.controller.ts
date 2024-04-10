@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
 import { EncaminharSolicitacaoService } from './encaminhar_solicitacao.service';
 import { CreateEncaminharSolicitacaoDto } from './dto/create-encaminhar_solicitacao.dto';
 import { UpdateEncaminharSolicitacaoDto } from './dto/update-encaminhar_solicitacao.dto';
@@ -22,8 +22,13 @@ export class EncaminharSolicitacaoController {
     return this.encaminharSolicitacaoService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEncaminharSolicitacaoDto: UpdateEncaminharSolicitacaoDto) {
+  @Get('/verifica/setor/:id')
+  findAvisoTramitePorSetor(@Param('id') id: number) {    
+    return this.encaminharSolicitacaoService.findAvisoDoTramite(+id);
+  }
+
+  @Put(':id')
+  update(@Param('id') id: string, @Body() updateEncaminharSolicitacaoDto: UpdateEncaminharSolicitacaoDto) {    
     return this.encaminharSolicitacaoService.update(+id, updateEncaminharSolicitacaoDto);
   }
 
