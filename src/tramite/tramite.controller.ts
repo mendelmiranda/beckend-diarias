@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
   HttpStatus,
   Param,
   Post,
@@ -13,6 +14,10 @@ import { UpdateTramiteDto } from './dto/update-tramite.dto';
 import { TramiteService } from './tramite.service';
 import { ViagemService } from 'src/viagem/viagem.service';
 import { EventoParticipantesService } from 'src/evento_participantes/evento_participantes.service';
+
+const TIMEOUT_DURATION = 10000; // 10 segundos
+const TIMEOUT_ERROR_MESSAGE = 'Operation timed out';
+const GENERIC_ERROR_MESSAGE = 'Ocorreu algo errado';
 
 @Controller('tramite')
 export class TramiteController {
@@ -28,21 +33,50 @@ export class TramiteController {
       const resultado = await this.tramiteService.create(createTramiteDto, nome);
       const solicitacaoId = resultado.solicitacao_id;
 
-      if(!this.verificaColaborador(resultado.solicitacao_id)){
+      if (!this.verificaColaborador(resultado.solicitacao_id)) {
 
-      if (createTramiteDto.status === "SOLICITADO") {
-        const resultadosViagem = await this.viagemService.calculaDiasParaDiaria(solicitacaoId);
-        await Promise.all(
-          resultadosViagem.map(async result => {
-            await this.cadastraValoresDaDiaria(result.viagem, result.participante.id, result.evento.id, result.totalDias);
-          })
-        );
+        this.salvaSolicitado(createTramiteDto.status, solicitacaoId);
+
       }
-
-    }
     }
     return 0;
   }
+
+
+
+// Função para criar exceções HTTP
+createHttpException(message: string, status: HttpStatus): HttpException {
+  return new HttpException({
+    status: 'error',
+    message,
+  }, status);
+}
+
+async salvaSolicitado(status: string, solicitacaoId: number) {
+  // Criação da promessa de timeout
+  const timeout = new Promise((_, reject) => {
+    setTimeout(() => reject(this.createHttpException(TIMEOUT_ERROR_MESSAGE, HttpStatus.REQUEST_TIMEOUT)), TIMEOUT_DURATION);
+  });
+
+  if (status === "SOLICITADO") {
+    try {
+      const resultadosViagem = await this.viagemService.calculaDiasParaDiaria(solicitacaoId);
+      
+      const newItemPromise = Promise.all(resultadosViagem.map(async result => {
+        await this.cadastraValoresDaDiaria(result.viagem, result.participante.id, result.evento.id, result.totalDias);
+      }));
+
+      const newItem = await Promise.race([newItemPromise, timeout]);
+      return { status: 'success', data: newItem };
+
+    } catch (error) {
+      if (!(error instanceof HttpException)) {
+        throw this.createHttpException(error.message || GENERIC_ERROR_MESSAGE, HttpStatus.BAD_REQUEST);
+      }
+      throw error;
+    }
+  }
+}
 
   async cadastraValoresDaDiaria(idViagem: number, participanteId: number, eventoId: number, total: number) {
     return await this.viagemService.calculaDiaria(idViagem, participanteId, eventoId, total);
@@ -51,14 +85,14 @@ export class TramiteController {
   async verificaColaborador(solicitacaoId: number): Promise<boolean> {
     try {
       const resultado = await this.tramiteService.findOneSolicitacaoColaborador(solicitacaoId);
-  
+
       // Verifica se algum dos eventos contém um participante do tipo 'S'.
       const temParticipanteTipoS = resultado.some(eventos =>
         eventos.eventos.some(ep =>
           ep.evento_participantes.some(part => part.participante.tipo === 'S')
         )
       );
-  
+
       return temParticipanteTipoS;
     } catch (error) {
       console.error("Erro ao verificar colaborador", error);
@@ -148,7 +182,7 @@ export class TramiteController {
   ) {
 
     console.log('dto', dto);
-    
+
     return this.tramiteService.updateStatusAoReverterTramite(+id, dto);
   }
 
