@@ -34,6 +34,8 @@ import { SolicitacaoCondutoresModule } from './solicitacao_condutores/solicitaca
 import { PrismaExceptionFilter } from './PrismaExceptionFilter';
 import { EncaminharSolicitacaoModule } from './encaminhar_solicitacao/encaminhar_solicitacao.module';
 import { OrganogramaModule } from './organograma/organograma.module';
+import { AssinaturaDaradModule } from './assinatura_darad/assinatura_darad.module';
+import { AprovacaoDefinitivaDaradModule } from './aprovacao_definitiva_darad/aprovacao_definitiva_darad.module';
 
 
 
@@ -99,6 +101,10 @@ import { OrganogramaModule } from './organograma/organograma.module';
     EncaminharSolicitacaoModule,
 
     OrganogramaModule,
+
+    AssinaturaDaradModule,
+
+    AprovacaoDefinitivaDaradModule,
   ],
   controllers: [AppController],
   providers: [AppService, EmailService, 
