@@ -106,7 +106,7 @@ model solicitacao {
   viagem                     viagem[]
   solicitacao_condutores     solicitacao_condutores[]
   encaminhar_solicitacao     encaminhar_solicitacao[]
-  aprovacao_definitiva_darad aprovacao_definitiva_darad[]
+  aprovacao_definitiva_darad aprovacao_definitiva_daof[]
 
   @@id([id])
 }
@@ -372,7 +372,6 @@ model assinatura {
   datareg                    DateTime                     @default(now()) @db.Timestamptz(3)
   ativo                      String                       @db.Char(3)
   aprovacao_definitiva       aprovacao_definitiva[]
-  aprovacao_definitiva_darad aprovacao_definitiva_darad[]
 }
 
 model aprovacao_definitiva {
@@ -443,24 +442,22 @@ model organograma {
   @@id([id])
 }
 
-model assinatura_darad {
+model assinatura_daof {
   id                         Int                          @unique @default(autoincrement())
   diretor                    String
   datareg                    DateTime                     @default(now()) @db.Timestamptz(3)
   ativo                      String                       @db.Char(3)
-  aprovacao_definitiva_darad aprovacao_definitiva_darad[]
+  aprovacao_definitiva_daof aprovacao_definitiva_daof[]
 }
 
-model aprovacao_definitiva_darad {
+model aprovacao_definitiva_daof {
   id Int @unique @default(autoincrement())
 
   assinatura_id Int
-  assinatura    assinatura @relation(fields: [assinatura_id], references: [id], onDelete: Cascade)
+  assinatura_daof    assinatura_daof @relation(fields: [assinatura_id], references: [id], onDelete: Cascade)
   datareg       DateTime   @default(now())
   hora          String
 
   solicitacao        solicitacao?      @relation(fields: [solicitacao_id], references: [id])
   solicitacao_id     Int
-  assinatura_darad   assinatura_darad? @relation(fields: [assinatura_daradId], references: [id])
-  assinatura_daradId Int?
 }
