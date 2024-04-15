@@ -34,8 +34,6 @@ import { SolicitacaoCondutoresModule } from './solicitacao_condutores/solicitaca
 import { PrismaExceptionFilter } from './PrismaExceptionFilter';
 import { EncaminharSolicitacaoModule } from './encaminhar_solicitacao/encaminhar_solicitacao.module';
 import { OrganogramaModule } from './organograma/organograma.module';
-import { AssinaturaDaradModule } from './assinatura_darad/assinatura_darad.module';
-import { AprovacaoDefinitivaDaradModule } from './aprovacao_definitiva_darad/aprovacao_definitiva_darad.module';
 import { AssinaturaDaofModule } from './assinatura_daof/assinatura_daof.module';
 import { AprovacaoDefinitivaDaofModule } from './aprovacao_definitiva_daof/aprovacao_definitiva_daof.module';
 
@@ -103,10 +101,6 @@ import { AprovacaoDefinitivaDaofModule } from './aprovacao_definitiva_daof/aprov
     EncaminharSolicitacaoModule,
 
     OrganogramaModule,
-
-    AssinaturaDaradModule,
-
-    AprovacaoDefinitivaDaradModule,
 
     AssinaturaDaofModule,
 
