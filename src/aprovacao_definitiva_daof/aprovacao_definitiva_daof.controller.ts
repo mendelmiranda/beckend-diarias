@@ -12,6 +12,11 @@ export class AprovacaoDefinitivaDaofController {
     return this.aprovacaoDefinitivaDaofService.create(createAprovacaoDefinitivaDaofDto);
   }
 
+  @Get('/assinatura-presidente/solicitacao/:id')
+  findAssinatura(@Param('id') id: string) {
+    return this.aprovacaoDefinitivaDaofService.findAssinaturaDiretorDAOF(parseInt(id));
+  }
+
   @Get()
   findAll() {
     return this.aprovacaoDefinitivaDaofService.findAll();
