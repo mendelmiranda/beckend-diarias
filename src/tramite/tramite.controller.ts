@@ -15,7 +15,7 @@ import { TramiteService } from './tramite.service';
 import { ViagemService } from 'src/viagem/viagem.service';
 import { EventoParticipantesService } from 'src/evento_participantes/evento_participantes.service';
 
-const TIMEOUT_DURATION = 10000; // 10 segundos
+const TIMEOUT_DURATION = 8000; // 10 segundos
 const TIMEOUT_ERROR_MESSAGE = 'Operation timed out';
 const GENERIC_ERROR_MESSAGE = 'Ocorreu algo errado';
 
@@ -53,10 +53,10 @@ createHttpException(message: string, status: HttpStatus): HttpException {
 }
 
 async salvaSolicitado(status: string, solicitacaoId: number) {
-  // Criação da promessa de timeout
+  /* // Criação da promessa de timeout
   const timeout = new Promise((_, reject) => {
     setTimeout(() => reject(this.createHttpException(TIMEOUT_ERROR_MESSAGE, HttpStatus.REQUEST_TIMEOUT)), TIMEOUT_DURATION);
-  });
+  }); */
 
   if (status === "SOLICITADO") {
     try {
@@ -66,8 +66,8 @@ async salvaSolicitado(status: string, solicitacaoId: number) {
         await this.cadastraValoresDaDiaria(result.viagem, result.participante.id, result.evento.id, result.totalDias);
       }));
 
-      const newItem = await Promise.race([newItemPromise, timeout]);
-      return { status: 'success', data: newItem };
+      //const newItem = await Promise.race([newItemPromise, timeout]);
+      return { status: 'success', data: newItemPromise };
 
     } catch (error) {
       if (!(error instanceof HttpException)) {
