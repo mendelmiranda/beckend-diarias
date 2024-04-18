@@ -5,29 +5,36 @@ import { PrismaService } from 'prisma/prisma.service';
 
 @Injectable()
 export class AssinaturaDaofService {
-
   constructor(private prisma: PrismaService) {}
 
   create(createAssinaturaDaofDto: CreateAssinaturaDaofDto) {
     return this.prisma.assinatura_daof.create({
-      data: createAssinaturaDaofDto
+      data: createAssinaturaDaofDto,
     });
   }
 
   findAll() {
     return this.prisma.assinatura_daof.findMany({
-      orderBy: [{ diretor: 'asc' }]
+      orderBy: [{ diretor: 'asc' }],
     });
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} assinaturaDaof`;
+    return this.prisma.assinatura_daof.findUnique({
+      where: { id: id },
+    });
+  }
+
+  findOneByNonme(nome: string) {
+    return this.prisma.assinatura_daof.findMany({
+      where: { diretor: nome },
+    });
   }
 
   update(id: number, updateAssinaturaDaofDto: UpdateAssinaturaDaofDto) {
     return this.prisma.assinatura_daof.update({
       where: { id: id },
-      data: updateAssinaturaDaofDto
+      data: updateAssinaturaDaofDto,
     });
   }
 
