@@ -1,1 +1,5 @@
-export class CreateAssinaturaDaofDto {}
+export class CreateAssinaturaDaofDto {
+  diretor: string;
+  datareg: Date;
+  ativo: string;
+}

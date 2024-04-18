@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
 import { AssinaturaDaofService } from './assinatura_daof.service';
 import { CreateAssinaturaDaofDto } from './dto/create-assinatura_daof.dto';
 import { UpdateAssinaturaDaofDto } from './dto/update-assinatura_daof.dto';
@@ -22,7 +22,7 @@ export class AssinaturaDaofController {
     return this.assinaturaDaofService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateAssinaturaDaofDto: UpdateAssinaturaDaofDto) {
     return this.assinaturaDaofService.update(+id, updateAssinaturaDaofDto);
   }

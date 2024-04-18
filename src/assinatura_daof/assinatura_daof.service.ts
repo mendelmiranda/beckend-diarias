@@ -9,7 +9,9 @@ export class AssinaturaDaofService {
   constructor(private prisma: PrismaService) {}
 
   create(createAssinaturaDaofDto: CreateAssinaturaDaofDto) {
-    return 'This action adds a new assinaturaDaof';
+    return this.prisma.assinatura_daof.create({
+      data: createAssinaturaDaofDto
+    });
   }
 
   findAll() {
@@ -23,7 +25,10 @@ export class AssinaturaDaofService {
   }
 
   update(id: number, updateAssinaturaDaofDto: UpdateAssinaturaDaofDto) {
-    return `This action updates a #${id} assinaturaDaof`;
+    return this.prisma.assinatura_daof.update({
+      where: { id: id },
+      data: updateAssinaturaDaofDto
+    });
   }
 
   remove(id: number) {
