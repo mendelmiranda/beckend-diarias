@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/
 import { AssinaturaDaofService } from './assinatura_daof.service';
 import { CreateAssinaturaDaofDto } from './dto/create-assinatura_daof.dto';
 import { UpdateAssinaturaDaofDto } from './dto/update-assinatura_daof.dto';
+import { Audit } from 'src/audit/audit.decorator';
 
 @Controller('assinatura-daof')
 export class AssinaturaDaofController {
@@ -12,6 +13,7 @@ export class AssinaturaDaofController {
     return this.assinaturaDaofService.create(createAssinaturaDaofDto);
   }
 
+  @Audit()
   @Get()
   findAll() {
     return this.assinaturaDaofService.findAll();
