@@ -2,12 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { CreateAssinaturaDaofDto } from './dto/create-assinatura_daof.dto';
 import { UpdateAssinaturaDaofDto } from './dto/update-assinatura_daof.dto';
 import { PrismaService } from 'prisma/prisma.service';
+import { LogSistemaService } from 'src/log_sistema/log_sistema.service';
+import { Operacao } from 'src/log_sistema/log_enum';
 
 @Injectable()
 export class AssinaturaDaofService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private logSistemaService: LogSistemaService) {}
 
   create(createAssinaturaDaofDto: CreateAssinaturaDaofDto) {
+
+    //this.logSistemaService.createLog(createAssinaturaDaofDto, usuario, Operacao.INSERT);
+
     return this.prisma.assinatura_daof.create({
       data: createAssinaturaDaofDto,
     });
