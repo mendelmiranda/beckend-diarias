@@ -88,8 +88,8 @@ model cidade {
 }
 
 model solicitacao {
-  id                         Int                          @default(autoincrement())
-  datareg                    DateTime?                    @default(now()) @db.Timestamptz(3)
+  id                         Int                         @default(autoincrement())
+  datareg                    DateTime?                   @default(now()) @db.Timestamptz(3)
   justificativa              String
   status                     String
   cpf_responsavel            String?
@@ -367,11 +367,11 @@ model cargo_diarias {
 }
 
 model assinatura {
-  id                         Int                          @unique @default(autoincrement())
-  presidente_exercicio       String
-  datareg                    DateTime                     @default(now()) @db.Timestamptz(3)
-  ativo                      String                       @db.Char(3)
-  aprovacao_definitiva       aprovacao_definitiva[]
+  id                   Int                    @unique @default(autoincrement())
+  presidente_exercicio String
+  datareg              DateTime               @default(now()) @db.Timestamptz(3)
+  ativo                String                 @db.Char(3)
+  aprovacao_definitiva aprovacao_definitiva[]
 }
 
 model aprovacao_definitiva {
@@ -407,9 +407,10 @@ model solicitacao_condutores {
   condutores_id Int
   condutores    condutores @relation(fields: [condutores_id], references: [id], onDelete: Cascade)
 
-  solicitacao_id Int
-  solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id], onDelete: Cascade)
-  veiculo        String?
+  solicitacao_id  Int
+  solicitacao     solicitacao       @relation(fields: [solicitacao_id], references: [id], onDelete: Cascade)
+  veiculo         String?
+  diaria_condutor diaria_condutor[]
 
   @@id([id, condutores_id, solicitacao_id])
 }
@@ -443,21 +444,34 @@ model organograma {
 }
 
 model assinatura_daof {
-  id                         Int                          @unique @default(autoincrement())
-  diretor                    String
-  datareg                    DateTime                     @default(now()) @db.Timestamptz(3)
-  ativo                      String                       @db.Char(3)
+  id                        Int                         @unique @default(autoincrement())
+  diretor                   String
+  datareg                   DateTime                    @default(now()) @db.Timestamptz(3)
+  ativo                     String                      @db.Char(3)
   aprovacao_definitiva_daof aprovacao_definitiva_daof[]
 }
 
 model aprovacao_definitiva_daof {
   id Int @unique @default(autoincrement())
 
-  assinatura_id Int
-  assinatura_daof    assinatura_daof @relation(fields: [assinatura_id], references: [id], onDelete: Cascade)
-  datareg       DateTime   @default(now())
-  hora          String
+  assinatura_id   Int
+  assinatura_daof assinatura_daof @relation(fields: [assinatura_id], references: [id], onDelete: Cascade)
+  datareg         DateTime        @default(now())
+  hora            String
 
-  solicitacao        solicitacao?      @relation(fields: [solicitacao_id], references: [id])
-  solicitacao_id     Int
+  solicitacao    solicitacao? @relation(fields: [solicitacao_id], references: [id])
+  solicitacao_id Int
+}
+
+//ao exibir para calcular, deve exibir somente os condutores com o TIPO C
+model diaria_condutor {
+  id Int @unique @default(autoincrement())
+
+  solicitacao_condutores_id Int
+  solicitacao_condutores    solicitacao_condutores @relation(fields: [solicitacao_condutores_id], references: [id], onDelete: Cascade)
+  datareg                   DateTime               @default(now()) @db.Timestamptz(3)
+  valor Float?
+
+
+  @@id([id, solicitacao_condutores_id])
 }

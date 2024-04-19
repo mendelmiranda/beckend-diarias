@@ -36,6 +36,7 @@ import { EncaminharSolicitacaoModule } from './encaminhar_solicitacao/encaminhar
 import { OrganogramaModule } from './organograma/organograma.module';
 import { AssinaturaDaofModule } from './assinatura_daof/assinatura_daof.module';
 import { AprovacaoDefinitivaDaofModule } from './aprovacao_definitiva_daof/aprovacao_definitiva_daof.module';
+import { DiariaCondutorModule } from './diaria_condutor/diaria_condutor.module';
 
 
 
@@ -105,6 +106,8 @@ import { AprovacaoDefinitivaDaofModule } from './aprovacao_definitiva_daof/aprov
     AssinaturaDaofModule,
 
     AprovacaoDefinitivaDaofModule,
+
+    DiariaCondutorModule,
   ],
   controllers: [AppController],
   providers: [AppService, EmailService, 
