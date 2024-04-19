@@ -1,26 +1,38 @@
 import { Injectable } from '@nestjs/common';
 import { CreateDiariaCondutorDto } from './dto/create-diaria_condutor.dto';
 import { UpdateDiariaCondutorDto } from './dto/update-diaria_condutor.dto';
+import { PrismaService } from 'prisma/prisma.service';
 
 @Injectable()
 export class DiariaCondutorService {
+  constructor(private readonly prisma: PrismaService) {}
+  
   create(createDiariaCondutorDto: CreateDiariaCondutorDto) {
-    return 'This action adds a new diariaCondutor';
+    return this.prisma.diaria_condutor.create({
+      data: createDiariaCondutorDto,
+    });
   }
 
   findAll() {
-    return `This action returns all diariaCondutor`;
+    return this.prisma.diaria_condutor.findMany();
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} diariaCondutor`;
+    return this.prisma.diaria_condutor.findUnique({
+      where: { id: id },
+    });
   }
 
   update(id: number, updateDiariaCondutorDto: UpdateDiariaCondutorDto) {
-    return `This action updates a #${id} diariaCondutor`;
+    return this.prisma.diaria_condutor.update({
+      where: { id: id },
+      data: updateDiariaCondutorDto,
+    });
   }
 
   remove(id: number) {
-    return `This action removes a #${id} diariaCondutor`;
+    return this.prisma.diaria_condutor.delete({
+      where: { id: id },
+    });
   }
 }

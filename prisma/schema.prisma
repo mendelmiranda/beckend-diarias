@@ -464,13 +464,14 @@ model aprovacao_definitiva_daof {
 }
 
 //ao exibir para calcular, deve exibir somente os condutores com o TIPO C
+//quando exibir os condutores, informar uma diária como sugestão(aprimorar depois)
 model diaria_condutor {
   id Int @unique @default(autoincrement())
 
   solicitacao_condutores_id Int
   solicitacao_condutores    solicitacao_condutores @relation(fields: [solicitacao_condutores_id], references: [id], onDelete: Cascade)
   datareg                   DateTime               @default(now()) @db.Timestamptz(3)
-  valor Float?
+  valor Float
 
 
   @@id([id, solicitacao_condutores_id])

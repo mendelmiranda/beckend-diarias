@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
 import { DiariaCondutorService } from './diaria_condutor.service';
 import { CreateDiariaCondutorDto } from './dto/create-diaria_condutor.dto';
 import { UpdateDiariaCondutorDto } from './dto/update-diaria_condutor.dto';
@@ -22,7 +22,7 @@ export class DiariaCondutorController {
     return this.diariaCondutorService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateDiariaCondutorDto: UpdateDiariaCondutorDto) {
     return this.diariaCondutorService.update(+id, updateDiariaCondutorDto);
   }
