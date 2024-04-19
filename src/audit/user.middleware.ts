@@ -8,16 +8,21 @@ import * as jwt from 'jsonwebtoken';
 export class UserMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     
-    const authHeader = req.headers.authorization;
+    const authHeader = req.headers.warning;
+
+        
 
     if (authHeader) {
-      const token = authHeader.split(' ')[1]; // Pega o token da string 'Bearer <token>'
+      const nome = authHeader;      
+      
       try {
 
-        console.log(token['cpf']);
+        //console.log(token['cpf']);
         
        /*  const decoded = jwt.verify(token, 'Pcy8Z6UpMY0fLaXXXa2Hj_lpUMeshiG6slVaQVoe9Zk'); // Substitua 'seuSecret' pelo seu segredo de JWT real
         req['user'] = decoded; */
+
+        req['user'] = nome;
         
       } catch (err) {
         console.error('Erro na verificação do JWT:', err.message);
