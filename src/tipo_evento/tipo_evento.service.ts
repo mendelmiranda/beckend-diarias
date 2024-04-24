@@ -20,7 +20,9 @@ export class TipoEventoService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} tipoEvento`;
+    return this.prisma.tipo_evento.findUnique({
+      where: {id: id},
+    });
   }
 
   update(id: number, updateTipoEventoDto: UpdateTipoEventoDto) {
