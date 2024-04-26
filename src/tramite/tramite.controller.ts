@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  HttpException,
   HttpStatus,
   Param,
   Post,
@@ -15,10 +14,6 @@ import { TramiteService } from './tramite.service';
 import { ViagemService } from 'src/viagem/viagem.service';
 import { EventoParticipantesService } from 'src/evento_participantes/evento_participantes.service';
 
-const TIMEOUT_DURATION = 8000; // 10 segundos
-const TIMEOUT_ERROR_MESSAGE = 'Operation timed out';
-const GENERIC_ERROR_MESSAGE = 'Ocorreu algo errado';
-
 @Controller('tramite')
 export class TramiteController {
   constructor(private readonly tramiteService: TramiteService, private readonly viagemService: ViagemService, private readonly eParticipanteService: EventoParticipantesService) { }
@@ -29,54 +24,25 @@ export class TramiteController {
 
     if (parsedId > 0) {
       await this.tramiteService.update(parsedId, createTramiteDto, nome);
+
     } else {
       const resultado = await this.tramiteService.create(createTramiteDto, nome);
       const solicitacaoId = resultado.solicitacao_id;
 
-      if (!this.verificaColaborador(resultado.solicitacao_id)) {
+      if (!await this.verificaColaborador(resultado.solicitacao_id)) {
 
-        this.salvaSolicitado(createTramiteDto.status, solicitacaoId);
-
+        if (createTramiteDto.status === 'SOLICITADO') {
+          const resultadosViagem = await this.viagemService.calculaDiasParaDiaria(solicitacaoId);
+          await Promise.all(
+            resultadosViagem.map(async (result) => {
+              await this.cadastraValoresDaDiaria(result.viagem, result.participante.id, result.evento.id, result.totalDias);
+            }),
+          );
+        }
       }
     }
     return 0;
   }
-
-
-
-// Função para criar exceções HTTP
-createHttpException(message: string, status: HttpStatus): HttpException {
-  return new HttpException({
-    status: 'error',
-    message,
-  }, status);
-}
-
-async salvaSolicitado(status: string, solicitacaoId: number) {
-  /* // Criação da promessa de timeout
-  const timeout = new Promise((_, reject) => {
-    setTimeout(() => reject(this.createHttpException(TIMEOUT_ERROR_MESSAGE, HttpStatus.REQUEST_TIMEOUT)), TIMEOUT_DURATION);
-  }); */
-
-  if (status === "SOLICITADO") {
-    try {
-      const resultadosViagem = await this.viagemService.calculaDiasParaDiaria(solicitacaoId);
-      
-      const newItemPromise = Promise.all(resultadosViagem.map(async result => {
-        await this.cadastraValoresDaDiaria(result.viagem, result.participante.id, result.evento.id, result.totalDias);
-      }));
-
-      //const newItem = await Promise.race([newItemPromise, timeout]);
-      return { status: 'success', data: newItemPromise };
-
-    } catch (error) {
-      if (!(error instanceof HttpException)) {
-        throw this.createHttpException(error.message || GENERIC_ERROR_MESSAGE, HttpStatus.BAD_REQUEST);
-      }
-      throw error;
-    }
-  }
-}
 
   async cadastraValoresDaDiaria(idViagem: number, participanteId: number, eventoId: number, total: number) {
     return await this.viagemService.calculaDiaria(idViagem, participanteId, eventoId, total);
@@ -85,19 +51,20 @@ async salvaSolicitado(status: string, solicitacaoId: number) {
   async verificaColaborador(solicitacaoId: number): Promise<boolean> {
     try {
       const resultado = await this.tramiteService.findOneSolicitacaoColaborador(solicitacaoId);
-
+  
       // Verifica se algum dos eventos contém um participante do tipo 'S'.
       const temParticipanteTipoS = resultado.some(eventos =>
         eventos.eventos.some(ep =>
-          ep.evento_participantes.some(part => part.participante.tipo === 'S')
+          ep.evento_participantes.some(part => part.participante.tipo === 'C' || part.participante.tipo === 'T')
         )
-      );
-
+      );      
+  
       return temParticipanteTipoS;
     } catch (error) {
       console.error("Erro ao verificar colaborador", error);
       throw error; // Relança o erro ou trata conforme necessário.
     }
+    
   }
 
   @Get()
@@ -113,11 +80,6 @@ async salvaSolicitado(status: string, solicitacaoId: number) {
   @Get('/solicitacao/:id')
   findTramiteSolicitracao(@Param('id') id: string) {
     return this.tramiteService.findOneSolicitacao(+id);
-  }
-
-  @Get('/todas/solicitacao/:id')
-  findTramitesDaSolicitracao(@Param('id') id: string) {
-    return this.tramiteService.findTramitesDaSolicitacao(+id);
   }
 
   @Get('/lotacao/:id')
@@ -174,17 +136,4 @@ async salvaSolicitado(status: string, solicitacaoId: number) {
   ) {
     return this.tramiteService.updateStatus(+id, 'RECUSADO', nome, dto);
   }
-
-  @Put('/:id/reverter/status')
-  updateStatusAoReverterTramite(
-    @Param('id') id: string,
-    @Body() dto: UpdateTramiteDto,
-  ) {
-
-    console.log('dto', dto);
-
-    return this.tramiteService.updateStatusAoReverterTramite(+id, dto);
-  }
-
-
 }
