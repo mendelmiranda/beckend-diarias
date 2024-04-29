@@ -17,7 +17,12 @@ export class ValorDiariasService {
   }
 
   findAll() {
-    return this.prisma.valor_diarias.findMany();
+    return this.prisma.valor_diarias.findMany({
+      where: {},
+      include: {
+        cargo_diarias: true
+      }
+    });
   }
 
   findOne(id: number) {
