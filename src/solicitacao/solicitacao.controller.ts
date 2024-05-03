@@ -92,7 +92,12 @@ export class SolicitacaoController {
 
 
   @Post('/pesquisar')
-  pesquisarSolicitacoes(@Body() dto: PesquisaSolicitacaoDTO) {
+  pesquisarSolicitacoes(@Body() dto: PesquisaSolicitacaoDTO) {   
+
+    if(parseInt(dto.numero) > 0 && dto.dataInicio === undefined) {
+      return this.solicitacaoService.pesquisarSolicitacaoPorNumero(+dto.numero);
+    }
+
     return this.solicitacaoService.pesquisarSolicitacoes(dto);
   }
 }

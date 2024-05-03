@@ -275,6 +275,66 @@ export class SolicitacaoService {
     });
   }
 
+  pesquisarSolicitacaoPorNumero(numero: number) {
+    return this.prisma.solicitacao.findMany({
+      where: {
+        id: numero
+      },
+      include: {
+        tramite: true,
+        correcao_solicitacao: true,
+        empenho_daofi: true,
+        eventos: {
+          include: {
+            anexo_evento: true,
+            evento_participantes: {
+              include: {
+                participante: {
+                  include: {
+                    conta_diaria: {
+                      include: {
+                        banco: true,
+                      },
+                    },
+                  },
+                },
+                viagem_participantes: {
+                  include: {
+                    viagem: {
+                      include: {
+                        origem: true,
+                        destino: true,
+                        pais: true,
+                        valor_viagem: true,
+                        cidade_origem: {
+                          include: {
+                            estado: true,
+                          },
+                        },
+                        cidade_destino: {
+                          include: {
+                            estado: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            tipo_evento: true,
+            cidade: {
+              include: {
+                estado: true,
+              },
+            },
+            pais: true,
+          },
+        },
+      },
+    });
+  }
+
   detalhesDaSolicitacao(id: number) {
     return this.prisma.solicitacao.findUnique({
       where: {
