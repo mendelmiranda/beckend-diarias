@@ -14,7 +14,11 @@ export class AssinaturaService {
   }
 
   findAll() {
-    return `This action returns all assinatura`;
+    return this.prisma.assinatura.findMany({
+      orderBy: [{
+        presidente_exercicio: 'asc'
+      }]
+    });
   }
 
   findAssinaturaAtiva(){
@@ -32,7 +36,13 @@ export class AssinaturaService {
   }
 
   update(id: number, updateAssinaturaDto: UpdateAssinaturaDto) {
-    return `This action updates a #${id} assinatura`;
+    return this.prisma.assinatura.update({
+      where: {
+        id: id
+      },
+      data: updateAssinaturaDto
+    
+    })
   }
 
   remove(id: number) {
