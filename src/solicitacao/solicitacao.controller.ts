@@ -53,6 +53,11 @@ export class SolicitacaoController {
     return this.solicitacaoService.findAllByLotacao(+id);
   }
 
+  @Get('/todas/login/:login')
+  findSolicitacaoPorLogin(@Param('login') login: string) {
+    return this.solicitacaoService.findAllByLogin(login);
+  }
+
   @Get('/detalhes/:id')
   detalhes(@Param('id') id: string) {
     return this.solicitacaoService.detalhesDaSolicitacao(+id);
