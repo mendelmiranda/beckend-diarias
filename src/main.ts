@@ -16,7 +16,7 @@ async function bootstrap() {
     cert: fs.readFileSync(`${root}/STAR_tce_ap_gov_br.crt`),
     ca: [fs.readFileSync(`${root}/CER - CRT Files/SectigoRSADomainValidationSecureServerCA.crt`)],
   };
-   */
+  */ 
 
   const app = await NestFactory.create(AppModule, {
     //httpsOptions,
