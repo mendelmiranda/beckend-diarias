@@ -4,6 +4,7 @@ import { PrismaClient, prisma } from '@prisma/client';
 import {
   FastifyAdapter,
 } from '@nestjs/platform-fastify';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const prisma = new PrismaClient();
@@ -34,6 +35,17 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
+
+  const config = new DocumentBuilder()
+  .setTitle("API de Solicitação de Viagens e Diárias")
+  .setDescription("API")
+  .setVersion("1.0")
+  .addTag("API")
+  .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+
+  SwaggerModule.setup('api', app, document);
 
   await app
     .listen(4000)

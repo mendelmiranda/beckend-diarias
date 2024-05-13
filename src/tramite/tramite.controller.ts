@@ -13,12 +13,14 @@ import { UpdateTramiteDto } from './dto/update-tramite.dto';
 import { TramiteService } from './tramite.service';
 import { ViagemService } from 'src/viagem/viagem.service';
 import { EventoParticipantesService } from 'src/evento_participantes/evento_participantes.service';
+import { ApiResponse } from '@nestjs/swagger';
 
 @Controller('tramite')
 export class TramiteController {
   constructor(private readonly tramiteService: TramiteService, private readonly viagemService: ViagemService, private readonly eParticipanteService: EventoParticipantesService) { }
 
   @Post('/:id/:nome')
+  @ApiResponse({ status: 200, description: 'Cadastra o tramite e calcula a diária para os participantes'})
   async create(@Param('id') id: string, @Param('nome') nome: string, @Body() createTramiteDto: CreateTramiteDto) {
     const parsedId = +id;
 
