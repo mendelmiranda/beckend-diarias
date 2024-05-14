@@ -26,6 +26,9 @@ export class AssinaturaService {
       {
         where: {
           ativo: "SIM"
+        },
+        include: {
+          aprovacao_definitiva: true
         }
       }
     )
