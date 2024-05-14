@@ -17,6 +17,12 @@ export class LogTramiteController {
     return this.logTramiteService.findAll();
   }
 
+  @Get('/pesquisa/status/:status')
+  findLogsDaSolicitacaoPorStatus(@Param('status') status: string) {
+    return this.logTramiteService.findTodosPorStatus(status);
+  }
+
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.logTramiteService.findOne(+id);

@@ -9,7 +9,8 @@ export class LogTramiteService {
   constructor(private prisma: PrismaService) {}
 
   create(dto: CreateLogTramiteDto) {
-    return this.prisma.log_tramite.create({
+    return this.prisma.log_tramite.
+    create({
       data: dto,
     });
   }
@@ -17,6 +18,35 @@ export class LogTramiteService {
   findAll() {
     return this.prisma.log_tramite.findMany();
   }
+
+  findTodosPorStatus(status: string) {
+    return this.prisma.log_tramite.findMany({
+      where: {
+        status: status,
+      },
+      include:{
+        tramite: {
+          include:{
+            solicitacao: {
+              include:{
+                eventos: {
+                  include: {
+                    tipo_evento: true,
+                    evento_participantes: {
+                      include: {
+                        participante: true
+                      }
+                    }
+                  }
+                },
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
 
   findOne(id: number) {
     return this.prisma.log_tramite.findUnique({
