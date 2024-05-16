@@ -107,6 +107,7 @@ model solicitacao {
   solicitacao_condutores     solicitacao_condutores[]
   encaminhar_solicitacao     encaminhar_solicitacao[]
   aprovacao_definitiva_darad aprovacao_definitiva_daof[]
+  portaria_solicitacao       portaria_solicitacao[]
 
   @@id([id])
 }
@@ -471,8 +472,16 @@ model diaria_condutor {
   solicitacao_condutores_id Int
   solicitacao_condutores    solicitacao_condutores @relation(fields: [solicitacao_condutores_id], references: [id], onDelete: Cascade)
   datareg                   DateTime               @default(now()) @db.Timestamptz(3)
-  valor Float
-
+  valor                     Float
 
   @@id([id, solicitacao_condutores_id])
+}
+
+model portaria_solicitacao {
+  id             Int          @unique @default(autoincrement())
+  solicitacao    solicitacao? @relation(fields: [solicitacao_id], references: [id])
+  solicitacao_id Int
+  portaria       String
+  observacao     String
+  datareg        DateTime     @default(now())
 }
