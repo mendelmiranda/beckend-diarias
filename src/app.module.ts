@@ -37,7 +37,6 @@ import { OrganogramaModule } from './organograma/organograma.module';
 import { AssinaturaDaofModule } from './assinatura_daof/assinatura_daof.module';
 import { AprovacaoDefinitivaDaofModule } from './aprovacao_definitiva_daof/aprovacao_definitiva_daof.module';
 import { DiariaCondutorModule } from './diaria_condutor/diaria_condutor.module';
-import { PortariaSolicitacaoModule } from './portaria_solicitacao/portaria_solicitacao.module';
 
 
 
@@ -109,8 +108,6 @@ import { PortariaSolicitacaoModule } from './portaria_solicitacao/portaria_solic
     AprovacaoDefinitivaDaofModule,
 
     DiariaCondutorModule,
-
-    PortariaSolicitacaoModule,
   ],
   controllers: [AppController],
   providers: [AppService, EmailService, 

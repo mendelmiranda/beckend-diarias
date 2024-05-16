@@ -6,6 +6,7 @@ import { CreateSolicitacaoDto } from './dto/create-solicitacao.dto';
 import PesquisaSolicitacaoDTO from './dto/pesquisa-solicitacao.dto';
 import { UpdateSolicitacaoDto } from './dto/update-solicitacao.dto';
 import { ConsultaSetoresDto } from './dto/consulta-setores.dto';
+import { Solicitacao } from './entities/solicitacao.entity';
 
 @Injectable()
 export class SolicitacaoService {
@@ -626,4 +627,76 @@ export class SolicitacaoService {
       await this.prisma.$disconnect();
     }
   }
+
+
+
+  async getSolicitacoesTransparencia(page: number, limit: number): Promise<Solicitacao[]> {
+    const skip = (page - 1) * limit;
+    return this.prisma.solicitacao.findMany({
+      skip: +skip,
+      take: +limit,
+      orderBy: {
+        datareg: 'desc',
+      },
+      where: {
+        status: 'PDF_GERADO'
+      },
+      include: {
+        tramite: {
+          include: {
+            log_tramite: true,
+          },
+        },
+        eventos: {
+          include: {
+            evento_participantes: {
+              include: {
+                participante: true,
+                viagem_participantes: {
+                  include: {
+                    viagem: {
+                      include: {
+                        origem: true,
+                        destino: true,
+                        pais: true,
+                        valor_viagem: true,
+                        cidade_origem: {
+                          include: {
+                            estado: true,
+                          },
+                        },
+                        cidade_destino: {
+                          include: {
+                            estado: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            tipo_evento: true,
+            cidade: {
+              include: {
+                estado: true,
+              },
+            },
+            pais: true,
+          },
+        },
+      },
+    }
+      
+   );
+  }
+
+
+  async getSolicitacoesCount(): Promise<number> {
+    return this.prisma.solicitacao.count();
+  }
+  
+
+
+
 }

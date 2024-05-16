@@ -10,6 +10,7 @@ import {
   Request,
   Req,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { SolicitacaoService } from './solicitacao.service';
 import { CreateSolicitacaoDto } from './dto/create-solicitacao.dto';
@@ -17,6 +18,7 @@ import { UpdateSolicitacaoDto } from './dto/update-solicitacao.dto';
 import PesquisaSolicitacaoDTO from './dto/pesquisa-solicitacao.dto';
 import { InfoUsuario } from 'src/log_sistema/log_sistema.service';
 import { ConsultaSetoresDto } from './dto/consulta-setores.dto';
+import { Solicitacao } from './entities/solicitacao.entity';
 
 @Controller('solicitacao')
 export class SolicitacaoController {
@@ -102,7 +104,22 @@ export class SolicitacaoController {
     if(parseInt(dto.numero) > 0 && dto.dataInicio === undefined) {
       return this.solicitacaoService.pesquisarSolicitacaoPorNumero(+dto.numero);
     }
-
     return this.solicitacaoService.pesquisarSolicitacoes(dto);
   }
+
+
+  @Get('/pesquisa/transparencia/resultado/')
+  async findTransparencia(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10
+  ): Promise<{ data: Solicitacao[], total: number }> {
+    const solicitacoes = await this.solicitacaoService.getSolicitacoesTransparencia(page, limit);
+    const total = await this.solicitacaoService.getSolicitacoesCount();
+
+    return {
+      data: solicitacoes,
+      total,
+    };
+  }
+
 }
