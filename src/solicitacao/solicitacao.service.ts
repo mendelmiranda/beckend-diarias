@@ -628,8 +628,6 @@ export class SolicitacaoService {
     }
   }
 
-
-
   async getSolicitacoesTransparencia(page: number, limit: number): Promise<Solicitacao[]> {
     const skip = (page - 1) * limit;
     return this.prisma.solicitacao.findMany({
@@ -639,35 +637,36 @@ export class SolicitacaoService {
         datareg: 'desc',
       },
       where: {
-        status: 'PDF_GERADO'
+        status: 'PDF_GERADO',
       },
-      include: {
-        tramite: {
-          include: {
-            log_tramite: true,
-          },
-        },
+      
+      select: {
+        id: true,
         eventos: {
-          include: {
+          select: {
+            titulo: true,
             evento_participantes: {
-              include: {
-                participante: true,
+               select: {
+                participante: {
+                  select: {
+                    nome: true,
+                    cargo: true,
+                  }
+                },
                 viagem_participantes: {
-                  include: {
+                  select: {
                     viagem: {
-                      include: {
-                        origem: true,
-                        destino: true,
-                        pais: true,
-                        valor_viagem: true,
-                        cidade_origem: {
-                          include: {
-                            estado: true,
+                      select: {                      
+                        data_ida: true,
+                        data_volta: true,
+                        valor_viagem: {
+                          orderBy: {
+                            id: 'desc',
                           },
-                        },
-                        cidade_destino: {
-                          include: {
-                            estado: true,
+                          take: 1,
+                          select: {
+                            valor_individual: true,
+                            valor_grupo: true,
                           },
                         },
                       },
@@ -677,26 +676,64 @@ export class SolicitacaoService {
               },
             },
             tipo_evento: true,
-            cidade: {
-              include: {
-                estado: true,
-              },
-            },
-            pais: true,
+            
           },
         },
       },
+      
+      
     }
+    
+
       
    );
   }
 
 
   async getSolicitacoesCount(): Promise<number> {
-    return this.prisma.solicitacao.count();
+    return this.prisma.solicitacao.findMany({
+      where: {
+        status: 'PDF_GERADO'
+      },
+    }).then((solicitacoes) => {
+      return solicitacoes.length;
+    });
   }
-  
-
-
 
 }
+
+  /* async getDadosTransparencia(page: number, limit: number): Promise<DadosTransparencia[]> {
+    const solicitacoes = await this.getSolicitacoesTransparencia(page, limit);
+  
+    return solicitacoes.map(solicitacao => {
+      const participante = solicitacao.eventos?.[0]?.evento_participantes?.[0]?.participante;
+      const viagem = solicitacao.eventos?.[0]?.evento_participantes?.[0]?.viagem_participantes?.[0]?.viagem;
+      const diarias = viagem?.valor_viagem || [];
+      const valorTotalDiariaRecebido = diarias.reduce((total, diaria) => total + diaria.valor, 0);
+      const numeroDiariasUsufruidas = diarias.length;
+      const periodoAfastamento = viagem ? `${viagem.dataInicio} a ${viagem.dataVolta}` : '';
+      const motivoAfastamento = viagem?.motivo || '';
+  
+      return {
+        nomeBeneficiario: participante?.nome || '',
+        cargoFuncao: participante?.cargo || '',
+        valorTotalDiariaRecebido,
+        numeroDiariasUsufruidas,
+        periodoAfastamento,
+        motivoAfastamento,
+      };
+    });
+  }  
+} */
+
+
+
+
+/* type DadosTransparencia = {
+  nomeBeneficiario: string;
+  cargoFuncao: string;
+  valorTotalDiariaRecebido: number;
+  numeroDiariasUsufruidas: number;
+  periodoAfastamento: string;
+  motivoAfastamento: string;
+}; */
