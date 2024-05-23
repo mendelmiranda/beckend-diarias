@@ -35,6 +35,25 @@ export class CidadeService {
   }
 
   remove(id: number) {
-    return `This action removes a #${id} cidade`;
+    return `This action delete a #${id} cidade`;
+    /* return this.prisma.cidade.delete({
+      where: { id: id },
+    }) */
   }
+
+
+  async localizaCidadesPorEstadoId(id: number) {
+    return this.prisma.cidade.findMany({
+      where: {
+        estado_id: id
+      }, 
+      include: {
+        estado: true,
+      }
+    });
+  }
+
+
+  
+
 }

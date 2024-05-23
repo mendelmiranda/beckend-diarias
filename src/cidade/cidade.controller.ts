@@ -31,4 +31,11 @@ export class CidadeController {
   remove(@Param('id') id: string) {
     return this.cidadeService.remove(+id);
   }
+
+
+  @Get('/estado/:id')
+  cidadesDoEstado(@Param('id') id: string) {
+    return this.cidadeService.localizaCidadesPorEstadoId(+id);
+  }
+
 }

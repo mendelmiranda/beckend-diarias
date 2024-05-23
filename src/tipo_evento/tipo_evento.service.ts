@@ -33,6 +33,8 @@ export class TipoEventoService {
   }
 
   remove(id: number) {
-    return `This action removes a #${id} tipoEvento`;
+    return this.prisma.tipo_evento.delete({
+      where: { id: id },
+    })
   }
 }
