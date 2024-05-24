@@ -17,6 +17,11 @@ export class AeroportoController {
     return this.aeroportoService.findAll();
   }
 
+  @Get('/cidade/nome/:nome')
+  findAllByNome(@Param('nome') nome: string) {
+    return this.aeroportoService.getAeroportos(nome);
+  }
+
   @Get('/descricao/:desc')
   findOneCidadePais(@Param('desc') desc: string) {
     return this.aeroportoService.findCidadePais(desc.toUpperCase());
