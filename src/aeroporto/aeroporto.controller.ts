@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, UseInterceptors, CacheInterceptor, CacheTTL } from '@nestjs/common';
 import { AeroportoService } from './aeroporto.service';
 import { CreateAeroportoDto } from './dto/create-aeroporto.dto';
 import { UpdateAeroportoDto } from './dto/update-aeroporto.dto';
@@ -13,6 +13,8 @@ export class AeroportoController {
   }
 
   @Get()
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(60)
   findAll() {
     return this.aeroportoService.findAll();
   }

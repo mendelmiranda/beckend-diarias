@@ -7,6 +7,9 @@ import {
   Param,
   Delete,
   Put,
+  UseInterceptors,
+  CacheInterceptor,
+  CacheTTL,
 } from '@nestjs/common';
 import { TipoEventoService } from './tipo_evento.service';
 import { CreateTipoEventoDto } from './dto/create-tipo_evento.dto';
@@ -22,6 +25,8 @@ export class TipoEventoController {
   }
 
   @Get()
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(60)
   findAll() {
     return this.tipoEventoService.findAll();
   }

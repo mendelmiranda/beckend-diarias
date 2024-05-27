@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, CacheInterceptor, CacheTTL } from '@nestjs/common';
 import { CidadeService } from './cidade.service';
 import { CreateCidadeDto } from './dto/create-cidade.dto';
 import { UpdateCidadeDto } from './dto/update-cidade.dto';
@@ -13,6 +13,8 @@ export class CidadeController {
   }
 
   @Get()
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(60)
   findAll() {
     return this.cidadeService.findAll();
   }
@@ -34,6 +36,8 @@ export class CidadeController {
 
 
   @Get('/estado/:id')
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(60)
   cidadesDoEstado(@Param('id') id: string) {
     return this.cidadeService.localizaCidadesPorEstadoId(+id);
   }

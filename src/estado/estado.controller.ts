@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, CacheInterceptor, CacheTTL } from '@nestjs/common';
 import { EstadoService } from './estado.service';
 import { CreateEstadoDto } from './dto/create-estado.dto';
 import { UpdateEstadoDto } from './dto/update-estado.dto';
@@ -13,6 +13,8 @@ export class EstadoController {
   }
 
   @Get()
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(60)
   findAll() {
     return this.estadoService.findAll();
   }
