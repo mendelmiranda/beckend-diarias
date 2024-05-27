@@ -20,6 +20,8 @@ export class AeroportoController {
   }
 
   @Get('/cidade/nome/:nome')
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(60)
   findAllByNome(@Param('nome') nome: string) {
     return this.aeroportoService.getAeroportos(nome);
   }
