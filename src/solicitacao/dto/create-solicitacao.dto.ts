@@ -7,4 +7,5 @@ export class CreateSolicitacaoDto {
   cod_lotacao?: number;
   lotacao?: string;
   login?: string;
+  protocolo?: string;
 }

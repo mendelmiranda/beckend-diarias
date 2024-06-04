@@ -72,8 +72,7 @@ export class SolicitacaoController {
   }
 
   @Put(':id')
-  update( @Param('id') id: string, @Body() updateSolicitacaoDto: UpdateSolicitacaoDto, 
-  @Req() request: Request ) {
+  update( @Param('id') id: string, @Body() updateSolicitacaoDto: UpdateSolicitacaoDto, @Req() request: Request ) {
     const usuario = JSON.parse(request.headers['dados_client']);
 
     return this.solicitacaoService.update(+id, updateSolicitacaoDto, usuario);

@@ -97,6 +97,7 @@ model solicitacao {
   cod_lotacao                Int?
   lotacao                    String?
   login                      String?
+  protocolo                  String?
   eventos                    evento[]
   tramite                    tramite[]
   correcao_solicitacao       correcao_solicitacao[]
@@ -107,7 +108,7 @@ model solicitacao {
   solicitacao_condutores     solicitacao_condutores[]
   encaminhar_solicitacao     encaminhar_solicitacao[]
   aprovacao_definitiva_darad aprovacao_definitiva_daof[]
-  
+
   @@id([id])
 }
 

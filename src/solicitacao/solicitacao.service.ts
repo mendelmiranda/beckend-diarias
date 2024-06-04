@@ -569,6 +569,7 @@ export class SolicitacaoService {
         where: { id },
         data: {
           status: 'PDF_GERADO',
+          protocolo: updateSolicitacaoDto.protocolo          
         },
       });
     }
