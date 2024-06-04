@@ -10,11 +10,12 @@ import { AeroportoService } from '../aeroporto/aeroporto.service';
 import { CargoDiariasService } from '../cargo_diarias/cargo_diarias.service';
 import { ValorViagemService } from 'src/valor_viagem/valor_viagem.service';
 import { EventoService } from 'src/evento/evento.service';
+import { LogSistemaService } from 'src/log_sistema/log_sistema.service';
 
 @Module({
   controllers: [ViagemController],
   providers: [ViagemService, PrismaService, ViagemParticipantesService, 
-    CidadeService, ParticipanteService, EventoParticipantesService, AeroportoService, CargoDiariasService, ValorViagemService, EventoService],
+    CidadeService, ParticipanteService, EventoParticipantesService, AeroportoService, CargoDiariasService, ValorViagemService, EventoService, LogSistemaService],
   exports: [ViagemService],
 })
 export class ViagemModule {}

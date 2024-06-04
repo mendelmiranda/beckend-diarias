@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/common';
 import { CargoDiariasService } from './cargo_diarias.service';
 import { CreateCargoDiariaDto } from './dto/create-cargo_diaria.dto';
 import { UpdateCargoDiariaDto } from './dto/update-cargo_diaria.dto';
@@ -8,8 +8,10 @@ export class CargoDiariasController {
   constructor(private readonly cargoDiariasService: CargoDiariasService) {}
 
   @Post()
-  create(@Body() createCargoDiariaDto: CreateCargoDiariaDto) {
-    return this.cargoDiariasService.create(createCargoDiariaDto);
+  create(@Body() createCargoDiariaDto: CreateCargoDiariaDto, @Req() request: Request) {
+    const usuario = JSON.parse(request.headers['dados_client']);
+    
+    return this.cargoDiariasService.create(createCargoDiariaDto, usuario);
   }
 
   @Get()
@@ -39,7 +41,9 @@ export class CargoDiariasController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.cargoDiariasService.remove(+id);
+  remove(@Param('id') id: string, @Req() request: Request) {
+    const usuario = JSON.parse(request.headers['dados_client']);
+
+    return this.cargoDiariasService.remove(+id, usuario);
   }
 }

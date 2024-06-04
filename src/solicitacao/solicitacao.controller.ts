@@ -1,24 +1,20 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Post,
   Put,
-  Request,
-  Req,
-  HttpStatus,
   Query,
+  Req
 } from '@nestjs/common';
-import { SolicitacaoService } from './solicitacao.service';
-import { CreateSolicitacaoDto } from './dto/create-solicitacao.dto';
-import { UpdateSolicitacaoDto } from './dto/update-solicitacao.dto';
-import PesquisaSolicitacaoDTO from './dto/pesquisa-solicitacao.dto';
-import { InfoUsuario } from 'src/log_sistema/log_sistema.service';
 import { ConsultaSetoresDto } from './dto/consulta-setores.dto';
+import { CreateSolicitacaoDto } from './dto/create-solicitacao.dto';
+import PesquisaSolicitacaoDTO from './dto/pesquisa-solicitacao.dto';
+import { UpdateSolicitacaoDto } from './dto/update-solicitacao.dto';
 import { Solicitacao } from './entities/solicitacao.entity';
+import { SolicitacaoService } from './solicitacao.service';
 
 @Controller('solicitacao')
 export class SolicitacaoController {
