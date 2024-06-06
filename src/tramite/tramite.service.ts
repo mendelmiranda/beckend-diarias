@@ -269,6 +269,7 @@ export class TramiteService {
             empenho_daofi: true,
             eventos: {
               include: {
+                anexo_evento: true,
                 evento_participantes: {
                   include: {
                     participante: true,
