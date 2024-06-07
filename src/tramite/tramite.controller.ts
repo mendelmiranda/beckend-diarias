@@ -148,4 +148,9 @@ export class TramiteController {
   updateStatusAoReverterTramite(@Param('id') id: string,@Body() dto: UpdateTramiteDto,) {
     return this.tramiteService.updateStatusAoReverterTramite(+id, dto);
   }
+
+  @Get('/consulta/detalhes/servidor/:cpf')
+  pesquisaServidor(@Param('cpf') cpf: string) {
+    return this.tramiteService.pesquisaServidorGOVBR(cpf);
+  }
 }
