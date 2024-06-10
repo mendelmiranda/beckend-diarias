@@ -591,6 +591,20 @@ export class TramiteService {
     });
   }
 
+  listarSolicitacoesPeloLogin(login: string) {
+    return this.prisma.tramite.findMany({
+      where: {
+        solicitacao: {
+          login: login,
+        },
+      },
+      include: {
+        solicitacao: true,
+        log_tramite: true,
+      },
+    });
+  }
+
   async update(id: number, dto: UpdateTramiteDto, nome?: string) {
     const { solicitacao, log_tramite, ...dtoSemSolicitacao } = dto;
 

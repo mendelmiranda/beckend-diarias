@@ -125,6 +125,11 @@ export class TramiteController {
     return this.tramiteService.findOne(+id);
   }
 
+  @Get('/solicitacao/login/:login')
+  localizarSolicitacoesPeloLogin(@Param('login') login: string) {
+    return this.tramiteService.listarSolicitacoesPeloLogin(login);
+  }
+
   @Put(':id')
   update(@Param('id') id: string, @Body() updateTramiteDto: UpdateTramiteDto) {
     return this.tramiteService.update(+id, updateTramiteDto);
