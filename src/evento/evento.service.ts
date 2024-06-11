@@ -70,6 +70,40 @@ export class EventoService {
     });
   }
 
+  findEventosFuturos() {
+    return this.prisma.evento.findMany({
+      where: {
+        inicio: {
+          gte: new Date(),
+        },
+      },
+      include: {
+        solicitacao: {
+          include: {
+            tramite: {
+              include: {
+                log_tramite: true,
+              },
+            },
+            }
+          },
+        tipo_evento: true,
+        evento_participantes: {
+          include: {
+            participante: true,
+          },
+        },
+        pais: true,
+        cidade: {
+          include: {
+            estado: true,
+          },
+        },
+      },
+      orderBy: [{ inicio: 'desc' }],
+    });
+  }
+
   update(id: number, updateEventoDto: UpdateEventoDto) {
     return this.prisma.evento.update({
       where: { id },

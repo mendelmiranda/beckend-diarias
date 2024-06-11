@@ -43,6 +43,11 @@ export class EventoController {
     return this.eventoService.findEventosDisponiveis();
   }
 
+  @Get('/futuros/presidencia')
+  findEventosFuturos() {
+    return this.eventoService.findEventosFuturos();
+  }
+
   @Put(':id')
   update(@Param('id') id: string, @Body() updateEventoDto: UpdateEventoDto) {   
 
