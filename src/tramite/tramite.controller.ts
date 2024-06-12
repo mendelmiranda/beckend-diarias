@@ -135,6 +135,11 @@ export class TramiteController {
     return this.tramiteService.update(+id, updateTramiteDto);
   }
 
+  @Put('/daof/lido/tramite/:id')
+  updateLidoDAOF(@Param('id') id: string, @Body() updateTramiteDto: UpdateTramiteDto) {
+    return this.tramiteService.updateDAOFLido(+id);
+  }
+
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.tramiteService.remove(+id);

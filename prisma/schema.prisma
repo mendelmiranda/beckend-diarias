@@ -141,6 +141,8 @@ model tramite {
   solicitacao_id      Int
   log_tramite         log_tramite[]
 
+  flag_daof           String? @db.Char(3)
+
   @@id([id])
 }
 

@@ -618,6 +618,15 @@ export class TramiteService {
     });
   }
 
+  async updateDAOFLido(id: number) {
+    return this.prisma.tramite.update({
+      where: { id },
+      data: {
+        flag_daof: 'SIM',      
+      },
+    });
+  }
+
   updateStatus(id: number, status: string, nome: string, dto: CreateTramiteDto) {
     /* const data = this.prisma.tramite.findUnique({
       where: {

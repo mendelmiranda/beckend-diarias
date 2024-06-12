@@ -10,4 +10,5 @@ export class CreateTramiteDto {
   solicitacao_id: number;
   solicitacao?: solicitacao;
   log_tramite?: log_tramite;
+  flag_daof?: string;
 }
