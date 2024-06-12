@@ -31,8 +31,10 @@ export class EncaminharSolicitacaoService {
     });
   }
 
-  findAvisoDoTramite(codLotacao: number) {
-    return this.prisma.encaminhar_solicitacao.findMany({
+  async findAvisoDoTramite(codLotacao: number) {
+    let resultado;
+   try {
+    resultado = await this.prisma.encaminhar_solicitacao.findMany({
       where: {
         AND: {
           cod_lotacao_destino: codLotacao,
@@ -40,6 +42,12 @@ export class EncaminharSolicitacaoService {
         },
       },
     });
+   } catch (error) {
+      console.log(error);
+    }
+
+    return resultado;
+
   }
 
   update(id: number, updateEncaminharSolicitacaoDto: UpdateEncaminharSolicitacaoDto) {
