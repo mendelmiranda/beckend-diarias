@@ -23,6 +23,7 @@ async function bootstrap() {
 
   app.enableCors({
     origin: [
+      'http://localhost:4321',
       'http://localhost:3000',
       'http://localhost:5173',
       'https://s3i.tce.ap.gov.br',

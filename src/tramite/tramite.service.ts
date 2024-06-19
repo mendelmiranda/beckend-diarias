@@ -591,6 +591,30 @@ export class TramiteService {
     });
   }
 
+  async listarAguardandoCalculo() {
+    const tramites = await this.prisma.tramite.findMany({
+      where: {
+        AND: [
+          {
+            status: 'VALORES_ESCOLA',
+          },
+          {
+            cod_lotacao_destino: 47,
+          },
+        ]
+      },
+      include: {
+        solicitacao: true,
+      },
+    });
+
+    const contador = tramites.length
+
+    return { tramites, contador };
+
+  }
+
+
   listarSolicitacoesPeloLogin(login: string) {
     return this.prisma.tramite.findMany({
       where: {

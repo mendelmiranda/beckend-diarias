@@ -14,10 +14,11 @@ import { ValorViagemService } from 'src/valor_viagem/valor_viagem.service';
 import { EventoService } from 'src/evento/evento.service';
 import { HttpModule, HttpService } from '@nestjs/axios';
 import { LogSistemaService } from 'src/log_sistema/log_sistema.service';
+import { TramiteContadorController } from './tramite.contator.controller';
 
 
 @Module({
-  controllers: [TramiteController],
+  controllers: [TramiteController, TramiteContadorController],
   providers: [TramiteService, PrismaService, LogTramiteService, EmailService, ViagemService, CidadeService, AeroportoService, EventoParticipantesService, CargoDiariasService, ValorViagemService,
   EventoService, LogSistemaService],
   imports: [EmailModule, HttpModule]
