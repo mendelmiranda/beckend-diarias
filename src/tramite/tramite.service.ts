@@ -614,6 +614,49 @@ export class TramiteService {
 
   }
 
+  async listarFinalizarDaradContador() {
+    const tramites = await this.prisma.tramite.findMany({
+      where: {
+        AND: [
+          {
+            status: 'EMPENHADO',
+          },
+          {
+            cod_lotacao_destino: 47,
+          },
+        ]
+      },
+      include: {
+        solicitacao: true,
+      },
+    });
+
+    const contador = tramites.length
+
+    return { tramites, contador };
+  }
+
+  async listarGerarPDFDaradContador() {
+    const tramites = await this.prisma.tramite.findMany({
+      where: {
+        AND: [
+          {
+            status: 'CONCLUIDO',
+          },
+          {
+            cod_lotacao_destino: 47,
+          },
+        ]
+      },
+      include: {
+        solicitacao: true,
+      },
+    });
+
+    const contador = tramites.length
+
+    return { tramites, contador };
+  }
 
   listarSolicitacoesPeloLogin(login: string) {
     return this.prisma.tramite.findMany({

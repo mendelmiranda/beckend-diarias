@@ -11,8 +11,20 @@ import { TramiteService } from './tramite.service';
     
   
     @Get('/aguardando-calculo')
-    pesquisaServidor() {
+    aguardandoCalculoContador() {
       return this.tramiteService.listarAguardandoCalculo();
     }
+
+
+    @Get('/darad-finalizar')
+    daradFinalizarContador() {
+      return this.tramiteService.listarFinalizarDaradContador();
+    }
+
+    @Get('/darad-gerar-pdf')
+    daradGerarPDFContador() {
+      return this.tramiteService.listarGerarPDFDaradContador();
+    }
+
   }
   
