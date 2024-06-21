@@ -1,6 +1,7 @@
 import {
     Controller,
-    Get
+    Get,
+    Param
 } from '@nestjs/common';
 import { TramiteService } from './tramite.service';
   
@@ -10,13 +11,13 @@ import { TramiteService } from './tramite.service';
   
     
   
-    @Get('/aguardando-calculo')
-    aguardandoCalculoContador() {
-      return this.tramiteService.listarAguardandoCalculo();
+    @Get('/contador/status/:status/destino/:destino')
+    aguardandoCalculoContador(@Param('status') status: string, @Param('destino') cod_lotacao_destino: number) {
+      return this.tramiteService.listarContador(status, cod_lotacao_destino);
     }
 
 
-    @Get('/darad-finalizar')
+    /* @Get('/darad-finalizar')
     daradFinalizarContador() {
       return this.tramiteService.listarFinalizarDaradContador();
     }
@@ -24,7 +25,7 @@ import { TramiteService } from './tramite.service';
     @Get('/darad-gerar-pdf')
     daradGerarPDFContador() {
       return this.tramiteService.listarGerarPDFDaradContador();
-    }
+    } */
 
   }
   

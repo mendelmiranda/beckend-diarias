@@ -591,15 +591,15 @@ export class TramiteService {
     });
   }
 
-  async listarAguardandoCalculo() {
+  async listarContador(status: string, cod_lotacao_destino: number) {
     const tramites = await this.prisma.tramite.findMany({
       where: {
         AND: [
           {
-            status: 'VALORES_ESCOLA',
+            status: status,
           },
           {
-            cod_lotacao_destino: 47,
+            cod_lotacao_destino: +cod_lotacao_destino,
           },
         ]
       },
@@ -614,7 +614,7 @@ export class TramiteService {
 
   }
 
-  async listarFinalizarDaradContador() {
+  /* async listarFinalizarDaradContador() {
     const tramites = await this.prisma.tramite.findMany({
       where: {
         AND: [
@@ -656,7 +656,7 @@ export class TramiteService {
     const contador = tramites.length
 
     return { tramites, contador };
-  }
+  } */
 
   listarSolicitacoesPeloLogin(login: string) {
     return this.prisma.tramite.findMany({
