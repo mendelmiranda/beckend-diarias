@@ -16,16 +16,5 @@ import { TramiteService } from './tramite.service';
       return this.tramiteService.listarContador(status, cod_lotacao_destino);
     }
 
-
-    /* @Get('/darad-finalizar')
-    daradFinalizarContador() {
-      return this.tramiteService.listarFinalizarDaradContador();
-    }
-
-    @Get('/darad-gerar-pdf')
-    daradGerarPDFContador() {
-      return this.tramiteService.listarGerarPDFDaradContador();
-    } */
-
   }
   
