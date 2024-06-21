@@ -44,6 +44,7 @@ export class EventoService {
         solicitacao_id: idSolicitacao,
       },
       include: {
+        anexo_evento: true,
         evento_participantes: {
           include: {
             participante: true,
