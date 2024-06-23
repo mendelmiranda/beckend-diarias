@@ -37,7 +37,7 @@ export class EncaminharSolicitacaoService {
     resultado = await this.prisma.encaminhar_solicitacao.findMany({
       where: {
         AND: {
-          cod_lotacao_destino: codLotacao,
+          cod_lotacao_destino: codLotacao ?? 0,
           lido: 'NAO',
         },
       },

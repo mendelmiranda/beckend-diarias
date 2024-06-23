@@ -1,12 +1,14 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { participante } from '@prisma/client';
+import { participante, tramite } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
 import { EmailService } from 'src/email/email.service';
 import { CreateLogTramiteDto } from 'src/log_tramite/dto/create-log_tramite.dto';
 import { LogTramiteService } from 'src/log_tramite/log_tramite.service';
 import { CreateTramiteDto } from './dto/create-tramite.dto';
 import { UpdateTramiteDto } from './dto/update-tramite.dto';
+import { DateTime } from 'luxon';
+
 
 @Injectable()
 export class TramiteService {
@@ -601,17 +603,23 @@ export class TramiteService {
           {
             cod_lotacao_destino: +cod_lotacao_destino,
           },
-        ]
+        ],
       },
       include: {
         solicitacao: true,
       },
     });
 
-    const contador = tramites.length
+    const tramitesFormatados = tramites.map(tramite => {
+      return {
+        ...tramite,
+        datareg: tramite.solicitacao.datareg ? DateTime.fromJSDate(tramite.solicitacao.datareg).toFormat('dd/MM/yyyy') : null,
+      };
+    });
 
-    return { tramites, contador };
+    const contador = tramitesFormatados.length;
 
+    return { tramites: tramitesFormatados, contador };
   }
 
   listarSolicitacoesPeloLogin(login: string) {
