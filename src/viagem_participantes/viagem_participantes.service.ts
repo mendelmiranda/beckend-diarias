@@ -68,6 +68,27 @@ export class ViagemParticipantesService {
     })
   }
 
+  findViagemDoParticipantePeloId(id: number) {
+    return this.prisma.viagem_participantes.findFirst({
+      where: {
+        evento_participantes_id: id
+      },
+      include: {
+        viagem: {
+          include: {
+            origem: true,
+            destino: true,
+            cidade_origem: true,
+            cidade_destino: true,
+            pais: true,
+          },
+        },
+
+      }
+    })
+  }
+
+
   update(id: number, updateViagemParticipanteDto: UpdateViagemParticipanteDto) {
     return `This action updates a #${id} viagemParticipante`;
   }
