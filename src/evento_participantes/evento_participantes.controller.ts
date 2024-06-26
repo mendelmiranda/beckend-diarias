@@ -42,34 +42,36 @@ export class EventoParticipantesController {
     return this.eventoParticipantesService.findParticipanteDoEventoInfo(cpf);
   }
 
-  @Get('/viagem/por/evento/id/:id')
+  @Get('/evento/viagem/solicitacao/:id')
   async findParticipantesAgrupadosPorEvento(@Param('id') id: number) {
-
     const dados = await this.eventoParticipantesService.buscarParticipantesEvento(id);    
 
     const agrupadosPorOrigemDestino = dados.reduce((acc, item) => {
-      const viagemInfo = item.viagem_participantes[0].viagem;
-      const chave = `${viagemInfo.origem.id}-${viagemInfo.destino.id}`;
-  
+      const viagemInfo = item.evento_participantes[0].viagem_participantes[0].viagem;
+      const evento = item.titulo;  
+      
+      // const chave = ${viagemInfo.origem.id}-${viagemInfo.destino.id};
+      const chave = "eventos";
+
       if (!acc[chave]) {
           acc[chave] = {
+              titulo: evento,
               origem: viagemInfo.origem.cidade,
               destino: viagemInfo.destino.cidade,
-              data_ida: viagemInfo.data_ida,
-              data_volta: viagemInfo.data_volta,
               participantes: []
           };
       }
   
       acc[chave].participantes.push({
-          nome: item.participante.nome
+          nome: item.evento_participantes[0].participante.nome
       });
   
       return acc;
-  }, {});
+    }, {});
 
-    return agrupadosPorOrigemDestino;
-  }
+        return agrupadosPorOrigemDestino['eventos'];
+}
+
 
 
   @Patch(':id')

@@ -6,10 +6,10 @@ import { evento, participante } from '@prisma/client';
 
 @Injectable()
 export class EventoParticipantesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async create(dto: CreateEventoParticipanteDto) {
-    
+
     const prop = 'evento';
     delete dto[prop];
 
@@ -58,7 +58,7 @@ export class EventoParticipantesService {
     return this.prisma.evento_participantes.findMany({
       where: {
         participante: {
-          cpf: cpf,        
+          cpf: cpf,
         },
       },
       include: {
@@ -66,50 +66,55 @@ export class EventoParticipantesService {
         evento: {
           include: {
             solicitacao: true,
-          },        
+          },
         },
 
-        
-        
+
+
       },
       orderBy: [{
         evento: {
           solicitacao: {
             id: 'desc',
           }
-        }      
+        }
       }]
     });
   }
 
-  async buscarParticipantesEvento(id: number) {
+  async buscarParticipantesEvento(solicitacaoId: number) {
     try {
-      const participantes = await this.prisma.evento_participantes.findMany({
+      const participantes = await this.prisma.evento.findMany({
         where: {
-          evento_id: +id, // Garantir que 'id' é um número
+          solicitacao_id: +solicitacaoId,
         },
         select: {
-          participante: {
+          titulo: true,
+          evento_participantes: {
             select: {
-              nome: true,
-            },
-          },
-          viagem_participantes: {
-            select: {
-              viagem: {
+              id: true,
+              participante: {
                 select: {
-                  data_ida: true,
-                  data_volta: true,
-                  origem: {
+                  nome: true,
+                  id: true,
+                },
+              },
+              viagem_participantes: {
+                select: {
+                  viagem: {
                     select: {
-                      id: true,
-                      cidade: true,
-                    },
-                  },
-                  destino: {
-                    select: {
-                      id: true,
-                      cidade: true,
+                      origem: {
+                        select: {
+                          cidade: true,
+                          id: true,
+                        },
+                      },
+                      destino: {
+                        select: {
+                          cidade: true,
+                          id: true,
+                        },
+                      },
                     },
                   },
                 },
@@ -119,7 +124,7 @@ export class EventoParticipantesService {
         },
       });
 
-      return participantes// this.agruparPorOrigemDestino(participantes);
+      return participantes;
     } catch (error) {
       console.error('Erro ao buscar participantes do evento:', error);
       throw new Error('Erro ao buscar participantes do evento');
