@@ -82,6 +82,77 @@ export class EventoParticipantesService {
     });
   }
 
+  async buscarParticipantesEvento(id: number) {
+    try {
+      const participantes = await this.prisma.evento_participantes.findMany({
+        where: {
+          evento_id: +id, // Garantir que 'id' é um número
+        },
+        select: {
+          participante: {
+            select: {
+              nome: true,
+            },
+          },
+          viagem_participantes: {
+            select: {
+              viagem: {
+                select: {
+                  data_ida: true,
+                  data_volta: true,
+                  origem: {
+                    select: {
+                      id: true,
+                      cidade: true,
+                    },
+                  },
+                  destino: {
+                    select: {
+                      id: true,
+                      cidade: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      return participantes// this.agruparPorOrigemDestino(participantes);
+    } catch (error) {
+      console.error('Erro ao buscar participantes do evento:', error);
+      throw new Error('Erro ao buscar participantes do evento');
+    }
+  }
+
+  /* private agruparPorOrigemDestino(participantes: any[]) {
+    try {
+      return participantes.reduce((acc, item) => {
+        const origem = item.viagem_participantes.viagem.origem.cidade;
+        const destino = item.viagem_participantes.viagem.destino.cidade;
+        const chave = `${origem}-${destino}`;
+        
+        if (!acc[chave]) {
+          acc[chave] = [];
+        }
+        
+        acc[chave].push({
+          nome: item.participante.nome,
+          origem: origem,
+          destino: destino
+        });
+
+        return acc;
+      }, {});
+    } catch (error) {
+      console.error('Erro ao agrupar participantes por origem e destino:', error);
+      throw new Error('Erro ao processar os dados');
+    }
+  } */
+
+
+
   update(id: number, updateEventoParticipanteDto: UpdateEventoParticipanteDto) {
     return `This action updates a #${id} eventoParticipante`;
   }

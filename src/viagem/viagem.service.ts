@@ -56,6 +56,7 @@ export class ViagemService {
   }
 
   async calculaDiaria(idViagem: number, participanteId: number, eventoId: number, total: number) {
+    
     const localizaEvento = await this.eventoService.findOne(eventoId);
     const localizaViagem = await this.findOne(idViagem);
     const localizaEventoParticipante = await this.eventoParticipanteService.findOne(+participanteId);
