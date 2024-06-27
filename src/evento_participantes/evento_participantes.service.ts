@@ -83,7 +83,9 @@ export class EventoParticipantesService {
   }
 
   async buscarParticipantesEvento(solicitacaoId: number) {
+    
     try {
+      
       const participantes = await this.prisma.evento.findMany({
         where: {
           solicitacao_id: +solicitacaoId,
@@ -103,6 +105,39 @@ export class EventoParticipantesService {
                 select: {
                   viagem: {
                     select: {
+                      data_ida: true,
+                      data_volta: true,
+                      arcar_passagem: true,
+                      custos: true,
+                      data_ida_diferente: true,
+                      data_volta_diferente: true,
+                      deslocamento: true,
+                      local_exterior: true,
+                      exterior: true,
+                      justificativa: true,
+                      justificativa_diferente: true,
+                      justificativa_municipios: true,
+                      servidor_acompanhando: true,
+                      viagem_diferente: true,
+                      pais: true,
+                      viagem_pernoite: true,
+                      viagem_superior: true,
+
+                      cidade_origem: {
+                        select: {
+                          descricao: true,
+                          id: true,
+                        },
+                      },
+                      cidade_destino: {
+                        select: {
+                          descricao: true,
+                          id: true,
+                        },
+                      },
+
+                      
+
                       origem: {
                         select: {
                           cidade: true,
@@ -130,32 +165,6 @@ export class EventoParticipantesService {
       throw new Error('Erro ao buscar participantes do evento');
     }
   }
-
-  /* private agruparPorOrigemDestino(participantes: any[]) {
-    try {
-      return participantes.reduce((acc, item) => {
-        const origem = item.viagem_participantes.viagem.origem.cidade;
-        const destino = item.viagem_participantes.viagem.destino.cidade;
-        const chave = `${origem}-${destino}`;
-        
-        if (!acc[chave]) {
-          acc[chave] = [];
-        }
-        
-        acc[chave].push({
-          nome: item.participante.nome,
-          origem: origem,
-          destino: destino
-        });
-
-        return acc;
-      }, {});
-    } catch (error) {
-      console.error('Erro ao agrupar participantes por origem e destino:', error);
-      throw new Error('Erro ao processar os dados');
-    }
-  } */
-
 
 
   update(id: number, updateEventoParticipanteDto: UpdateEventoParticipanteDto) {
