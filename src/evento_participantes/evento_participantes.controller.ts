@@ -49,28 +49,25 @@ export class EventoParticipantesController {
     const agrupadosPorOrigemDestinoEvento = dados.reduce((acc, evento) => {
       evento.evento_participantes.forEach(participante => {
           participante.viagem_participantes.forEach(viagem => {
-              // Usando operador ternário para escolher entre 'origem'/'destino' e 'cidade_origem'/'cidade_destino'
               const origemCidade = viagem.viagem.origem ? viagem.viagem.origem.cidade : viagem.viagem.cidade_origem.descricao;
               const destinoCidade = viagem.viagem.destino ? viagem.viagem.destino.cidade : viagem.viagem.cidade_destino.descricao;
   
               const chave = `${origemCidade}-${destinoCidade}-${evento.titulo}`;
-              
+  
               // Encontrar um grupo existente com a mesma chave
-              let grupoExistente = acc.find(g => g.titulo === evento.titulo && 
-                                                 g.origem === origemCidade && 
-                                                 g.destino === destinoCidade);
+              let grupoExistente = acc.find(g => g.chave === chave);
   
               if (!grupoExistente) {
                   // Se não existir, crie um novo grupo
                   grupoExistente = {
                       titulo: evento.titulo,
-                      origem: origemCidade,
-                      destino: destinoCidade,
+                      viagem: viagem.viagem,
+                      chave, // Armazena a chave no grupo para facilitar a busca
                       participantes: []
                   };
                   acc.push(grupoExistente);
               }
-              
+  
               // Adicionar o participante ao grupo existente
               grupoExistente.participantes.push({
                   nome: participante.participante.nome,
@@ -82,7 +79,7 @@ export class EventoParticipantesController {
   }, []);
   
 
-        return agrupadosPorOrigemDestinoEvento;
+  return agrupadosPorOrigemDestinoEvento;
 }
 
 

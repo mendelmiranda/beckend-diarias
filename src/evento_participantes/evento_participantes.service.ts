@@ -102,7 +102,18 @@ export class EventoParticipantesService {
                 },
               },
               viagem_participantes: {
-                select: {
+                include: {
+                  viagem: {
+                    include: {
+                      origem: true,
+                      destino: true,
+                      cidade_origem: true,
+                      cidade_destino: true,
+                      pais: true,
+                    }
+                  }
+                },
+                /* select: {
                   viagem: {
                     select: {
                       data_ida: true,
@@ -152,7 +163,7 @@ export class EventoParticipantesService {
                       },
                     },
                   },
-                },
+                }, */
               },
             },
           },
