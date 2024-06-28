@@ -84,97 +84,72 @@ export class EventoParticipantesService {
 
   async buscarParticipantesEvento(solicitacaoId: number) {
     
-    try {
-      
-      const participantes = await this.prisma.evento.findMany({
-        where: {
-          solicitacao_id: +solicitacaoId,
-        },
-        select: {
-          titulo: true,
-          evento_participantes: {
-            select: {
-              id: true,
-              participante: {
-                select: {
-                  nome: true,
-                  id: true,
-                },
+    const participantes = await this.prisma.evento.findMany({
+      where: {
+        solicitacao_id: +solicitacaoId,
+      },
+      select: {
+        titulo: true,
+        evento_participantes: {
+          select: {
+            id: true,
+            participante: {
+              select: {
+                nome: true,
+                id: true,
               },
-              viagem_participantes: {
-                include: {
-                  viagem: {
-                    include: {
-                      origem: true,
-                      destino: true,
-                      cidade_origem: true,
-                      cidade_destino: true,
-                      pais: true,
-                    }
+            },
+            viagem_participantes: {
+              include: {
+                viagem: {
+                  include: {
+                    origem: true,
+                    destino: true,
+                    cidade_origem: true,
+                    cidade_destino: true,
+                    pais: true,
                   }
-                },
-                /* select: {
-                  viagem: {
-                    select: {
-                      data_ida: true,
-                      data_volta: true,
-                      arcar_passagem: true,
-                      custos: true,
-                      data_ida_diferente: true,
-                      data_volta_diferente: true,
-                      deslocamento: true,
-                      local_exterior: true,
-                      exterior: true,
-                      justificativa: true,
-                      justificativa_diferente: true,
-                      justificativa_municipios: true,
-                      servidor_acompanhando: true,
-                      viagem_diferente: true,
-                      pais: true,
-                      viagem_pernoite: true,
-                      viagem_superior: true,
-
-                      cidade_origem: {
-                        select: {
-                          descricao: true,
-                          id: true,
-                        },
-                      },
-                      cidade_destino: {
-                        select: {
-                          descricao: true,
-                          id: true,
-                        },
-                      },
-
-                      
-
-                      origem: {
-                        select: {
-                          cidade: true,
-                          id: true,
-                        },
-                      },
-                      destino: {
-                        select: {
-                          cidade: true,
-                          id: true,
-                        },
-                      },
-                    },
-                  },
-                }, */
+                }
               },
             },
           },
         },
+      },
+    });
+  
+    const viagensAgrupadas: ViagemAgrupada = {};
+  
+    participantes.forEach(evento => {
+      evento.evento_participantes.forEach(ep => {
+        ep.viagem_participantes.forEach(vp => {
+          const chave = `${vp.viagem.origem?.cidade || vp.viagem.cidade_origem?.descricao}-${vp.viagem.destino?.cidade || vp.viagem.cidade_destino?.descricao}`;
+          if (!viagensAgrupadas[chave]) {
+            viagensAgrupadas[chave] = {
+              participantes: [],
+              detalhesViagem: {
+                origem: vp.viagem.origem?.cidade || vp.viagem.cidade_origem?.descricao || 'Desconhecida',
+                destino: vp.viagem.destino?.cidade || vp.viagem.cidade_destino?.descricao || 'Desconhecida',
+              }
+            };
+          }
+          viagensAgrupadas[chave].participantes.push({
+            nome: ep.participante.nome,
+            id: ep.participante.id
+          });
+        });
       });
-
-      return participantes;
-    } catch (error) {
-      console.error('Erro ao buscar participantes do evento:', error);
-      throw new Error('Erro ao buscar participantes do evento');
+    });
+  
+    // Aqui você pode decidir como exibir os resultados
+    // Por exemplo, exibir sem mostrar a chave diretamente:
+    for (const [_, group] of Object.entries(viagensAgrupadas)) {
+      console.log(`Viagem de ${group.detalhesViagem.origem} para ${group.detalhesViagem.destino}`);
+      group.participantes.forEach(participante => {
+        console.log(`  Participante: ${participante.nome} (ID: ${participante.id})`);
+      });
     }
+  
+    return viagensAgrupadas;
   }
 
 
@@ -190,13 +165,22 @@ export class EventoParticipantesService {
     });
   }
 
-  /* async remove(idEvento: number, idParticipante) {
-    return await this.prisma.evento_participantes.delete({
-      where: {
-        evento_id_participante_id: {
-          evento_id: idEvento, participante_id: idParticipante
-        }
-      }
-    })
-  } */
+ }
+
+
+interface ViagemDetalhe {
+  origem: string;
+  destino: string;
+  // incluir outros detalhes necessários da viagem
+}
+
+// Tipo para mapear viagens a participantes
+export interface ViagemAgrupada {
+  [key: string]: { // chave é uma string composta por origem-destino
+    participantes: Array<{
+      nome: string;
+      id: number;
+    }>;
+    detalhesViagem: ViagemDetalhe;
+  }
 }
