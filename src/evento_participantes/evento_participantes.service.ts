@@ -68,9 +68,6 @@ export class EventoParticipantesService {
             solicitacao: true,
           },
         },
-
-
-
       },
       orderBy: [{
         evento: {
