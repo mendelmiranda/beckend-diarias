@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { CreateEventoParticipanteDto } from './dto/create-evento_participante.dto';
 import { UpdateEventoParticipanteDto } from './dto/update-evento_participante.dto';
-import { evento, participante } from '@prisma/client';
+import { aeroporto, cidade, evento, pais, participante, viagem } from '@prisma/client';
 
 @Injectable()
 export class EventoParticipantesService {
@@ -122,14 +122,13 @@ export class EventoParticipantesService {
     participantes.forEach(evento => {
       evento.evento_participantes.forEach(ep => {
         ep.viagem_participantes.forEach(vp => {
-          const chave = `${vp.viagem.origem?.cidade || vp.viagem.cidade_origem?.descricao}-${vp.viagem.destino?.cidade || vp.viagem.cidade_destino?.descricao}`;
+          const chave = `${evento.titulo}-${vp.viagem.origem?.cidade || vp.viagem.cidade_origem?.descricao}-${vp.viagem.destino?.cidade || vp.viagem.cidade_destino?.descricao}`;
+
           if (!viagensAgrupadas[chave]) {
             viagensAgrupadas[chave] = {
+              titulo: evento.titulo,
               participantes: [],
-              detalhesViagem: {
-                origem: vp.viagem.origem?.cidade || vp.viagem.cidade_origem?.descricao || 'Desconhecida',
-                destino: vp.viagem.destino?.cidade || vp.viagem.cidade_destino?.descricao || 'Desconhecida',
-              }
+              viagem: vp.viagem,
             };
           }
           viagensAgrupadas[chave].participantes.push({
@@ -139,15 +138,6 @@ export class EventoParticipantesService {
         });
       });
     });
-  
-    // Aqui você pode decidir como exibir os resultados
-    // Por exemplo, exibir sem mostrar a chave diretamente:
-    for (const [_, group] of Object.entries(viagensAgrupadas)) {
-      console.log(`Viagem de ${group.detalhesViagem.origem} para ${group.detalhesViagem.destino}`);
-      group.participantes.forEach(participante => {
-        console.log(`  Participante: ${participante.nome} (ID: ${participante.id})`);
-      });
-    }
   
     return viagensAgrupadas;
   }
@@ -168,11 +158,15 @@ export class EventoParticipantesService {
  }
 
 
-interface ViagemDetalhe {
-  origem: string;
-  destino: string;
-  // incluir outros detalhes necessários da viagem
-}
+/* interface ViagemDetalhe {
+  viagem: viagem & {
+    origem: aeroporto;
+    destino: aeroporto;
+    pais: pais;
+    cidade_origem: cidade;
+    cidade_destino: cidade;
+  };
+} */
 
 // Tipo para mapear viagens a participantes
 export interface ViagemAgrupada {
@@ -181,6 +175,7 @@ export interface ViagemAgrupada {
       nome: string;
       id: number;
     }>;
-    detalhesViagem: ViagemDetalhe;
+    viagem: viagem;
+    titulo: string;
   }
 }
