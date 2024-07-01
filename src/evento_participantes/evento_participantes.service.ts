@@ -83,7 +83,6 @@ export class EventoParticipantesService {
   }
 
   async buscarParticipantesEvento(solicitacaoId: number) {
-    
     const participantes = await this.prisma.evento.findMany({
       where: {
         solicitacao_id: +solicitacaoId,
@@ -116,9 +115,9 @@ export class EventoParticipantesService {
         },
       },
     });
-  
-    const viagensAgrupadas: ViagemAgrupada = {};
-  
+
+    const viagensAgrupadas: { [key: string]: any } = {};
+
     participantes.forEach(evento => {
       evento.evento_participantes.forEach(ep => {
         ep.viagem_participantes.forEach(vp => {
@@ -128,7 +127,7 @@ export class EventoParticipantesService {
             viagensAgrupadas[chave] = {
               titulo: evento.titulo,
               participantes: [],
-              viagem: vp.viagem,
+              viagem: vp.viagem, 
             };
           }
           viagensAgrupadas[chave].participantes.push({
@@ -138,9 +137,18 @@ export class EventoParticipantesService {
         });
       });
     });
-  
-    return viagensAgrupadas;
-  }
+
+    const listaViagens = [];
+    for (const key in viagensAgrupadas) {
+      const viagem = viagensAgrupadas[key];
+      listaViagens.push({
+        titulo: viagem.titulo,
+        viagem: viagem.viagem,
+        participantes: viagem.participantes,
+      });
+    }
+    return listaViagens;
+}
 
 
   update(id: number, updateEventoParticipanteDto: UpdateEventoParticipanteDto) {
@@ -155,18 +163,9 @@ export class EventoParticipantesService {
     });
   }
 
- }
+}
 
 
-/* interface ViagemDetalhe {
-  viagem: viagem & {
-    origem: aeroporto;
-    destino: aeroporto;
-    pais: pais;
-    cidade_origem: cidade;
-    cidade_destino: cidade;
-  };
-} */
 
 // Tipo para mapear viagens a participantes
 export interface ViagemAgrupada {
