@@ -118,7 +118,10 @@ export class EventoParticipantesService {
     participantes.forEach(evento => {
       evento.evento_participantes.forEach(ep => {
         ep.viagem_participantes.forEach(vp => {
-          const chave = `${evento.titulo}-${vp.viagem.origem?.cidade || vp.viagem.cidade_origem?.descricao}-${vp.viagem.destino?.cidade || vp.viagem.cidade_destino?.descricao}`;
+//          const chave = `${evento.titulo}-${vp.viagem.origem?.cidade || vp.viagem.cidade_origem?.descricao}-${vp.viagem.destino?.cidade || vp.viagem.cidade_destino?.descricao}`;
+const chave = `${evento.titulo}-${vp.viagem.origem?.cidade || vp.viagem.cidade_origem?.descricao}-${vp.viagem.destino?.cidade || vp.viagem.cidade_destino?.descricao}-${vp.viagem.servidor_acompanhando}
+-${vp.viagem.custos}-${vp.viagem.viagem_diferente}-${vp.viagem.viagem_superior}-${vp.viagem.viagem_pernoite}`;
+
 
           if (!viagensAgrupadas[chave]) {
             viagensAgrupadas[chave] = {
@@ -129,7 +132,13 @@ export class EventoParticipantesService {
           }
           viagensAgrupadas[chave].participantes.push({
             nome: ep.participante.nome,
-            id: ep.participante.id
+            id: ep.participante.id,
+            servidor_acompanhando: vp.viagem.servidor_acompanhando,
+            custos: vp.viagem.custos,
+            viagem_diferente: vp.viagem.viagem_diferente,
+            viagem_superior: vp.viagem.viagem_superior,
+            viagem_pernoite: vp.viagem.viagem_pernoite,
+
           });
         });
       });
