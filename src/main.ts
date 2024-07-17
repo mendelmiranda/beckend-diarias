@@ -1,8 +1,7 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { PrismaClient, prisma } from '@prisma/client';
-import { FastifyAdapter } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { PrismaClient } from '@prisma/client';
+import { AppModule } from './app.module';
 
 async function bootstrap() {
   const prisma = new PrismaClient();
