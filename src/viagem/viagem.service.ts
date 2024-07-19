@@ -410,6 +410,63 @@ export class ViagemService {
   })
   }
 
+  async participantesDaViagemPorSolicitacaoId(id: number) {
+      const resultado = await this.prisma.evento_participantes.findMany({
+        where: {
+          evento: {
+            solicitacao_id: id
+          }
+        },
+        include: {
+          participante: {
+            select: {
+              id: true,
+              nome: true,
+            }
+          },
+          evento: {
+            select: {
+              id: true,
+              titulo: true,
+            }
+          },
+          viagem_participantes: {
+            include: {
+              viagem: {
+                include: {
+                  origem: true,
+                  destino: true,
+                  cidade_origem: true,
+                  cidade_destino: true,
+                  pais: true,
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      // Agrupando por evento e reformatando a estrutura para usar array
+      const eventos = resultado.reduce((acc, item) => {
+        const eventoIndex = acc.findIndex(e => e.id === item.evento.id);
+        if (eventoIndex === -1) {
+          acc.push({
+            id: item.evento.id,
+            titulo: item.evento.titulo,
+            participantes: [item.participante],
+            viagens: item.viagem_participantes.map(vp => vp.viagem)
+          });
+        } else {
+          acc[eventoIndex].participantes.push(item.participante);
+          acc[eventoIndex].viagens.push(...item.viagem_participantes.map(vp => vp.viagem));
+        }
+        return acc;
+      }, []);
+    
+      return eventos;
+    }
+    
+
   update(id: number, updateViagemDto: UpdateViagemDto) {
     const prop = 'id';
     delete updateViagemDto[prop];
