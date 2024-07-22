@@ -49,7 +49,7 @@ export class ViagemController {
 
   @Get('/eventos/participantes/solicitacao/:id')
   findParticipantesDaViagemPorSolicitacao(@Param('id') id: number) {   
-    return this.viagemService.participantesDaViagemPorSolicitacaoId(+id);
+    return this.viagemService.participantesAgrupadosPorEvento(+id);
   }
 
   @Get()

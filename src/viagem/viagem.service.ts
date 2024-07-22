@@ -418,12 +418,12 @@ export class ViagemService {
           }
         },
         include: {
-          participante: {
+          /* participante: {
             select: {
               id: true,
               nome: true,
             }
-          },
+          }, */
           evento: {
             select: {
               id: true,
@@ -432,6 +432,16 @@ export class ViagemService {
           },
           viagem_participantes: {
             include: {
+              evento_participantes: {
+                include: {
+                  participante: {
+                    select: {
+                      id: true,
+                      nome: true,
+                    }
+                  }
+                }
+              },
               viagem: {
                 include: {
                   origem: true,
@@ -441,29 +451,43 @@ export class ViagemService {
                   pais: true,
                 }
               }
+              
             }
           }
         }
       });
       
-      // Agrupando por evento e reformatando a estrutura para usar array
-      const eventos = resultado.reduce((acc, item) => {
-        const eventoIndex = acc.findIndex(e => e.id === item.evento.id);
-        if (eventoIndex === -1) {
-          acc.push({
-            id: item.evento.id,
-            titulo: item.evento.titulo,
-            participantes: [item.participante],
-            viagens: item.viagem_participantes.map(vp => vp.viagem)
-          });
-        } else {
-          acc[eventoIndex].participantes.push(item.participante);
-          acc[eventoIndex].viagens.push(...item.viagem_participantes.map(vp => vp.viagem));
-        }
-        return acc;
-      }, []);
+            
+      return resultado;
+    }
+
+    async participantesAgrupadosPorEvento(id: number): Promise<EventoAgrupado[]> {
+      const resultado = await this.participantesDaViagemPorSolicitacaoId(id);
+      
+      const eventosAgrupados: { [key: number]: EventoAgrupado } = {};
     
-      return eventos;
+      resultado.forEach(item => {
+        // Verifica se o evento já foi adicionado ao objeto de agrupamento
+        if (!eventosAgrupados[item.evento_id]) {
+          eventosAgrupados[item.evento_id] = {
+            evento: {
+              id: item.evento.id,
+              titulo: item.evento.titulo,
+            },
+            participantes: []
+          };
+        }
+    
+        // Adiciona participantes ao evento correspondente
+        eventosAgrupados[item.evento_id].participantes.push({
+          id: item.id,
+          participante_id: item.participante_id,
+          viagem_participantes: item.viagem_participantes
+        });
+      });
+    
+      // Converte o objeto em um array para retornar
+      return Object.values(eventosAgrupados);
     }
     
 
@@ -504,4 +528,13 @@ type ParticipanteTotalDias = {
   totalDias: number;
   evento: evento;
   viagem: number;
+};
+
+
+type EventoAgrupado = {
+  evento: {
+    id: number;
+    titulo: string;
+  };
+  participantes: any[];
 };
