@@ -444,6 +444,7 @@ export class ViagemService {
               },
               viagem: {
                 include: {
+                  valor_viagem: true,
                   origem: true,
                   destino: true,
                   cidade_origem: true,
