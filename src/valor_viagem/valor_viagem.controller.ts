@@ -37,6 +37,16 @@ export class ValorViagemController {
     return this.valorViagemService.update(+id, updateValorViagemDto);
   }
 
+  @Get('/existe/valor/viagem/:id')
+  findOneValor(@Param('id') id: string) {
+    return this.valorViagemService.findOneValorDaViagem(+id);
+  }
+
+  @Put('/atualizar/valor/:id')
+  updateValor(@Param('id') id: string, @Body() updateValorViagemDto: UpdateValorViagemDto) {
+    return this.valorViagemService.updateValor(+id, updateValorViagemDto);
+  }
+
   @Put('/cotacao/:id/valor/:valor')
   updateCotacao(@Param('id') id: string, @Param('valor') valor: string) {
     return this.valorViagemService.updateCotacao(+id, valor);

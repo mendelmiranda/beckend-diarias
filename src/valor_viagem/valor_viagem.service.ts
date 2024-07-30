@@ -64,6 +64,21 @@ export class ValorViagemService {
     });
   }
 
+  findOneValorDaViagem(id: number) {
+    return this.prisma.valor_viagem.findFirst({
+      where: {
+        viagem_id: id
+      }
+    });
+  }
+
+  updateValor(viagem_id: number, updateValorViagemDto: UpdateValorViagemDto) {
+    return this.prisma.valor_viagem.updateMany({
+      where: { viagem_id: viagem_id },
+      data: updateValorViagemDto,
+    })
+  }
+
   async remove(id: number) {
     return await this.prisma.valor_viagem.delete({
       where: {
