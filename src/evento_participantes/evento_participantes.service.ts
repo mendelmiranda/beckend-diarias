@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { CreateEventoParticipanteDto } from './dto/create-evento_participante.dto';
 import { UpdateEventoParticipanteDto } from './dto/update-evento_participante.dto';
@@ -118,8 +118,8 @@ export class EventoParticipantesService {
     participantes.forEach(evento => {
       evento.evento_participantes.forEach(ep => {
         ep.viagem_participantes.forEach(vp => {
-//          const chave = `${evento.titulo}-${vp.viagem.origem?.cidade || vp.viagem.cidade_origem?.descricao}-${vp.viagem.destino?.cidade || vp.viagem.cidade_destino?.descricao}`;
-const chave = `${evento.titulo}-${vp.viagem.origem?.cidade || vp.viagem.cidade_origem?.descricao}-${vp.viagem.destino?.cidade || vp.viagem.cidade_destino?.descricao}-${vp.viagem.servidor_acompanhando}
+          //          const chave = `${evento.titulo}-${vp.viagem.origem?.cidade || vp.viagem.cidade_origem?.descricao}-${vp.viagem.destino?.cidade || vp.viagem.cidade_destino?.descricao}`;
+          const chave = `${evento.titulo}-${vp.viagem.origem?.cidade || vp.viagem.cidade_origem?.descricao}-${vp.viagem.destino?.cidade || vp.viagem.cidade_destino?.descricao}-${vp.viagem.servidor_acompanhando}
 -${vp.viagem.custos}-${vp.viagem.viagem_diferente}-${vp.viagem.viagem_superior}-${vp.viagem.viagem_pernoite}`;
 
 
@@ -127,7 +127,7 @@ const chave = `${evento.titulo}-${vp.viagem.origem?.cidade || vp.viagem.cidade_o
             viagensAgrupadas[chave] = {
               titulo: evento.titulo,
               participantes: [],
-              viagem: vp.viagem, 
+              viagem: vp.viagem,
             };
           }
           viagensAgrupadas[chave].participantes.push({
@@ -154,7 +154,55 @@ const chave = `${evento.titulo}-${vp.viagem.origem?.cidade || vp.viagem.cidade_o
       });
     }
     return listaViagens;
-}
+  }
+
+
+  async findValoresDiarias(solicitacaoId: number) {
+    try {
+      const resultado = await this.prisma.evento.findMany({
+        where: {
+          solicitacao_id: +solicitacaoId  
+        },
+        select: {
+          id: true,           // Seleciona o ID do evento
+          titulo: true,       // Seleciona o título do evento
+          evento_participantes: {
+            select: {
+              participante: {
+                select: {
+                  id: true,
+                  nome: true
+                }
+              },
+              viagem_participantes: {
+                select: {
+                  viagem: {
+                    select: {
+                      id: true,
+                      valor_viagem: {
+                        select: {
+                          valor_individual: true,
+                          valor_grupo: true,
+                          tipo: true,
+                          destino: true,
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
+
+      return resultado;
+    } catch (error) {
+      console.error('Erro ao buscar valores das diárias:', error);
+      throw new HttpException('Erro ao processar a solicitação de valores das diárias.', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
 
 
   update(id: number, updateEventoParticipanteDto: UpdateEventoParticipanteDto) {
