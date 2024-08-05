@@ -53,9 +53,8 @@ export class ValorDiariasService {
     let dtFinal = Util.subtractDays(dtInicial, 1);    
 
     if(dtInicial.getDay() === 0 || dtInicial.getDay() === 6){
-      dtFinal = Util.subtractDays(dtInicial, 3);
+      dtFinal = Util.subtractDays(dtInicial, 2);
     }
-    
 
     const url = "https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarPeriodo(dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@dataInicial='"+Util.formataDataAmericanaComParametro(dtFinal)+"'&@dataFinalCotacao='"+Util.formataDataAmericana()+"'&$top=100&$format=json&$select=cotacaoCompra,cotacaoVenda,dataHoraCotacao";
 
