@@ -159,7 +159,7 @@ export class EventoParticipantesService {
 
   async findValoresDiarias(solicitacaoId: number) {
     try {
-      const resultado = await this.prisma.evento.findMany({
+      const eventos = await this.prisma.evento.findMany({
         where: {
           solicitacao_id: +solicitacaoId  
         },
@@ -179,6 +179,11 @@ export class EventoParticipantesService {
                   viagem: {
                     select: {
                       id: true,
+                      cidade_destino: true,
+                      cidade_origem: true,
+                      destino: true,
+                      origem: true,
+                      pais: true,
                       valor_viagem: {
                         select: {
                           valor_individual: true,
@@ -196,12 +201,25 @@ export class EventoParticipantesService {
         }
       });
 
-      return resultado;
+      const resultadosAgrupados = eventos.map(evento => ({
+        id: evento.id,
+        titulo: evento.titulo,
+        participantes: evento.evento_participantes.map(ep => ({
+          participanteId: ep.participante.id,
+          nomeParticipante: ep.participante.nome,
+          viagens: ep.viagem_participantes.map(vp => ({
+            viagem: vp.viagem,
+            valor_viagem: vp.viagem.valor_viagem,
+          }))
+        }))
+      }));
+
+      return resultadosAgrupados;
     } catch (error) {
       console.error('Erro ao buscar valores das diárias:', error);
       throw new HttpException('Erro ao processar a solicitação de valores das diárias.', HttpStatus.INTERNAL_SERVER_ERROR);
     }
-  }
+}
 
 
 

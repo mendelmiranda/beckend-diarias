@@ -49,7 +49,7 @@ export class EventoParticipantesController {
   }
 
   //continuar
-  @Get('xx/yy/cc/valor/diarias/solicitacao/:id')
+  @Get('/valor/diarias/solicitacao/:id')
   async findValoresDiariasPorSolicitacao(@Param('id') id: number) {
     const dados = await this.eventoParticipantesService.findValoresDiarias(id);    
     return dados;
