@@ -1,25 +1,22 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  Put,
+  Get,
+  Param,
+  Post,
+  Put
 } from '@nestjs/common';
-import { ParticipanteService } from './participante.service';
-import { CreateParticipanteDto } from './dto/create-participante.dto';
-import { UpdateParticipanteDto } from './dto/update-participante.dto';
-import { conta_diaria, participante } from '@prisma/client';
+import { conta_diaria } from '@prisma/client';
+import { UpdateContaDiariaDto } from 'src/conta_diaria/dto/update-conta_diaria.dto';
 import { Util } from 'src/util/Util';
-import moment from 'moment';
 import { ContaDiariaService } from '../conta_diaria/conta_diaria.service';
 import { CreateContaDiariaDto } from '../conta_diaria/dto/create-conta_diaria.dto';
-import { EventoParticipante } from '../evento_participantes/entities/evento_participante.entity';
-import { EventoParticipantesService } from '../evento_participantes/evento_participantes.service';
 import { CreateEventoParticipanteDto } from '../evento_participantes/dto/create-evento_participante.dto';
-import { UpdateContaDiariaDto } from 'src/conta_diaria/dto/update-conta_diaria.dto';
+import { EventoParticipantesService } from '../evento_participantes/evento_participantes.service';
+import { CreateParticipanteDto } from './dto/create-participante.dto';
+import { UpdateParticipanteDto } from './dto/update-participante.dto';
+import { ParticipanteService } from './participante.service';
 
 @Controller('participante')
 export class ParticipanteController {
@@ -185,6 +182,20 @@ export class ParticipanteController {
 
     return resultado;
   }
+
+
+  @Post('/conta/participante/s3i')
+  async createParticipanteS3i( @Body() createParticipanteDto: CreateParticipanteDto ) { 
+
+    const dateString = createParticipanteDto.data_nascimento as any;
+    const data: CreateParticipanteDto = {
+      ...createParticipanteDto,
+      data_nascimento: Util.convertToDate(dateString),
+    };    
+
+    return (await this.participanteService.createS3i(data)).id;
+  }
+
 
   @Delete(':id')
   remove(@Param('id') id: string) {
