@@ -81,9 +81,21 @@ export class ParticipanteService {
 
   async createS3i(dto: CreateParticipanteDto) {
     try {
+        const existeParticipante = await this.prisma.participante.findFirst({
+            where: {
+                cpf: dto.cpf,
+            },
+        });
+
+        if (existeParticipante && this.isEquivalent(dto, existeParticipante)) {
+            console.log('Participante já cadastrado');
+            throw new HttpException('Participante já cadastrado', HttpStatus.BAD_REQUEST);
+        }
+
         const participante = await this.prisma.participante.create({
             data: dto,
         });
+
         return participante;
     } catch (error) {
         if (error.code === 'P2002') {
@@ -93,6 +105,13 @@ export class ParticipanteService {
         }
     }
 }
+
+private isEquivalent(dto: CreateParticipanteDto, existeParticipante: any): boolean {
+    const relevantFields = ['lotacao', 'cargo', 'classe']; 
+
+    return relevantFields.every(field => dto[field] === existeParticipante[field]);
+}
+
 
 
 }
