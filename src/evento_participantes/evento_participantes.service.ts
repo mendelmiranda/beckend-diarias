@@ -3,6 +3,7 @@ import { PrismaService } from 'prisma/prisma.service';
 import { CreateEventoParticipanteDto } from './dto/create-evento_participante.dto';
 import { UpdateEventoParticipanteDto } from './dto/update-evento_participante.dto';
 import { aeroporto, cidade, evento, pais, participante, viagem } from '@prisma/client';
+import { Util } from 'src/util/Util';
 
 @Injectable()
 export class EventoParticipantesService {
@@ -165,13 +166,17 @@ export class EventoParticipantesService {
         },
         select: {
           id: true,           // Seleciona o ID do evento
-          titulo: true,       // Seleciona o título do evento
+          titulo: true, 
+          inicio: true,
+          fim: true,
+          exterior: true,
           evento_participantes: {
             select: {
               participante: {
                 select: {
                   id: true,
-                  nome: true
+                  nome: true,
+                  cargo: true,
                 }
               },
               viagem_participantes: {
@@ -179,10 +184,25 @@ export class EventoParticipantesService {
                   viagem: {
                     select: {
                       id: true,
-                      cidade_destino: true,
-                      cidade_origem: true,
+                      cidade_destino: {
+                        include: {
+                          origem: true,
+                          destino: true,
+                        }
+                      },
+                      cidade_origem: {
+                        include: {
+                          origem: true,
+                          destino: true,
+                        }
+                      },
                       destino: true,
-                      origem: true,
+                      origem: {
+                        select: {
+                          cidade: true,
+                          estado: true,
+                        }
+                      },
                       pais: true,
                       valor_viagem: {
                         select: {
@@ -204,11 +224,17 @@ export class EventoParticipantesService {
       const resultadosAgrupados = eventos.map(evento => ({
         id: evento.id,
         titulo: evento.titulo,
+        inicio: evento.inicio,
+        fim: evento.fim,  
+        totalDias: Util.calcularDiferencaDias(evento.inicio, evento.fim)+1, //<=====CONFIRMAR
+        exterior: evento.exterior,
         participantes: evento.evento_participantes.map(ep => ({
           participanteId: ep.participante.id,
           nomeParticipante: ep.participante.nome,
+          cargo: ep.participante.cargo,
           viagens: ep.viagem_participantes.map(vp => ({
             viagem: vp.viagem,
+            id: vp.viagem.id,
             valor_viagem: vp.viagem.valor_viagem,
           }))
         }))

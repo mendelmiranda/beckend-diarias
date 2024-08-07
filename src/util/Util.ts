@@ -1,6 +1,13 @@
 import * as moment from 'moment';
 
 
+const calcularDiferencaDias = (dt1: Date, dt2: Date): number => {    
+    const diff = dt2.getTime() - dt1.getTime();
+    
+    const dias = Math.round(diff / (1000 * 60 * 60 * 24));
+
+    return Math.abs(dias);
+}
 
 function dataAtual(d: Date) {    
     return d.setTime( d.getTime() - new Date().getTimezoneOffset()*60*1000 );
@@ -56,5 +63,5 @@ function convertToDateDB(dateString: string) {
 }
 
 export const Util = {
-    dataAtual, convertToDate,totalDeDias, formataDataAmericana, formataDataAmericanaBanco, convertToDateDB, subtractDays, formataDataAmericanaComParametro, horaAtual
+    dataAtual, convertToDate,totalDeDias, formataDataAmericana, formataDataAmericanaBanco, convertToDateDB, subtractDays, formataDataAmericanaComParametro, horaAtual, calcularDiferencaDias
 }
