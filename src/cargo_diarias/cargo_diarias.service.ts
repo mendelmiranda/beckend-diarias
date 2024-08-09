@@ -54,8 +54,7 @@ async findDiariasPorCargo(cargo: string){
     return `This action updates a #${id} cargoDiaria`;
   }
 
-  async remove(id: number, usuario: InfoUsuario) {
-    
+  async remove(id: number, usuario: InfoUsuario) {    
     const dto = await this.findOne(id);
     await this.logSistemaService.createLog(dto, usuario, Operacao.DELETE);
 
@@ -65,4 +64,19 @@ async findDiariasPorCargo(cargo: string){
       }
     })
   }
+
+
+  async pesquisaValorDoCargo(cargo: string){
+    return this.prisma.cargo_diarias.findFirst({
+      where: {
+        cargo: cargo
+      },
+      include: {
+        valor_diarias: true
+      }
+    });
+  }
+
+
+
 }

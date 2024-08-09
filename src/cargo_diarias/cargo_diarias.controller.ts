@@ -35,6 +35,11 @@ export class CargoDiariasController {
     return this.cargoDiariasService.findOne(+id);
   }
 
+  @Get('/valor/cargo/:cargo')
+  findValoresDoCargo(@Param('cargo') cargo: string) {
+    return this.cargoDiariasService.pesquisaValorDoCargo(cargo);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCargoDiariaDto: UpdateCargoDiariaDto) {
     return this.cargoDiariasService.update(+id, updateCargoDiariaDto);
