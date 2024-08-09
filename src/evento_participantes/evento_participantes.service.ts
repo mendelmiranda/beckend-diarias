@@ -165,7 +165,7 @@ export class EventoParticipantesService {
           solicitacao_id: +solicitacaoId  
         },
         select: {
-          id: true,           // Seleciona o ID do evento
+          id: true,           
           titulo: true, 
           inicio: true,
           fim: true,
@@ -210,6 +210,8 @@ export class EventoParticipantesService {
                           valor_grupo: true,
                           tipo: true,
                           destino: true,
+                          id: true,
+                          justificativa: true,
                         }
                       }
                     }
@@ -242,8 +244,8 @@ export class EventoParticipantesService {
 
       return resultadosAgrupados;
     } catch (error) {
-      console.error('Erro ao buscar valores das diárias:', error);
-      throw new HttpException('Erro ao processar a solicitação de valores das diárias.', HttpStatus.INTERNAL_SERVER_ERROR);
+     // console.error('Erro ao buscar valores das diárias:', error);
+     // throw new HttpException('Erro ao processar a solicitação de valores das diárias.', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
 
