@@ -33,8 +33,6 @@ export class ValorDiariasController {
     return this.valorDiariasService.remove(+id);
   }
 
-
-
   @Get('/cotacao/dolar')
   cotacaoDolar(){
     return this.valorDiariasService.consultarCotacao();
@@ -43,6 +41,11 @@ export class ValorDiariasController {
   @Get('/cotacao/bc/dolar')
   cotacaoDolarBancoCentral(){
     return this.valorDiariasService.consultarCotacaoBancoCentral();
+  }
+
+  @Get('/cotacao/bc/dolar/data/:dataCotacao')
+  cotacaoDolarBancoCentralComData(@Param('dataCotacao') data: string){
+    return this.valorDiariasService.consultarCotacaoBancoCentralComData(data);
   }
 
 
