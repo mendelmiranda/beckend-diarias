@@ -60,6 +60,19 @@ export class ParticipanteService {
     });
   }
 
+  pesquisarParticipanteServidorPorCpf(cpf: string) {
+    return this.prisma.participante.findFirst({
+      where: {
+        cpf: cpf,
+        tipo: { not: 'T' },
+      },
+      include: {
+        cidade: true,
+      },
+      orderBy: [{ id: 'desc' }],
+    });
+  }
+
   findOne(id: number) {
     return this.prisma.participante.findFirst({
       where: {

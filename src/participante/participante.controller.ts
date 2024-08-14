@@ -98,6 +98,11 @@ export class ParticipanteController {
     return this.participanteService.pesquisarParticipantePorCpf(cpf);
   }
 
+  @Get('/servidor/cpf/:cpf')
+  pesquisarParticipanteServidorPorCpf(@Param('cpf') cpf: string) {
+    return this.participanteService.pesquisarParticipanteServidorPorCpf(cpf);
+  }
+
   /* @Get(':id')
   findOne(@Param('id') id: string) {
     return this.participanteService.findOne(+id);
