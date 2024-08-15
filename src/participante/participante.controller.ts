@@ -198,7 +198,7 @@ export class ParticipanteController {
       data_nascimento: Util.convertToDate(dateString),
     };    
 
-    return (await this.participanteService.createS3i(data)).id;
+    return (await this.participanteService.createS3i(data));
   }
 
 

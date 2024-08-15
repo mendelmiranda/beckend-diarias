@@ -94,36 +94,44 @@ export class ParticipanteService {
 
   async createS3i(dto: CreateParticipanteDto) {
     try {
-        const existeParticipante = await this.prisma.participante.findFirst({
-            where: {
-                cpf: dto.cpf,
-            },
-        });
-
-        if (existeParticipante && this.isEquivalent(dto, existeParticipante)) {
-            console.log('Participante já cadastrado');
-            throw new HttpException('Participante já cadastrado', HttpStatus.BAD_REQUEST);
+      const existeParticipante = await this.prisma.participante.findFirst({
+        where: {
+          cpf: dto.cpf,
+        },
+        select: {
+          id: true, // Seleciona apenas o ID
         }
+      });
 
+      if (existeParticipante) {
+        console.log('Participante já cadastrado', existeParticipante);
+
+        return existeParticipante.id; // Retorna apenas o ID
+      } else {
         const participante = await this.prisma.participante.create({
-            data: dto,
-        });
+          data: dto,
+          select: {
+            id: true, // Seleciona apenas o ID
+          }
+        });        
 
-        return participante;
+        return participante; // Retorna apenas o ID
+      }
     } catch (error) {
-        if (error.code === 'P2002') {
-            throw new HttpException('Erro de duplicidade de dados.', HttpStatus.BAD_REQUEST);
-        } else {
-            throw new HttpException('Erro ao criar participante', HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+      if (error.code === 'P2002') {
+        throw new HttpException('Erro de duplicidade de dados.', HttpStatus.BAD_REQUEST);
+      } else {
+        throw new HttpException('Erro ao criar participante', HttpStatus.INTERNAL_SERVER_ERROR);
+      }
     }
-}
+  }
 
-private isEquivalent(dto: CreateParticipanteDto, existeParticipante: any): boolean {
-    const relevantFields = ['lotacao', 'cargo', 'classe']; 
+
+  private isEquivalent(dto: CreateParticipanteDto, existeParticipante: any): boolean {
+    const relevantFields = ['lotacao', 'cargo', 'classe'];
 
     return relevantFields.every(field => dto[field] === existeParticipante[field]);
-}
+  }
 
 
 
