@@ -167,6 +167,7 @@ export class EventoParticipantesService {
         select: {
           id: true,           
           titulo: true, 
+          tem_passagem: true,
           inicio: true,
           fim: true,
           exterior: true,
@@ -223,12 +224,15 @@ export class EventoParticipantesService {
         }
       });
 
+      //Util.totalDeDias(evento.inicio, evento.fim)+2;
+
       const resultadosAgrupados = eventos.map(evento => ({
         id: evento.id,
         titulo: evento.titulo,
+        tem_passagem: evento.tem_passagem,
         inicio: evento.inicio,
         fim: evento.fim,  
-        totalDias: Util.calcularDiferencaDias(evento.inicio, evento.fim)+1, //<=====CONFIRMAR
+        totalDias: Util.totalDeDias(evento.inicio, evento.fim)+2, //<=====CONFIRMAR
         exterior: evento.exterior,
         participantes: evento.evento_participantes.map(ep => ({
           participanteId: ep.participante.id,
