@@ -8,7 +8,7 @@ export default class CalculoNacional {
   }
 
   private viagemNacional(viagem: viagem, uf: string, valorDiaria: valor_diarias, evento: evento, temPassagem: string, total: number): number {
-    const diarias = total+1;
+    const diarias = total;
 
     /* if(this.verificaDeslocamentoEMesmoLocal(viagem, evento)){
       if (uf !== UF.AP && viagem.exterior === 'NAO' && temPassagem === 'SIM') {
@@ -21,8 +21,6 @@ export default class CalculoNacional {
         return diarias * this.valorServidoresForaAP(valorDiaria.fora, viagem.servidor_acompanhando) + meiaDiaria;
       }
     //}
-
-    
 
     return 0;
   }
