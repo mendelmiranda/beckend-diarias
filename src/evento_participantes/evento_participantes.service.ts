@@ -212,6 +212,7 @@ export class EventoParticipantesService {
                           tipo: true,
                           destino: true,
                           id: true,
+                          viagem_id: true,
                           justificativa: true,
                         }
                       }
