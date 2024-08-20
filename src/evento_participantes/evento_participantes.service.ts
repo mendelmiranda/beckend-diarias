@@ -233,7 +233,7 @@ export class EventoParticipantesService {
         tem_passagem: evento.tem_passagem,
         inicio: evento.inicio,
         fim: evento.fim,  
-        totalDias: Util.totalDeDias(evento.inicio, evento.fim)+2, //<=====CONFIRMAR
+        totalDias: Util.totalDeDias(evento.inicio, evento.fim)+1, //<=====CONFIRMAR
         exterior: evento.exterior,
         participantes: evento.evento_participantes.map(ep => ({
           participanteId: ep.participante.id,
