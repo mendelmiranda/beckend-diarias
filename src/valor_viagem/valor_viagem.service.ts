@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { CreateValorViagemDto } from './dto/create-valor_viagem.dto';
 import { UpdateValorViagemDto } from './dto/update-valor_viagem.dto';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 
 @Injectable()
 export class ValorViagemService {
@@ -55,6 +56,17 @@ export class ValorViagemService {
     })
   }
 
+  /* updatePorViagem(viagemId: number, valor_individual: number) {
+    return this.prisma.valor_viagem.updateMany({
+      where: { viagem_id: viagemId },
+      data: {
+        valor_individual: valor_individual
+      },
+    })
+  }
+ */
+  
+
   updateCotacao(id: number, cotacao: string) {
     return this.prisma.valor_viagem.update({
       where: { id },
@@ -72,11 +84,56 @@ export class ValorViagemService {
     });
   }
 
-  updateValor(viagem_id: number, updateValorViagemDto: UpdateValorViagemDto) {
-    return this.prisma.valor_viagem.updateMany({
-      where: { viagem_id: viagem_id },
-      data: updateValorViagemDto,
-    })
+  async updateValor(viagem_id: number, updateValorViagemDto: UpdateValorViagemDto) {
+
+    const pesquisa = await this.prisma.valor_viagem.findFirst({
+      where: {
+        viagem_id: viagem_id
+      }
+    }); 
+    
+    const dto: CreateValorViagemDto = {
+      viagem_id: updateValorViagemDto.viagem_id,
+      tipo: updateValorViagemDto.tipo,
+      destino: updateValorViagemDto.destino,
+      valor_individual: parseFloat(updateValorViagemDto.valor_individual+""),
+      valor_grupo: updateValorViagemDto.valor_grupo,
+    };      
+
+    if(pesquisa === null){ 
+      
+      try {
+        
+        await this.prisma.valor_viagem.create({
+          data: dto,
+        });
+
+      } catch (error) {
+        if (error instanceof PrismaClientKnownRequestError) {
+          console.error('Erro específico do Prisma:', error.message);
+        } else {
+          console.error('Erro ao criar valor da viagem:', error.message);
+        }
+        throw new Error('Falha ao atualizar os valores da viagem.'); // Propaga o erro ou manipule conforme necessário
+      }
+    
+    }
+
+    try {
+      const resultado = await this.prisma.valor_viagem.updateMany({
+        where: { viagem_id: viagem_id },
+        data: dto,
+      });
+      return resultado; 
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        console.error('Erro específico do Prisma:', error.message);
+      } else {
+        console.error('Erro ao atualizar valor da viagem:', error.message);
+      }
+      throw new Error('Falha ao atualizar os valores da viagem.'); // Propaga o erro ou manipule conforme necessário
+    }
+
   }
 
   async remove(id: number) {
