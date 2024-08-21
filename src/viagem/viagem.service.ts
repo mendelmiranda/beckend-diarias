@@ -85,7 +85,7 @@ export class ViagemService {
     return cidadeId === null ? await this.aeroportoService.findOne(aeroportoId) : await this.cidadeService.findOne(cidadeId);
   }
 
-  async destinoEstadual(parametros: any) {
+  async destinoEstadual(parametros: any) {    
     const evento = parametros.evento as evento;
 
     if (evento.tem_passagem === 'NAO' && parametros.localizaCidade.descricao !== Municipios.MACAPA) {

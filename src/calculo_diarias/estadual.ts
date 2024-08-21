@@ -1,6 +1,5 @@
-import { Util } from "src/util/Util";
+import { evento, valor_diarias, viagem } from '@prisma/client';
 import { Acompanha, Local, Municipios, UF } from "./diarias-enum";
-import { valor_diarias, viagem, evento } from '@prisma/client';
 
 
 export default class CalculoEstadual {
@@ -19,7 +18,7 @@ export default class CalculoEstadual {
           cidade !== Municipios.SANTANA && 
           cidade !== Municipios.MAZAGAO) {        
         
-        const diarias = total+1;
+        const diarias = total//+1;        
 
         const meiaDiaria = this.valorServidoresDentroAP(valorDiaria.dentro, viagem.servidor_acompanhando) / 2;
         
