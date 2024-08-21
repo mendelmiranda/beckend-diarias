@@ -47,6 +47,11 @@ export class ValorViagemController {
     return this.valorViagemService.updateValor(+id, updateValorViagemDto);
   }
 
+  @Put('/atualizar/valor/viagem/:id')
+  updateValorViagem(@Param('id') id: string, @Body() updateValorViagemDto: UpdateValorViagemDto) {
+    return this.valorViagemService.updateValorViagem(+id, updateValorViagemDto);
+  }
+
   @Put('/cotacao/:id/valor/:valor')
   updateCotacao(@Param('id') id: string, @Param('valor') valor: string) {
     return this.valorViagemService.updateCotacao(+id, valor);

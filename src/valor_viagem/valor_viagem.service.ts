@@ -56,17 +56,6 @@ export class ValorViagemService {
     })
   }
 
-  /* updatePorViagem(viagemId: number, valor_individual: number) {
-    return this.prisma.valor_viagem.updateMany({
-      where: { viagem_id: viagemId },
-      data: {
-        valor_individual: valor_individual
-      },
-    })
-  }
- */
-  
-
   updateCotacao(id: number, cotacao: string) {
     return this.prisma.valor_viagem.update({
       where: { id },
@@ -84,7 +73,23 @@ export class ValorViagemService {
     });
   }
 
-  async updateValor(viagem_id: number, updateValorViagemDto: UpdateValorViagemDto) {
+  updateValor(viagem_id: number, updateValorViagemDto: UpdateValorViagemDto) {
+    return this.prisma.valor_viagem.updateMany({
+      where: { viagem_id: viagem_id },
+      data: updateValorViagemDto,
+    })
+  }
+
+  async remove(id: number) {
+    return await this.prisma.valor_viagem.delete({
+      where: {
+        id: id
+      }
+    });
+  }
+
+
+  async updateValorViagem(viagem_id: number, updateValorViagemDto: UpdateValorViagemDto) {
 
     const pesquisa = await this.prisma.valor_viagem.findFirst({
       where: {
@@ -136,11 +141,5 @@ export class ValorViagemService {
 
   }
 
-  async remove(id: number) {
-    return await this.prisma.valor_viagem.delete({
-      where: {
-        id: id
-      }
-    });
-  }
+
 }
