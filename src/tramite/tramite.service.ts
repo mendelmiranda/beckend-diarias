@@ -594,21 +594,30 @@ export class TramiteService {
   }
 
   async listarContador(status: string, cod_lotacao_destino: number) {
-    const tramites = await this.prisma.tramite.findMany({
-      where: {
-        AND: [
-          {
-            status: status,
-          },
-          {
-            cod_lotacao_destino: +cod_lotacao_destino,
-          },
-        ],
+    let statusNome;
+    if(status === 'VALORES_ESCOLA') {
+      statusNome = 'CONDUTOR_INFO';
+    }
+
+    const statusQuery = status === 'VALORES_ESCOLA' ? ['VALORES_ESCOLA', 'CONDUTOR_INFO'] : [status];
+
+const tramites = await this.prisma.tramite.findMany({
+  where: {
+    AND: [
+      {
+        status: {
+          in: statusQuery, // Usa a operação 'in' para buscar por múltiplos status
+        },
       },
-      include: {
-        solicitacao: true,
+      {
+        cod_lotacao_destino: +cod_lotacao_destino,
       },
-    });
+    ],
+  },
+  include: {
+    solicitacao: true,
+  },
+});
 
     const tramitesFormatados = tramites.map(tramite => {
       return {

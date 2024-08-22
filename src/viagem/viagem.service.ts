@@ -418,12 +418,13 @@ export class ViagemService {
           }
         },
         include: {
-          /* participante: {
+          participante: {
             select: {
               id: true,
               nome: true,
+              tipo: true,
             }
-          }, */
+          },
           evento: {
             select: {
               id: true,
