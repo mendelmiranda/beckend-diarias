@@ -2,17 +2,34 @@ import { Injectable } from '@nestjs/common';
 import { CreateDiariaCondutorDto } from './dto/create-diaria_condutor.dto';
 import { UpdateDiariaCondutorDto } from './dto/update-diaria_condutor.dto';
 import { PrismaService } from 'prisma/prisma.service';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 
 @Injectable()
 export class DiariaCondutorService {
-  constructor(private readonly prisma: PrismaService) {}
-  
-  create(createDiariaCondutorDto: CreateDiariaCondutorDto) {
-    return this.prisma.diaria_condutor.create({
-      data: createDiariaCondutorDto,
-    });
+  constructor(private readonly prisma: PrismaService) { }
+
+  async create(createDiariaCondutorDto: CreateDiariaCondutorDto) {
+    
+    try {
+      const result = await this.prisma.diaria_condutor.create({
+        data: createDiariaCondutorDto,
+      });
+      return result;
+    } catch (error) {
+      console.log('error', error);
+      
+      if (error instanceof PrismaClientKnownRequestError) {
+        // Aqui você pode tratar erros específicos de Prisma. Por exemplo:
+        if (error.code === 'P2002') {
+          throw new Error('Um registro duplicado foi encontrado.');
+        }
+      }
+      // Tratar outros tipos de erro que não são específicos do Prisma
+      throw new Error('Erro ao criar diária de condutor: ' + error.message);
+    }
   }
 
+  
   findAll() {
     return this.prisma.diaria_condutor.findMany();
   }
