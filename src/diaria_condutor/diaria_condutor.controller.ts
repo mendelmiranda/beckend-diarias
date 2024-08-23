@@ -31,4 +31,10 @@ export class DiariaCondutorController {
   remove(@Param('id') id: string) {
     return this.diariaCondutorService.remove(+id);
   }
+
+  @Get('/diaria/condutor/:id')
+  findDiariaDoCondutor(@Param('id') id: number) {
+    return this.diariaCondutorService.findDiariaDoCondutor(+id);
+  }
+
 }

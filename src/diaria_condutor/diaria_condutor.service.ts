@@ -9,7 +9,7 @@ export class DiariaCondutorService {
   constructor(private readonly prisma: PrismaService) { }
 
   async create(createDiariaCondutorDto: CreateDiariaCondutorDto) {
-    
+
     try {
       const result = await this.prisma.diaria_condutor.create({
         data: createDiariaCondutorDto,
@@ -52,4 +52,11 @@ export class DiariaCondutorService {
       where: { id: id },
     });
   }
+
+  findDiariaDoCondutor(id: number) {
+    return this.prisma.diaria_condutor.findFirst({
+      where: { solicitacao_condutores_id: id },
+    });
+  }
+
 }
