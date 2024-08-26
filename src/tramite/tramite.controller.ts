@@ -14,6 +14,7 @@ import { TramiteService } from './tramite.service';
 import { ViagemService } from 'src/viagem/viagem.service';
 import { EventoParticipantesService } from 'src/evento_participantes/evento_participantes.service';
 import { ApiResponse } from '@nestjs/swagger';
+import { CreateLogTramiteDto } from 'src/log_tramite/dto/create-log_tramite.dto';
 
 @Controller('tramite')
 export class TramiteController {
@@ -163,4 +164,15 @@ export class TramiteController {
   pesquisaServidor(@Param('cpf') cpf: string) {
     return this.tramiteService.pesquisaServidorGOVBR(cpf);
   }
+
+
+  @Post('/processar/encaminhamento/log-tramite/:logTramiteId/solicitacao/:solicitacaoId')
+  processarEncaminhamento(@Param('logTramiteId') logTramiteId: number, @Param('solicitacaoId') solicitacaoId: number, @Body() createTramiteDto: CreateLogTramiteDto) {
+    console.log('chegou');
+    
+    //if(!logTramiteId === undefined || !solicitacaoId === undefined) return;
+    return this.tramiteService.voltaSolicitacaoParaDeterminadoSetor(logTramiteId, solicitacaoId, createTramiteDto);
+  }
+
+
 }

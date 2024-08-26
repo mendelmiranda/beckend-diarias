@@ -716,23 +716,32 @@ export class TramiteService {
     })
   }
 
-  //novo código para o andamento do tramite
-  async processaEncaminhamentoDoTramite(logTramiteId: number, solicitacao_id: number) {
-    await this.voltaSolicitacaoParaDeterminadoSetor(logTramiteId, solicitacao_id);
-  }
+  //novo código para o andamento do tramite <=====================================================================
+ 
 
-  async voltaSolicitacaoParaDeterminadoSetor(logTramiteId: number, solicitacao_id: number) {
-    const localizaLogTramite = await this.prisma.log_tramite.findFirst({
-      where: {
-        id: logTramiteId,
-      },
-    });
+  async voltaSolicitacaoParaDeterminadoSetor(logTramiteId: number, solicitacao_id: number, novosDados: CreateLogTramiteDto) {
+    console.log(novosDados);
+    
+    try {
+      // const localizaLogTramite = await this.prisma.log_tramite.findFirst({
+      //   where: {
+      //     id: +logTramiteId,
+      //   },
+      // });
 
-    await this.removerTudoParaIniciarTramites(logTramiteId, localizaLogTramite.tramite_id);
+      // console.log('Localiza log tramite:', localizaLogTramite);
+      
 
-    const atualiza = await this.atualizarTramiteParaStatusSelecionado(localizaLogTramite, solicitacao_id);
-    if (atualiza) {
-      this.removerDemaisTramites(logTramiteId, localizaLogTramite.tramite_id);
+      await this.removerTudoParaIniciarTramites(logTramiteId, novosDados.tramite_id);
+
+      const atualiza = await this.atualizarTramiteParaStatusSelecionado(novosDados);
+      if (atualiza) {
+        this.removerDemaisTramites(logTramiteId, novosDados.tramite_id);
+      }
+
+    } catch (error) {
+      console.error('Erro ao remover registros:', error);
+      throw error;  // Propaga o erro para o controller
     }
 
   }
@@ -742,8 +751,8 @@ export class TramiteService {
       await this.prisma.log_tramite.deleteMany({
         where: {
           AND: [
-            { id: { gt: logTramiteId } },
-            { tramite_id: tramiteId }
+            { tramite_id: tramiteId },
+            { id: { gte: +logTramiteId } },
           ]
         }
       });
@@ -755,20 +764,17 @@ export class TramiteService {
 
   }
 
-
-  async atualizarTramiteParaStatusSelecionado(logTramite: log_tramite, solicitacao_id: number) {
+  async atualizarTramiteParaStatusSelecionado(logTramite: any) {
 
     try {
 
       const atualizar = await this.prisma.tramite.update({
         where: {
           id: logTramite.tramite_id,
-          solicitacao_id: solicitacao_id,
         },
         data: {
           cod_lotacao_destino: logTramite.cod_lotacao_destino,
           lotacao_destino: logTramite.lotacao_destino,
-          solicitacao_id: solicitacao_id,
           status: logTramite.status,
           cod_lotacao_origem: logTramite.cod_lotacao_origem,
           lotacao_origem: logTramite.lotacao_origem,
