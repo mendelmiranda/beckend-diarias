@@ -1,6 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { participante, tramite } from '@prisma/client';
+import { log_tramite, participante, tramite } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
 import { EmailService } from 'src/email/email.service';
 import { CreateLogTramiteDto } from 'src/log_tramite/dto/create-log_tramite.dto';
@@ -17,7 +17,7 @@ export class TramiteService {
     private logTramiteService: LogTramiteService,
     private emailService: EmailService,
     private readonly httpService: HttpService,
-  ) {}
+  ) { }
 
   async create(dto: CreateTramiteDto, nome: string) {
     const { solicitacao, log_tramite, ...dtoSemSolicitacao } = dto;
@@ -595,29 +595,29 @@ export class TramiteService {
 
   async listarContador(status: string, cod_lotacao_destino: number) {
     let statusNome;
-    if(status === 'VALORES_ESCOLA') {
+    if (status === 'VALORES_ESCOLA') {
       statusNome = 'CONDUTOR_INFO';
     }
 
     const statusQuery = status === 'VALORES_ESCOLA' ? ['VALORES_ESCOLA', 'CONDUTOR_INFO'] : [status];
 
-const tramites = await this.prisma.tramite.findMany({
-  where: {
-    AND: [
-      {
-        status: {
-          in: statusQuery, // Usa a operação 'in' para buscar por múltiplos status
-        },
+    const tramites = await this.prisma.tramite.findMany({
+      where: {
+        AND: [
+          {
+            status: {
+              in: statusQuery, // Usa a operação 'in' para buscar por múltiplos status
+            },
+          },
+          {
+            cod_lotacao_destino: +cod_lotacao_destino,
+          },
+        ],
       },
-      {
-        cod_lotacao_destino: +cod_lotacao_destino,
+      include: {
+        solicitacao: true,
       },
-    ],
-  },
-  include: {
-    solicitacao: true,
-  },
-});
+    });
 
     const tramitesFormatados = tramites.map(tramite => {
       return {
@@ -662,7 +662,7 @@ const tramites = await this.prisma.tramite.findMany({
     return this.prisma.tramite.update({
       where: { id },
       data: {
-        flag_daof: 'SIM',      
+        flag_daof: 'SIM',
       },
     });
   }
@@ -715,6 +715,129 @@ const tramites = await this.prisma.tramite.findMany({
       }
     })
   }
+
+  //novo código para o andamento do tramite
+  async processaEncaminhamentoDoTramite(logTramiteId: number, solicitacao_id: number) {
+    await this.voltaSolicitacaoParaDeterminadoSetor(logTramiteId, solicitacao_id);
+  }
+
+  async voltaSolicitacaoParaDeterminadoSetor(logTramiteId: number, solicitacao_id: number) {
+    const localizaLogTramite = await this.prisma.log_tramite.findFirst({
+      where: {
+        id: logTramiteId,
+      },
+    });
+
+    await this.removerTudoParaIniciarTramites(logTramiteId, localizaLogTramite.tramite_id);
+
+    const atualiza = await this.atualizarTramiteParaStatusSelecionado(localizaLogTramite, solicitacao_id);
+    if (atualiza) {
+      this.removerDemaisTramites(logTramiteId, localizaLogTramite.tramite_id);
+    }
+
+  }
+
+  async removerDemaisTramites(logTramiteId: number, tramiteId: number) {
+    try {
+      await this.prisma.log_tramite.deleteMany({
+        where: {
+          AND: [
+            { id: { gt: logTramiteId } },
+            { tramite_id: tramiteId }
+          ]
+        }
+      });
+
+    } catch (error) {
+      console.error('Erro ao remover registros:', error);
+      throw error;  // Propaga o erro para o controller
+    }
+
+  }
+
+
+  async atualizarTramiteParaStatusSelecionado(logTramite: log_tramite, solicitacao_id: number) {
+
+    try {
+
+      const atualizar = await this.prisma.tramite.update({
+        where: {
+          id: logTramite.tramite_id,
+          solicitacao_id: solicitacao_id,
+        },
+        data: {
+          cod_lotacao_destino: logTramite.cod_lotacao_destino,
+          lotacao_destino: logTramite.lotacao_destino,
+          solicitacao_id: solicitacao_id,
+          status: logTramite.status,
+          cod_lotacao_origem: logTramite.cod_lotacao_origem,
+          lotacao_origem: logTramite.lotacao_origem,
+        }
+      });
+
+      if (atualizar) {
+        return true;
+      } else {
+        return false;
+      }
+
+
+    } catch (error) {
+      console.error('Erro na atualização:', error);
+      return false;
+    }
+
+  }
+
+  //se é o menor. é por que tem que excluir tudo.
+  async voltaSolicitacaoParaOrigem(logTramiteId: number, tramiteId: number): Promise<boolean> {
+
+    const primeiroLog = await this.prisma.log_tramite.findFirst({
+      where: {
+        tramite_id: tramiteId
+      },
+      orderBy: {
+        id: 'asc'
+      }
+    });
+
+    return primeiroLog ? primeiroLog.id === logTramiteId : false;
+  }
+
+  async removerTudoParaIniciarTramites(logTramiteId: number, tramiteId: number) {
+    const isFirst = await this.voltaSolicitacaoParaOrigem(logTramiteId, tramiteId);
+    //console.log(`O log_tramite ID ${logTramiteId} é o primeiro? ${isFirst ? 'Sim' : 'Não'}`);
+
+    if (isFirst) {
+      try {
+
+        const removeTodosDoLog = await this.prisma.log_tramite.deleteMany({
+          where: {
+            tramite_id: tramiteId
+          }
+        });
+
+        if (removeTodosDoLog) {
+          const removeTramite = await this.prisma.tramite.delete({
+            where: {
+              id: tramiteId
+            }
+          });
+
+        }
+
+      } catch (error) {
+        console.error('Erro ao remover registros:', error);
+        throw error;  // Propaga o erro para o controller
+      }
+    }
+
+  }
+
+
+
+
+
 }
 
 type ParticipanteTotalDias = {
