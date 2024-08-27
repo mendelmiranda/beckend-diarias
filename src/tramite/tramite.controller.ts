@@ -167,9 +167,7 @@ export class TramiteController {
 
 
   @Post('/processar/encaminhamento/log-tramite/:logTramiteId/solicitacao/:solicitacaoId')
-  processarEncaminhamento(@Param('logTramiteId') logTramiteId: number, @Param('solicitacaoId') solicitacaoId: number, @Body() createTramiteDto: CreateLogTramiteDto) {
-    console.log('chegou');
-    
+  processarEncaminhamento(@Param('logTramiteId') logTramiteId: number, @Param('solicitacaoId') solicitacaoId: number, @Body() createTramiteDto: CreateLogTramiteDto) {    
     //if(!logTramiteId === undefined || !solicitacaoId === undefined) return;
     return this.tramiteService.voltaSolicitacaoParaDeterminadoSetor(logTramiteId, solicitacaoId, createTramiteDto);
   }

@@ -720,7 +720,6 @@ export class TramiteService {
  
 
   async voltaSolicitacaoParaDeterminadoSetor(logTramiteId: number, solicitacao_id: number, novosDados: CreateLogTramiteDto) {
-    console.log(novosDados);
     
     try {
       // const localizaLogTramite = await this.prisma.log_tramite.findFirst({
@@ -752,7 +751,7 @@ export class TramiteService {
         where: {
           AND: [
             { tramite_id: tramiteId },
-            { id: { gte: +logTramiteId } },
+            { id: { gt: +logTramiteId } },
           ]
         }
       });
