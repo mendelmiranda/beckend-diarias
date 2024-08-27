@@ -716,27 +716,12 @@ export class TramiteService {
     })
   }
 
-  //novo código para o andamento do tramite <=====================================================================
- 
-
+  //novo código para o andamento do tramite <==================================================================================================
   async voltaSolicitacaoParaDeterminadoSetor(logTramiteId: number, solicitacao_id: number, novosDados: CreateLogTramiteDto) {
-    
-    try {
-      // const localizaLogTramite = await this.prisma.log_tramite.findFirst({
-      //   where: {
-      //     id: +logTramiteId,
-      //   },
-      // });
 
-      // console.log('Localiza log tramite:', localizaLogTramite);
-      
+    try {
 
       await this.removerTudoParaIniciarTramites(logTramiteId, novosDados.tramite_id);
-
-      const atualiza = await this.atualizarTramiteParaStatusSelecionado(novosDados);
-      if (atualiza) {
-        this.removerDemaisTramites(logTramiteId, novosDados.tramite_id);
-      }
 
     } catch (error) {
       console.error('Erro ao remover registros:', error);
@@ -806,12 +791,12 @@ export class TramiteService {
       }
     });
 
-    return primeiroLog ? primeiroLog.id === logTramiteId : false;
+    return primeiroLog ? primeiroLog.id === +logTramiteId : false;
   }
 
   async removerTudoParaIniciarTramites(logTramiteId: number, tramiteId: number) {
+
     const isFirst = await this.voltaSolicitacaoParaOrigem(logTramiteId, tramiteId);
-    //console.log(`O log_tramite ID ${logTramiteId} é o primeiro? ${isFirst ? 'Sim' : 'Não'}`);
 
     if (isFirst) {
       try {
