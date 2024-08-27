@@ -716,16 +716,22 @@ export class TramiteService {
     })
   }
 
-  //novo código para o andamento do tramite <==================================================================================================
-  async voltaSolicitacaoParaDeterminadoSetor(logTramiteId: number, solicitacao_id: number, novosDados: CreateLogTramiteDto) {
+  //novo código para o andamento do tramite <===================================================================== 
 
-    try {
+  async voltaSolicitacaoParaDeterminadoSetor(logTramiteId: number, solicitacao_id: number, novosDados: CreateLogTramiteDto) {
+    
+    try {      
 
       await this.removerTudoParaIniciarTramites(logTramiteId, novosDados.tramite_id);
 
+      const atualiza = await this.atualizarTramiteParaStatusSelecionado(novosDados);
+      if (atualiza) {
+        this.removerDemaisTramites(logTramiteId, novosDados.tramite_id);
+      }
+
     } catch (error) {
       console.error('Erro ao remover registros:', error);
-      throw error;  // Propaga o erro para o controller
+      throw error;  
     }
 
   }
@@ -795,8 +801,12 @@ export class TramiteService {
   }
 
   async removerTudoParaIniciarTramites(logTramiteId: number, tramiteId: number) {
-
     const isFirst = await this.voltaSolicitacaoParaOrigem(logTramiteId, tramiteId);
+
+    console.log('Is first:', isFirst);
+    
+    
+
 
     if (isFirst) {
       try {
