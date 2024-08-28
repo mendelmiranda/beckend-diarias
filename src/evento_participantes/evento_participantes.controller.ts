@@ -55,6 +55,12 @@ export class EventoParticipantesController {
     return dados;
   }
 
+  @Get('/participantes/terceirizados/solicitacao/:id')
+  async findTerceirizadosDaSolicitacao(@Param('id') id: number) {
+    const dados = await this.eventoParticipantesService.listaTerceirizadosPorEventosDaSolicitacao(id);    
+    return dados;
+  }
+
 
 
   @Patch(':id')

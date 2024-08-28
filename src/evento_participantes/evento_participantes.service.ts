@@ -162,11 +162,11 @@ export class EventoParticipantesService {
     try {
       const eventos = await this.prisma.evento.findMany({
         where: {
-          solicitacao_id: +solicitacaoId  
+          solicitacao_id: +solicitacaoId
         },
         select: {
-          id: true,           
-          titulo: true, 
+          id: true,
+          titulo: true,
           tem_passagem: true,
           inicio: true,
           fim: true,
@@ -178,6 +178,7 @@ export class EventoParticipantesService {
                   id: true,
                   nome: true,
                   cargo: true,
+                  tipo: true,
                 }
               },
               viagem_participantes: {
@@ -232,12 +233,13 @@ export class EventoParticipantesService {
         titulo: evento.titulo,
         tem_passagem: evento.tem_passagem,
         inicio: evento.inicio,
-        fim: evento.fim,  
-        totalDias: Util.totalDeDias(evento.inicio, evento.fim)+1, //<=====CONFIRMAR
+        fim: evento.fim,
+        totalDias: Util.totalDeDias(evento.inicio, evento.fim) + 1, //<=====CONFIRMAR
         exterior: evento.exterior,
         participantes: evento.evento_participantes.map(ep => ({
           participanteId: ep.participante.id,
           nomeParticipante: ep.participante.nome,
+          tipo: ep.participante.tipo,
           cargo: ep.participante.cargo,
           viagens: ep.viagem_participantes.map(vp => ({
             viagem: vp.viagem,
@@ -249,10 +251,71 @@ export class EventoParticipantesService {
 
       return resultadosAgrupados;
     } catch (error) {
-     // console.error('Erro ao buscar valores das diárias:', error);
-     // throw new HttpException('Erro ao processar a solicitação de valores das diárias.', HttpStatus.INTERNAL_SERVER_ERROR);
+      // console.error('Erro ao buscar valores das diárias:', error);
+      // throw new HttpException('Erro ao processar a solicitação de valores das diárias.', HttpStatus.INTERNAL_SERVER_ERROR);
     }
-}
+  }
+
+  async listaTerceirizadosPorEventosDaSolicitacao(solicitacaoId: number) {
+    const eventos = await this.prisma.evento.findMany({
+      where: {
+        solicitacao_id: +solicitacaoId,
+      },
+      include: {
+        evento_participantes: {
+          include: {
+            viagem_participantes: {
+              include: {
+                viagem: {
+                  select: {
+                    id: true,
+                    valor_viagem: {
+                      select: {
+                        valor_individual: true,
+                        valor_grupo: true,
+                        tipo: true,
+                        destino: true,
+                        id: true,
+                        viagem_id: true,
+                        justificativa: true,
+                      }
+                    }
+                  }
+                },
+              }
+            },
+            participante: {
+              select: {
+                id: true,
+                nome: true,
+                tipo: true,
+                cpf: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Criando uma estrutura de dados para agrupar participantes terceirizados por evento
+    return eventos.map(evento => ({
+      eventoId: evento.id,  // Assumindo que você tenha um campo 'id' no objeto evento
+      totalDias: Util.totalDeDias(evento.inicio, evento.fim) + 1, //<=====CONFIRMAR
+      nomeEvento: evento.titulo,  // Assumindo que você tenha um campo 'nome' no objeto evento
+      participantesTerceirizados: evento.evento_participantes
+        .filter(ep => ep.participante.tipo === 'T')  // Filtrando apenas terceirizados
+        .map(ep => ({
+          participanteId: ep.participante.id,
+          nome: ep.participante.nome,
+          cpf: ep.participante.cpf,
+          viagens: ep.viagem_participantes.map(vp => ({
+            viagemId: vp.viagem.id,
+            valor_viagem: vp.viagem.valor_viagem,
+          }))
+        })),
+    }));
+  }
+
 
 
 
