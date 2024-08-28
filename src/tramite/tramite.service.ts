@@ -718,7 +718,7 @@ export class TramiteService {
 
   //novo código para o andamento do tramite <===================================================================== 
 
-  async voltaSolicitacaoParaDeterminadoSetor(logTramiteId: number, solicitacao_id: number, novosDados: CreateLogTramiteDto) {
+  /* async voltaSolicitacaoParaDeterminadoSetor(logTramiteId: number, solicitacao_id: number, novosDados: CreateLogTramiteDto) {
     
     try {      
 
@@ -749,7 +749,7 @@ export class TramiteService {
 
     } catch (error) {
       console.error('Erro ao remover registros:', error);
-      throw error;  // Propaga o erro para o controller
+      throw error; 
     }
 
   }
@@ -803,11 +803,6 @@ export class TramiteService {
   async removerTudoParaIniciarTramites(logTramiteId: number, tramiteId: number) {
     const isFirst = await this.voltaSolicitacaoParaOrigem(logTramiteId, tramiteId);
 
-    console.log('Is first:', isFirst);
-    
-    
-
-
     if (isFirst) {
       try {
 
@@ -832,11 +827,104 @@ export class TramiteService {
       }
     }
 
+  } */
+
+
+  async voltaSolicitacaoParaDeterminadoSetor(logTramiteId: number, solicitacao_id: number, novosDados: CreateLogTramiteDto) {
+    const prisma = this.prisma; 
+
+    try {
+      await prisma.$transaction(async (transaction) => {
+        await this.removerTudoParaIniciarTramites(transaction, logTramiteId, novosDados.tramite_id);
+
+        const atualiza = await this.atualizarTramiteParaStatusSelecionado(transaction, novosDados);
+        if (atualiza) {
+          await this.removerDemaisTramites(transaction, logTramiteId, novosDados.tramite_id);
+        }
+      });
+
+    } catch (error) {
+      console.error('Erro ao processar a transação:', error);
+      throw error;
+    }
   }
 
+  async removerDemaisTramites(transaction: any, logTramiteId: number, tramiteId: number) {
+    try {
+      await transaction.log_tramite.deleteMany({
+        where: {
+          AND: [
+            { tramite_id: tramiteId },
+            { id: { gt: +logTramiteId } },
+          ]
+        }
+      });
 
+    } catch (error) {
+      console.error('Erro ao remover registros:', error);
+      throw error;
+    }
+  }
 
+  async atualizarTramiteParaStatusSelecionado(transaction: any, logTramite: any) {
+    try {
+      const atualizar = await transaction.tramite.update({
+        where: {
+          id: logTramite.tramite_id,
+        },
+        data: {
+          cod_lotacao_destino: logTramite.cod_lotacao_destino,
+          lotacao_destino: logTramite.lotacao_destino,
+          status: logTramite.status,
+          cod_lotacao_origem: logTramite.cod_lotacao_origem,
+          lotacao_origem: logTramite.lotacao_origem,
+        }
+      });
 
+      return atualizar ? true : false;
+    } catch (error) {
+      console.error('Erro na atualização:', error);
+      return false;
+    }
+  }
+
+  async voltaSolicitacaoParaOrigem(logTramiteId: number, tramiteId: number): Promise<boolean> {
+
+    const primeiroLog = await this.prisma.log_tramite.findFirst({
+      where: {
+        tramite_id: tramiteId
+      },
+      orderBy: {
+        id: 'asc'
+      }
+    });
+
+    return primeiroLog ? primeiroLog.id === +logTramiteId : false;
+  }
+
+  async removerTudoParaIniciarTramites(transaction: any, logTramiteId: number, tramiteId: number) {
+    const isFirst = await this.voltaSolicitacaoParaOrigem(transaction, tramiteId);
+
+    if (isFirst) {
+      try {
+        await transaction.log_tramite.deleteMany({
+          where: {
+            tramite_id: tramiteId
+          }
+        });
+
+        await transaction.tramite.delete({
+          where: {
+            id: tramiteId
+          }
+        });
+
+      } catch (error) {
+        console.error('Erro ao remover registros:', error);
+        throw error;
+      }
+    }
+  }
 
 }
 
