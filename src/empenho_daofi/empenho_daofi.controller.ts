@@ -27,6 +27,11 @@ export class EmpenhoDaofiController {
     return this.empenhoDaofiService.findEmpenhoPorSolicitacaoId(+id);
   }
 
+  @Get('/valores/solicitacao/:id')
+  findInfoValoresPorSolicitacao(@Param('id') id: string) {
+    return this.empenhoDaofiService.findInfoValoresParaEmpenhoPorSolicitacaoId(+id);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateEmpenhoDaofiDto: UpdateEmpenhoDaofiDto) {
     return this.empenhoDaofiService.update(+id, updateEmpenhoDaofiDto);
