@@ -5,18 +5,36 @@ import { UpdateContaDiariaDto } from './dto/update-conta_diaria.dto';
 
 @Injectable()
 export class ContaDiariaService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
-  async create(dto: CreateContaDiariaDto) {      
-    
-    if(dto.id === 0 || dto.id === undefined){
+  async create(dto: CreateContaDiariaDto) {
 
-    return this.prisma.conta_diaria.create({
-      data: dto,
+    const pesquisa = await this.prisma.conta_diaria.findMany({
+      where: {
+        cpf: dto.cpf,
+        tipo: { not: 'T' },
+      },
+      orderBy: [
+        { id: "desc" }
+      ]
     });
+
+    if (pesquisa === null) {
+      return this.prisma.conta_diaria.create({
+        data: dto,
+      });
+
     } else {
+      let idContaBancaria = 0;
+      let idParticipante = 0;
+
+      if (pesquisa.length > 0) {
+        idContaBancaria = pesquisa[0].id;
+        idParticipante = pesquisa[0].participante_id;
+      }
+
       const data: UpdateContaDiariaDto = {
-        id: dto.id,
+        id: idContaBancaria,
         nome: dto.nome,
         cpf: dto.cpf,
         tipo: dto.tipo,
@@ -24,33 +42,38 @@ export class ContaDiariaService {
         agencia: dto.agencia,
         conta: dto.conta,
         banco_id: dto.banco_id,
-        participante_id: dto.participante_id
+        participante_id: idParticipante,
       };
 
-      await this.update(dto.id,data )
+      return this.prisma.conta_diaria.update({
+        where: { id: idContaBancaria },
+        data: data,
+      });
+
     }
+
   }
 
   findAll() {
     return `This action returns all contaDiaria`;
   }
 
-  pesquisaContaDoParticipantePorCpf(cpf: string){
+  pesquisaContaDoParticipantePorCpf(cpf: string) {
     return this.prisma.conta_diaria.findFirst({
       where: {
         cpf: cpf,
-        tipo: {not:'S'},
+        tipo: { not: 'S' },
       },
       include: {
         banco: true,
       },
       orderBy: [
-       { id: "desc"}
+        { id: "desc" }
       ]
     });
   }
 
-  pesquisaContaDoParticipanteGeralPorCpf(cpf: string){
+  pesquisaContaDoParticipanteGeralPorCpf(cpf: string) {
     return this.prisma.conta_diaria.findFirst({
       where: {
         cpf: cpf,
@@ -59,18 +82,18 @@ export class ContaDiariaService {
         banco: true,
       },
       orderBy: [
-       { id: "desc"}
+        { id: "desc" }
       ]
     });
   }
 
   findOne(id: number) {
     return this.prisma.conta_diaria.findFirst({
-      where: {id: id}
+      where: { id: id }
     });
   }
 
-  update(id: number, updateContaDiariaDto: UpdateContaDiariaDto) {            
+  update(id: number, updateContaDiariaDto: UpdateContaDiariaDto) {
     return this.prisma.conta_diaria.update({
       where: { id },
       data: updateContaDiariaDto,
