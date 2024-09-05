@@ -5,7 +5,7 @@ import { UpdateValorViagemDto } from './dto/update-valor_viagem.dto';
 
 @Controller('valor-viagem')
 export class ValorViagemController {
-  constructor(private readonly valorViagemService: ValorViagemService) {}
+  constructor(private readonly valorViagemService: ValorViagemService) { }
 
   @Post()
   create(@Body() createValorViagemDto: CreateValorViagemDto) {
@@ -49,7 +49,13 @@ export class ValorViagemController {
 
   @Put('/atualizar/valor/viagem/:id')
   updateValorViagem(@Param('id') id: string, @Body() updateValorViagemDto: UpdateValorViagemDto) {
-    return this.valorViagemService.updateValorViagem(+id, updateValorViagemDto);
+
+    if (updateValorViagemDto.tipo == 'PASSAGEM') {
+      return this.valorViagemService.updateValorViagemTipo(+id, 'PASSAGEM', updateValorViagemDto);
+    } else {
+      return this.valorViagemService.updateValorViagemTipo(+id, 'DIARIA', updateValorViagemDto);
+    }
+
   }
 
   @Put('/cotacao/:id/valor/:valor')
