@@ -54,7 +54,24 @@ export class EmpenhoDaofiService {
   async findInfoValoresParaEmpenhoPorSolicitacaoId(solicitacaoId: number) {
     const eventos = await this.prisma.evento.findMany({
         where: {
-            solicitacao_id: solicitacaoId
+            solicitacao_id: solicitacaoId,
+            evento_participantes: {
+                some: {
+                    viagem_participantes: {
+                        some: {
+                            viagem: {
+                                valor_viagem: {
+                                    some: {
+                                        valor_individual: {
+                                            not: null  // Asegura que só serão retornados os que têm valor_individual
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         },
         select: {
             id: true,
@@ -88,8 +105,15 @@ export class EmpenhoDaofiService {
         }
     });
 
-    // Calculando o total dos valores individuais para cada evento
-    const eventosComTotal = eventos.map(evento => ({
+    // Filtrar para incluir apenas eventos com valores totais positivos
+    const eventosComValores = eventos.filter(evento => evento.evento_participantes.some(ep =>
+        ep.viagem_participantes.some(vp =>
+            vp.viagem.valor_viagem.some(vv => vv.valor_individual && vv.valor_individual > 0)
+        )
+    ));
+
+    // Calculando o total dos valores individuais para cada evento com valores
+    const eventosComTotal = eventosComValores.map(evento => ({
         ...evento,
         totalValorIndividual: evento.evento_participantes.reduce((acc, ep) => {
             const totalPorParticipante = ep.viagem_participantes.reduce((accVP, vp) => {
@@ -102,5 +126,6 @@ export class EmpenhoDaofiService {
 
     return eventosComTotal;
 }
+
 
 }
