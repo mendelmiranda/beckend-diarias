@@ -12,44 +12,51 @@ export class ContaDiariaService {
     const pesquisa = await this.prisma.conta_diaria.findMany({
       where: {
         cpf: dto.cpf,
-        tipo: { not: 'T' },
       },
       orderBy: [
         { id: "desc" }
       ]
     });
 
-    if (pesquisa === null) {
-      return this.prisma.conta_diaria.create({
-        data: dto,
-      });
 
-    } else {
-      let idContaBancaria = 0;
-      let idParticipante = 0;
 
-      if (pesquisa.length > 0) {
-        idContaBancaria = pesquisa[0].id;
-        idParticipante = pesquisa[0].participante_id;
+    try {
+
+      if (pesquisa === null) {
+        return this.prisma.conta_diaria.create({
+          data: dto,
+        });
+
+      } else {
+        let idContaBancaria = 0;
+        let idParticipante = 0;
+
+        if (pesquisa.length > 0) {
+          idContaBancaria = pesquisa[0].id;
+          idParticipante = pesquisa[0].participante_id;
+        }
+
+        const data: UpdateContaDiariaDto = {
+          id: idContaBancaria,
+          nome: dto.nome,
+          cpf: dto.cpf,
+          tipo: dto.tipo,
+          tipo_conta: dto.tipo_conta,
+          agencia: dto.agencia,
+          conta: dto.conta,
+          banco_id: dto.banco_id,
+          participante_id: idParticipante,
+        };
+
+        return this.prisma.conta_diaria.update({
+          where: { id: idContaBancaria },
+          data: data,
+        });
+
       }
 
-      const data: UpdateContaDiariaDto = {
-        id: idContaBancaria,
-        nome: dto.nome,
-        cpf: dto.cpf,
-        tipo: dto.tipo,
-        tipo_conta: dto.tipo_conta,
-        agencia: dto.agencia,
-        conta: dto.conta,
-        banco_id: dto.banco_id,
-        participante_id: idParticipante,
-      };
-
-      return this.prisma.conta_diaria.update({
-        where: { id: idContaBancaria },
-        data: data,
-      });
-
+    } catch (error) {
+      console.log(error)
     }
 
   }
