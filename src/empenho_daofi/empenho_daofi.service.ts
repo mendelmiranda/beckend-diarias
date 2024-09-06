@@ -76,6 +76,8 @@ export class EmpenhoDaofiService {
         select: {
             id: true,
             titulo: true,
+            valor_evento: true,
+            valor_total_inscricao: true,
             evento_participantes: {
                 include: {
                     participante: {
