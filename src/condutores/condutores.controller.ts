@@ -18,7 +18,7 @@ export class CondutoresController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string) {    
     return this.condutoresService.findOne(+id);
   }
 
@@ -28,8 +28,9 @@ export class CondutoresController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.condutoresService.remove(+id);
+  async remove(@Param('id') id: string) {
+    const resultado = await this.condutoresService.remove(+id);    
+    return resultado;
   }
   
 }
