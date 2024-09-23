@@ -176,6 +176,10 @@ export class TramiteService {
   }
 
   async salvarLogTramite(dto: CreateTramiteDto, nome: string, tramiteId: number) {
+    if (!dto.cod_lotacao_origem || !dto.lotacao_origem) {
+      throw new Error("Dados de lotação de origem estão incompletos.");
+    }
+
     const dados: CreateLogTramiteDto = {
       cod_lotacao_origem: dto.cod_lotacao_origem,
       cod_lotacao_destino: dto.cod_lotacao_destino,
@@ -184,11 +188,18 @@ export class TramiteService {
       lotacao_destino: dto.lotacao_destino,
       lotacao_origem: dto.lotacao_origem,
       status: dto.status,
-      tramite_id: tramiteId,
+      tramite_id: tramiteId // Assumindo que você está connecting a tramite_id
     };
 
-    return await this.logTramiteService.create(dados);
+    try {
+      return await this.logTramiteService.create(dados);
+    } catch (error) {
+      console.error('Erro ao salvar o log de tramite:', error);
+      throw error;
+    }
   }
+
+
 
   findAll() {
     return this.prisma.tramite.findMany({
@@ -831,7 +842,7 @@ export class TramiteService {
 
 
   async voltaSolicitacaoParaDeterminadoSetor(logTramiteId: number, solicitacao_id: number, novosDados: CreateLogTramiteDto) {
-    const prisma = this.prisma; 
+    const prisma = this.prisma;
 
     try {
       await prisma.$transaction(async (transaction) => {
