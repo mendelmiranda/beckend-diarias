@@ -36,4 +36,10 @@ export class EncaminharSolicitacaoController {
   remove(@Param('id') id: string) {
     return this.encaminharSolicitacaoService.remove(+id);
   }
+
+
+  @Delete('/remover/tramites/solicitacao/:id')
+  removeTodoTramite(@Param('id') id: number) {
+    return this.encaminharSolicitacaoService.removerTramitesGeral(+id);
+  }
 }

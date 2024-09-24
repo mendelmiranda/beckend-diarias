@@ -46,7 +46,7 @@ export class EncaminharSolicitacaoService {
         }
       });
     } catch (error) {
-     // console.error("Erro ao buscar avisos do trâmite:", error);
+      // console.error("Erro ao buscar avisos do trâmite:", error);
       //throw error;  // Ou manipule o erro como preferir
     }
   }
@@ -62,4 +62,15 @@ export class EncaminharSolicitacaoService {
   remove(id: number) {
     return `This action removes a #${id} encaminharSolicitacao`;
   }
+
+  async removerTramitesGeral(solicitacaoId: number) {
+    try {
+      const result = await this.prisma.$executeRaw`SELECT public.limpar_tramite_por_solicitacao(${solicitacaoId}::INTEGER)`;
+      return result;
+    } catch (error) {
+      console.error("Erro ao remover trâmites da solicitação:", error);      
+    }
+  }
+
+
 }
