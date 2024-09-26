@@ -62,6 +62,21 @@ function convertToDateDB(dateString: string) {
     return dat;     
 }
 
+const dateOptionsHourShort: object = {
+	year: "numeric",
+	month: "numeric",
+	day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+};
+
+function formataDataCurtaComHora(data: Date) {
+    const formattedPublishDate = new Date(data).toLocaleDateString("pt-BR", dateOptionsHourShort);
+    return formattedPublishDate;
+}
+
 export const Util = {
-    dataAtual, convertToDate,totalDeDias, formataDataAmericana, formataDataAmericanaBanco, convertToDateDB, subtractDays, formataDataAmericanaComParametro, horaAtual, calcularDiferencaDias
+    dataAtual, convertToDate,totalDeDias, formataDataAmericana, formataDataAmericanaBanco, 
+    convertToDateDB, subtractDays, formataDataAmericanaComParametro, horaAtual, calcularDiferencaDias,
+    formataDataCurtaComHora
 }

@@ -2,9 +2,23 @@
 import { Injectable } from '@nestjs/common';
 import * as PdfPrinter from 'pdfmake';
 import * as fs from 'fs';
+import { SolicitacaoService } from 'src/solicitacao/solicitacao.service';
 
 @Injectable()
 export class PdfServiceGenerator {
+  
+    constructor( private solicitacaoService: SolicitacaoService) {}
+
+    async pesquisaSolicitacaoPorId(id: number) {
+        return await this.solicitacaoService.detalhesDaSolicitacao(id).catch((e) => {
+            console.error(e);
+            return null;
+        }
+        );
+    }
+
+
+    
   private printer = new PdfPrinter({
     Roboto: {
       normal: 'fonts/Roboto-Regular.ttf',
