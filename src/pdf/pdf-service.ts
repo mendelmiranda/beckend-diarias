@@ -1,13 +1,14 @@
 // pdf.service.ts
+
 import { Injectable } from '@nestjs/common';
-import * as PdfPrinter from 'pdfmake';
-import * as fs from 'fs';
+const PdfPrinter = require('pdfmake');
 import { SolicitacaoService } from 'src/solicitacao/solicitacao.service';
+import { SolicitacaoCondutoresService } from 'src/solicitacao_condutores/solicitacao_condutores.service';
 
 @Injectable()
 export class PdfServiceGenerator {
   
-    constructor( private solicitacaoService: SolicitacaoService) {}
+    constructor( private solicitacaoService: SolicitacaoService, private readonly solicitacaoCondutoresService: SolicitacaoCondutoresService) {}
 
     async pesquisaSolicitacaoPorId(id: number) {
         return await this.solicitacaoService.detalhesDaSolicitacao(id).catch((e) => {
@@ -15,6 +16,10 @@ export class PdfServiceGenerator {
             return null;
         }
         );
+    }
+
+    getCondutoresDaSolicitacao( id: number) {
+      return this.solicitacaoCondutoresService.findAll(id);
     }
 
 

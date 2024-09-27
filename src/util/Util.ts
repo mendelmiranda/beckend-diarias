@@ -1,4 +1,4 @@
-import * as moment from 'moment';
+import moment from 'moment';
 
 
 const calcularDiferencaDias = (dt1: Date, dt2: Date): number => {    
@@ -70,10 +70,36 @@ const dateOptionsHourShort: object = {
     minute: "numeric",
 };
 
+const dateOptionsShort: object = {
+	year: "numeric",
+	month: "numeric",
+	day: "numeric",
+};
+
+
 function formataDataCurtaComHora(data: Date) {
     const formattedPublishDate = new Date(data).toLocaleDateString("pt-BR", dateOptionsHourShort);
     return formattedPublishDate;
 }
+
+export function formataDataCurta(data: Date) {
+    const formattedPublishDate = new Date(data).toLocaleDateString("pt-BR", dateOptionsShort);
+    return formattedPublishDate;
+}
+
+export const formataValorDiaria = (valor: number, destino: string) => {
+    if (destino === "INTERNACIONAL") {
+        return Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(valor);
+    }
+    return Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+}
+
+export const formataMascaraCpf = (cpf: string) => {
+    return cpf
+        .replace(/[^\d]/g, "")
+        .replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+}
+
 
 export const Util = {
     dataAtual, convertToDate,totalDeDias, formataDataAmericana, formataDataAmericanaBanco, 

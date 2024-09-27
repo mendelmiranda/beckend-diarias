@@ -2,9 +2,8 @@
 import { Controller, Get, Param, Res } from '@nestjs/common';
 
 import { Response } from 'express';
+import { formataDataCurta, formataMascaraCpf, formataValorDiaria, Util } from 'src/util/Util';
 import { PdfServiceGenerator } from './pdf-service';
-import { SolicitacaoService } from 'src/solicitacao/solicitacao.service';
-import { Util } from 'src/util/Util';
 
 
 @Controller('pdf')
@@ -18,6 +17,13 @@ export class PdfController {
     const sol = await this.pdfService.pesquisaSolicitacaoPorId(+id);
 
     let content: any = [];
+    let resultadoPassagem = 0;
+    let resultado = 0;
+    let resultadoInternacional = 0;
+    let cotacao = 0;
+
+    let totalDiariaCondutor = 0;
+    let totalValoresEventos = 0;
 
     content.push({
       image: this.base64Image,
@@ -40,7 +46,7 @@ export class PdfController {
         text: "\nSOLICITAÇÃO Nº " + id,
         style: "texto",
       }
-      
+
     );
 
     content.push({
@@ -58,6 +64,353 @@ export class PdfController {
       },
     });
 
+    content.push({ text: "\n\n", });
+
+    content.push(
+      {
+        text: "Justificativa",
+        style: "texto",
+      },
+      {
+        text: sol.justificativa ?? "\n\n",
+        style: "textoNormal",
+      },
+
+    );
+
+    //EVENTOS
+    
+    sol.eventos?.forEach((eventos) => {
+
+      const matchingEventos = sol.eventos?.filter((evento) => evento.id === eventos.id) ?? [];
+
+
+      content.push({
+        text: "\n\n" + eventos.titulo.toUpperCase(),
+        style: "texto",
+      });
+
+      content.push(
+        {
+          text: eventos.tipo_evento?.descricao,
+          style: "textoNormal",
+        },
+        {
+          text: "De " + formataDataCurta(eventos.inicio as Date) + " a " + formataDataCurta(eventos.fim as Date) + "\n\n",
+          style: "textoNormal",
+        },
+        {
+          text: eventos.informacoes + "\n\n",
+          style: "textoNormal",
+        },
+      );
+
+      matchingEventos.forEach((data) => {
+        let text: string;
+      
+        if (data.exterior === "SIM") {
+          const paisNome = data.pais?.nome_pt ?? "";
+          const localExterior = data.local_exterior ?? "";
+          text = `${paisNome} - ${localExterior}`;
+        } else {
+          const cidadeDescricao = data.cidade?.descricao ?? "";
+          const estadoUf = data.cidade?.estado?.uf ?? "";
+          text = `${cidadeDescricao}/${estadoUf}`;
+        }
+      
+        content.push({
+          text: "Local do Evento: ",
+          style: "textoNormal",
+        },{ text });
+      });
+  
+
+      //VALORES EVENTOS
+      sol.eventos?.filter((a) => a.id === eventos.id).map((data) => {
+
+        if (data.valor_evento || data.valor_total_inscricao) {
+
+          totalValoresEventos += (data.valor_total_inscricao!) + (data.valor_evento!);
+
+          content.push({
+            text: "\n",
+          });
+
+          content.push({
+            style: "justificativa",
+            table: {
+              headerRows: 1,
+              widths: ['*'],
+              body: [
+                [
+                  {
+                    text: 'INFORMAÇÕES RELIZADAS: ESCOLA DE CONTAS',
+                    style: 'justificativa',
+                  }
+                ],
+                ['Valor unitário: ' + formataValorDiaria(data.valor_total_inscricao!, "NACIONAL" ?? '') +
+                  '\n' + 'Valor total: ' + formataValorDiaria(data.valor_evento!, "NACIONAL") +
+                  '\n' + "Observação: " + data.observacao_valor]
+              ]
+            }
+
+          });
+
+        } else {
+          content.push({
+            text:
+              "Observação: " + data.observacao_valor === null
+                ? ""
+                : data.observacao_valor,
+          });
+        }
+
+        content.push({
+          text: "\n\nPARTICIPANTES DO EVENTO\n\n",
+          style: "texto",
+        });
+
+        eventos.evento_participantes?.forEach((ep) => {
+          const conta = ep.participante.conta_diaria?.find((a) => a);
+          const tipoConta = conta?.tipo_conta === "C" ? "CONTA CORRENTE" : "" || conta?.tipo_conta === "P" ? "CONTA POUPANÇA"
+              : "" || conta?.tipo_conta === "S" ? "CONTA SALÁRIO" : "";
+  
+          content.push(
+            {
+              style: "textoNormal",
+              layout: "noBorders",
+              table: {
+                body: [
+                  ["Nome:", ep.participante.nome],
+                  [
+                    "Matrícula: ",
+                    ep.participante.matricula === null
+                      ? "Colaborador/Teceirizado"
+                      : ep.participante.matricula,
+                  ],
+                  [
+                    "Data Nasc:", formataDataCurta(new Date(Date.parse(ep.participante.data_nascimento))),
+                  ],
+                  ["RG:", ep.participante.rg],
+                  ["CPF:", formataMascaraCpf(ep.participante.cpf)],
+                  ["E-mail:", ep.participante.email],
+                  ["Telefone:", ep.participante.telefone],
+                  ["Lotação:", ep.participante.lotacao],
+                  ["Cargo:", ep.participante.cargo],
+                ],
+              },
+            },
+  
+            {
+              text: "\n",
+            }
+          );
+  
+          ep.viagem_participantes.forEach((vp) => {
+            const custos = vp.viagem.custos?.map((custos) => {
+              return this.exibeCustos(+custos);
+            });
+  
+            //==============
+            const valoresViagem = vp.viagem.valor_viagem;
+  
+            valoresViagem?.forEach((valor) => {
+              if (valor.tipo === "PASSAGEM") {
+                resultadoPassagem += valor.valor_grupo || valor.valor_individual || 0;
+              }
+              if (valor.tipo === "DIARIA" && valor.destino === "NACIONAL") {
+                resultado += valor.valor_individual || 0;
+              }
+              if (valor.tipo === "DIARIA" && valor.destino?.trim() === "INTERNACIONAL") {
+                resultadoInternacional += valor.valor_individual || 0;
+                cotacao = valor.cotacao_dolar || 0;
+              }
+            });
+  
+            const local = vp.viagem.cidade_destino?.descricao + " - " + vp.viagem.cidade_destino?.estado?.uf;
+            const cidadeDestino = vp.viagem?.destino?.cidade === undefined ? local : vp.viagem?.destino?.cidade + " - " + vp.viagem?.destino?.uf;
+  
+            let origem = "";
+            if (eventos.tem_passagem === "NAO") {
+              origem =
+                vp.viagem.cidade_origem?.descricao + " - " + vp.viagem.cidade_origem?.estado?.uf;
+            } else {
+              origem = vp.viagem.origem?.cidade + " - " + vp.viagem.origem?.uf;
+            }
+  
+            let valorDiaria = 0;
+            let diariasDesc = "";
+  
+            vp.viagem.valor_viagem?.filter((a) => a.tipo === "DIARIA").forEach((diarias) => {
+                valorDiaria += diarias.valor_individual ?? 0;
+  
+                if (diarias.justificativa !== undefined && diarias.justificativa?.length > 0) {
+                  diariasDesc += formataValorDiaria(diarias.valor_individual ?? 0, "NACIONAL") + " (Justificativa: " + diarias.justificativa +")\n";
+                } else {
+                  diariasDesc += formataValorDiaria(diarias.valor_individual ?? 0, "NACIONAL") + "\n";
+                }
+              });
+  
+            /* BANCO AQUI */
+            content.push(
+              {
+                style: "textoNormal",
+                layout: "noBorders",
+                table: {
+                  body: [
+                    ["DADOS BANCÁRIOS", "DADOS DA VIAGEM"],
+                    [
+                      // First cell of the second row
+                      {
+                        style: "textoNormal",
+                        layout: "noBorders",
+                        table: {
+                          body: [
+                            ["Banco:", conta?.banco?.banco ?? ""],
+                            ["Tipo:", tipoConta ?? ""],
+                            ["Agência:", conta?.agencia ?? ""],
+                            ["Conta:", conta?.conta ?? ""],
+                          ],
+                        },
+                      },
+                      // Second cell of the second row (removed extra square brackets)
+                      {
+                        style: "textoNormal",
+                        layout: "noBorders",
+                        table: {
+                          body: [
+                            ["Origem:", origem ?? ""],
+                            [
+                              "Ida:",
+                              vp.viagem.data_ida
+                                ? formataDataCurta(vp.viagem.data_ida as Date)
+                                : "",
+                            ],
+                            [
+                              "Destino:",
+                              cidadeDestino ??
+                                (vp.viagem.cidade_destino?.descricao ?? "") +
+                                  " - " +
+                                  (vp.viagem.cidade_destino?.uf ?? ""),
+                            ],
+                            [
+                              "",
+                              vp.viagem.deslocamento === "SIM"
+                                ? "Deslocamento"
+                                : vp.viagem.data_volta
+                                ? "Volta: " + formataDataCurta(vp.viagem.data_volta as Date)
+                                : "",
+                            ],
+                          ],
+                        },
+                      },
+                    ],
+                  ],
+                },
+              },
+              {
+                text: "Valor Diária " + (diariasDesc ?? ""),
+                style: "texto",
+              },
+              {
+                text: "\nVai arcar com algum custo? " + (vp.viagem.arcar_passagem ?? "") + "\n",
+                style: "textoNormal",
+              }
+            );
+            //BANCO
+ 
+            if (vp.viagem.arcar_passagem === "SIM") {
+              content.push(
+                {
+                  text: "" + custos,
+                },
+  
+                {
+                  text: "Justificativa: " + vp.viagem.justificativa + "\n\n",
+                  style: "textos",
+                }
+              );
+            }
+  
+            if (vp.viagem.viagem_diferente === "SIM") {
+              content.push(
+                {
+                  text:
+                    "" +
+                    "Viagem com data diferentes?" +
+                    vp.viagem.viagem_diferente,
+                  style: "textos",
+                },
+                {
+                  text:
+                    "" +
+                    "Ida: " +
+                    formataDataCurta(vp.viagem.data_ida_diferente as Date),
+                  style: "textos",
+                },
+                {
+                  text:
+                    "" +
+                    "Volta: " +
+                    formataDataCurta(vp.viagem.data_volta_diferente as Date),
+                  style: "textos",
+                },
+                {
+                  text:
+                    "" +
+                    "Justificativa: " +
+                    vp.viagem.justificativa_diferente +
+                    "\n\n",
+                  style: "textos",
+                }
+              );
+            }
+  
+            content.push({
+              text:
+                "Servidor Acompanhando Conselheiro ou Procurador Geral? " +
+                vp.viagem.servidor_acompanhando +
+                "\n\n",
+              style: "textoNormal",
+            });
+  
+            if (vp.viagem.viagem_pernoite === "SIM") {
+              content.push({
+                text:
+                  "Viagem com pernoite " +
+                  vp.viagem.justificativa_municipios +
+                  "\n\n",
+                style: "textos",
+              });
+            }
+  
+            if (vp.viagem.viagem_superior === "SIM") {
+              content.push({
+                text:
+                  "Viagem será superir a 6 horas: " +
+                  vp.viagem.justificativa_municipios +
+                  "\n\n",
+                style: "textos",
+              });
+            }
+          });
+  
+        });
+        
+
+        
+
+
+      });
+    });
+    //VALORES EVENTOS
+    //EVENTOS  
+
+    
+
+    
+    
+    
 
     const docDefinition = {
       content: content,
@@ -69,6 +422,10 @@ export class PdfController {
         texto: {
           fontSize: 12,
           bold: true,
+        },
+        textoNormal: {
+          fontSize: 11,
+          bold: false,
         },
         titulosHeader: {
           fontSize: 11,
