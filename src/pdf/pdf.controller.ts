@@ -448,7 +448,7 @@ export class PdfController {
                   [
                       {
                         text: 'INFORMAÇÕES DO CONDUTOR: DIRETORIA AREA ADMINISTRATIVA',
-                        style: 'justificativa',
+                        style: 'texto',
                       }
                     ],
 
@@ -471,6 +471,7 @@ export class PdfController {
         }
       });
     });
+    //MOTORISTA
 
     content.push({
       text: "\n",
