@@ -396,15 +396,85 @@ export class PdfController {
           });
   
         });
-        
-
-        
-
 
       });
     });
     //VALORES EVENTOS
     //EVENTOS  
+
+    //MOTORISTA
+    await this.exibeMotorista(sol.id!).then((condutoresDaSolicitacao) => {
+      condutoresDaSolicitacao?.map((condutor, index) => {
+        content.push({
+          text: '\n',
+        });
+
+        if (condutor.condutores?.tipo === "S") {
+          content.push(
+            {
+              text: "SERVIDOR/MOTORISTA PARTICULAR \n",
+              style: "titulos",
+            },
+            {
+              text:
+                "Nome: " +
+                condutor.condutores.nome +
+                " CPF: " +
+                condutor.condutores.cpf,
+              style: "textos",
+            },
+            {
+              text: "*Dados bancários nas informações de participantes \n\n",
+              style: "textos",
+            }
+          );
+        } else {
+          let valorDiaria = 0;
+
+          {
+            condutor?.diaria_condutor?.map((diaria) => {
+              valorDiaria = diaria.valor;
+              totalDiariaCondutor += valorDiaria;
+            });
+          }
+
+
+          //montando condutor
+          content.push({
+            style: "textoEmp",
+            table: {
+            widths: ['*'],
+            body: [
+                  [
+                      {
+                        text: 'INFORMAÇÕES DO CONDUTOR: DIRETORIA AREA ADMINISTRATIVA',
+                        style: 'justificativa',
+                      }
+                    ],
+
+                    ["Nome: " + (condutor?.condutores?.nome.toUpperCase()) + " CPF: " + (condutor?.condutores?.cpf) +'\n'+ "Matricula: " + condutor?.condutores?.matricula + '\n'
+                        + "Validade CNH: " + formataDataCurta(condutor.condutores?.validade_cnh as Date) + " Categoria: " + condutor.condutores?.categoria_cnh + '\n'
+                        + "Celular: " + condutor.condutores?.celular + '\n' + "Endereço: " + condutor.condutores?.endereco + '\n' + "Agencia: " + condutor.condutores?.agencia + '\n' 
+                        + "CC: " + condutor.condutores?.conta + " Banco: " + condutor.condutores?.banco + "\n \n" 
+                        + "Diária Condutor: " + formataValorDiaria(valorDiaria, "NACIONAL") + "\n"
+                        + "Veículo: " + condutor.veiculo + "\n\n"
+                    ] 
+      
+                
+                
+               
+              ],
+            },
+            
+          });
+        
+        }
+      });
+    });
+
+    content.push({
+      text: "\n",
+    });
 
     
 
@@ -458,6 +528,20 @@ export class PdfController {
       "Outros",
     ];
     return custos[index];
+  };
+
+  exibeMotorista = async (solicitacaoId: number) => {
+    try {
+      const data = await this.pdfService.getCondutoresDaSolicitacao(solicitacaoId);
+      return data;
+    } catch (error) {
+      // Se ocorrer um erro, verifique se é um erro 404
+      if ((error as any).response && (error as any).response.status === 404) {
+        return [];
+      } else {
+        return [];
+      }
+    }
   };
 
 
