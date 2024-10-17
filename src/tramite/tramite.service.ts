@@ -89,9 +89,12 @@ export class TramiteService {
   async enviaDARAD(status: string, solicitacaoId: number, mensagem?: string) {
     //this.emailService.enviarEmail(solicitacaoId, status, 'wendell.sacramento', mensagem);
 
-    this.emailService.enviarEmail(solicitacaoId, status, 'betania.silva', mensagem);
+    this.emailService.enviarEmail(solicitacaoId, status, 'darad', mensagem)
+    this.emailService.enviarEmail(solicitacaoId, status, 'ana.coutinho', mensagem)
+
+    /* this.emailService.enviarEmail(solicitacaoId, status, 'betania.silva', mensagem);
     this.emailService.enviarEmail(solicitacaoId, status, 'clarisse.dias'), mensagem;
-    this.emailService.enviarEmail(solicitacaoId, status, 'joanne.dias', mensagem);
+    this.emailService.enviarEmail(solicitacaoId, status, 'joanne.dias', mensagem); */
   }
 
   async enviaDAOF(status: string, solicitacaoId: number, mensagem?: string) {
