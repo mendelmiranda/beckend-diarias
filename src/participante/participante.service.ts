@@ -115,7 +115,7 @@ export class ParticipanteService {
           }
         });        
 
-        return participante; // Retorna apenas o ID
+        return participante.id; // Retorna apenas o ID
       }
     } catch (error) {
       if (error.code === 'P2002') {

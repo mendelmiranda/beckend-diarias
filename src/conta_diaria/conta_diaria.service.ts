@@ -9,6 +9,9 @@ export class ContaDiariaService {
 
   async create(dto: CreateContaDiariaDto) {
 
+    let idContaBancaria = 0;
+    let idParticipante = 0;
+
     const pesquisa = await this.prisma.conta_diaria.findMany({
       where: {
         cpf: dto.cpf,
@@ -18,36 +21,43 @@ export class ContaDiariaService {
       ]
     });
 
+    pesquisa.forEach(element => {
+      idContaBancaria = element.id;
+    });
 
+
+    const pesquisaParticipante = await this.prisma.participante.findMany({
+      where: {
+        cpf: dto.cpf,
+      },
+      orderBy: [
+        { id: "desc" }
+      ]
+    });
+
+    if (pesquisaParticipante.length > 0) {
+      idParticipante = pesquisaParticipante[0].id;
+    }
 
     try {
 
-      if (pesquisa === null) {
-        return this.prisma.conta_diaria.create({
-          data: dto,
+      const data: Omit<UpdateContaDiariaDto, 'id'> = {
+        nome: dto.nome,
+        cpf: dto.cpf,
+        tipo: dto.tipo,
+        tipo_conta: dto.tipo_conta,
+        agencia: dto.agencia,
+        conta: dto.conta,
+        banco_id: dto.banco_id,
+        participante_id: idParticipante,
+      };
+
+      if (idContaBancaria === 0) {
+        const conta = await this.prisma.conta_diaria.create({
+          data: data,
         });
-
+        return conta;
       } else {
-        let idContaBancaria = 0;
-        let idParticipante = 0;
-
-        if (pesquisa.length > 0) {
-          idContaBancaria = pesquisa[0].id;
-          idParticipante = pesquisa[0].participante_id;
-        }
-
-        const data: UpdateContaDiariaDto = {
-          id: idContaBancaria,
-          nome: dto.nome,
-          cpf: dto.cpf,
-          tipo: dto.tipo,
-          tipo_conta: dto.tipo_conta,
-          agencia: dto.agencia,
-          conta: dto.conta,
-          banco_id: dto.banco_id,
-          participante_id: idParticipante,
-        };
-
         return this.prisma.conta_diaria.update({
           where: { id: idContaBancaria },
           data: data,
