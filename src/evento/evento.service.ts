@@ -8,10 +8,17 @@ export class EventoService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(dto: CreateEventoDto) {
-    return this.prisma.evento.create({
-      data: dto,
-    });
+    try {
+      return await this.prisma.evento.create({
+        data: dto,
+      });
+    } catch (error) {
+      console.log(error);
+      
+      throw new Error(`Erro ao criar evento: ${error.message}`);
+    }
   }
+  
 
   findAll() {
     return this.prisma.evento.findMany();
