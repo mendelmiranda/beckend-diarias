@@ -9,7 +9,19 @@ export class ViagemParticipantesService {
 
   async create(dto: CreateViagemParticipanteDto) {
     return this.prisma.viagem_participantes.create({
-      data: dto,
+        data: {
+            evento_participantes: {
+                connect: {
+                    id: dto.evento_participantes_id
+                }
+            },
+            viagem: {
+                connect: {
+                    id: dto.viagem_id
+                }
+            }
+            // Adicione outros campos se necessário
+        }
     });
   }
 

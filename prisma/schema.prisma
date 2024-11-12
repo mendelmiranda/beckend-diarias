@@ -341,6 +341,13 @@ model viagem_participantes {
   viagem    viagem @relation(fields: [viagem_id], references: [id], onDelete: Cascade)
 
   datareg DateTime @default(now())
+  servidor_acompanhando String? @db.Char(3)
+  viagem_diferente       String? @db.Char(3)
+  justificativa_diferente String?
+  data_ida_diferente      DateTime?
+  data_volta_diferente    DateTime?
+  arcar_passagem          String? @db.Char(3)
+  custos                  String[]
 
   @@id([id, evento_participantes_id, viagem_id])
 }
