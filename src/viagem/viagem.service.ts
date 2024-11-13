@@ -1,24 +1,20 @@
 import { Injectable } from '@nestjs/common';
+import { evento, participante } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
-import { CidadeService } from 'src/cidade/cidade.service';
-import { CreateViagemDto } from './dto/create-viagem.dto';
-import { UpdateViagemDto } from './dto/update-viagem.dto';
-import { ParticipanteService } from '../participante/participante.service';
-import { ViagemParticipantesService } from '../viagem_participantes/viagem_participantes.service';
-import { EventoParticipantesService } from '../evento_participantes/evento_participantes.service';
-import CalculoDiaria from './calculo-diarias-membros';
-import CalculoDiariasServidores from './calculo-diarias-servidores';
-import { AeroportoService } from '../aeroporto/aeroporto.service';
-import { CargoDiariasService } from '../cargo_diarias/cargo_diarias.service';
-import { ValorViagemService } from 'src/valor_viagem/valor_viagem.service';
-import { CreateValorViagemDto } from 'src/valor_viagem/dto/create-valor_viagem.dto';
-import { viagem, evento, valor_diarias, participante, evento_participantes, viagem_participantes } from '@prisma/client';
-import { EventoService } from 'src/evento/evento.service';
+import { Municipios } from 'src/calculo_diarias/diarias-enum';
 import CalculoEstadual from 'src/calculo_diarias/estadual';
 import CalculoNacional from 'src/calculo_diarias/externo';
 import CalculoInternacional from 'src/calculo_diarias/internacional';
-import { Municipios } from 'src/calculo_diarias/diarias-enum';
+import { CidadeService } from 'src/cidade/cidade.service';
+import { EventoService } from 'src/evento/evento.service';
 import { Util } from 'src/util/Util';
+import { CreateValorViagemDto } from 'src/valor_viagem/dto/create-valor_viagem.dto';
+import { ValorViagemService } from 'src/valor_viagem/valor_viagem.service';
+import { AeroportoService } from '../aeroporto/aeroporto.service';
+import { CargoDiariasService } from '../cargo_diarias/cargo_diarias.service';
+import { EventoParticipantesService } from '../evento_participantes/evento_participantes.service';
+import { CreateViagemDto } from './dto/create-viagem.dto';
+import { UpdateViagemDto } from './dto/update-viagem.dto';
 
 
 @Injectable()
@@ -53,6 +49,21 @@ export class ViagemService {
         data: newDto,
       });
     }
+  }
+
+  async createNova(dto: CreateViagemDto) {
+    
+    try{
+      const { valor_viagem, ...newDto } = dto;
+  
+      return this.prisma.viagem.create({
+        data: newDto,
+      });
+    } catch(error){
+      console.log("Erro ao cadastrar viagem:", error);
+      throw error;
+    }
+    
   }
 
   async calculaDiaria(idViagem: number, participanteId: number, eventoId: number, total: number) {
