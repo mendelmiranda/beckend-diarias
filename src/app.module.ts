@@ -38,6 +38,7 @@ import { AssinaturaDaofModule } from './assinatura_daof/assinatura_daof.module';
 import { AprovacaoDefinitivaDaofModule } from './aprovacao_definitiva_daof/aprovacao_definitiva_daof.module';
 import { DiariaCondutorModule } from './diaria_condutor/diaria_condutor.module';
 import { PdfModule } from './pdf/pdf.module';
+import { ViagemEventoModule } from './viagem_evento/viagem_evento.module';
 
 
 
@@ -111,6 +112,8 @@ import { PdfModule } from './pdf/pdf.module';
     DiariaCondutorModule,
 
     PdfModule,
+
+    ViagemEventoModule,
   ],
   controllers: [AppController],
   providers: [AppService, EmailService, 

@@ -51,8 +51,7 @@ export class ViagemService {
     }
   }
 
-  async createNova(dto: CreateViagemDto) {
-    
+  async createNova(dto: CreateViagemDto) {    
     try{
       const { valor_viagem, ...newDto } = dto;
   
@@ -62,9 +61,10 @@ export class ViagemService {
     } catch(error){
       console.log("Erro ao cadastrar viagem:", error);
       throw error;
-    }
-    
+    }    
   }
+
+  
 
   async calculaDiaria(idViagem: number, participanteId: number, eventoId: number, total: number) {
     

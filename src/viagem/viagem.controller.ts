@@ -72,8 +72,8 @@ export class ViagemController {
     return this.viagemService.remove(+id);
   }
 
-  @Post('/v2/nova')
-  async createViagem(@Body() createViagemDto: CreateViagemDto) {
+  @Post('/v2/nova/:eventoId')
+  async createViagem(@Param('id') id: string, @Body() createViagemDto: CreateViagemDto) {
     console.log('origem', createViagemDto.origem_id);
     
     console.log(createViagemDto);

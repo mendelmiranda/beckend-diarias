@@ -108,6 +108,7 @@ model solicitacao {
   solicitacao_condutores     solicitacao_condutores[]
   encaminhar_solicitacao     encaminhar_solicitacao[]
   aprovacao_definitiva_darad aprovacao_definitiva_daof[]
+  viagem_evento              viagem_evento[]
 
   @@id([id])
 }
@@ -141,7 +142,7 @@ model tramite {
   solicitacao_id      Int
   log_tramite         log_tramite[]
 
-  flag_daof           String? @db.Char(3)
+  flag_daof String? @db.Char(3)
 
   @@id([id, solicitacao_id])
 }
@@ -317,6 +318,21 @@ model viagem {
 
   viagem_participantes viagem_participantes[]
   valor_viagem         valor_viagem[]
+  viagem_evento        viagem_evento[]
+}
+
+model viagem_evento {
+  id        Int        @unique @default(autoincrement())
+  evento_id Int
+  evento    condutores @relation(fields: [evento_id], references: [id], onDelete: Cascade)
+
+  solicitacao_id Int
+  solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id], onDelete: Cascade)
+
+  viagem_id Int
+  viagem    viagem @relation(fields: [viagem_id], references: [id], onDelete: Cascade)
+
+  @@id([id, evento_id, solicitacao_id, viagem_id])
 }
 
 model valor_viagem {
@@ -340,13 +356,13 @@ model viagem_participantes {
   viagem_id Int
   viagem    viagem @relation(fields: [viagem_id], references: [id], onDelete: Cascade)
 
-  datareg DateTime @default(now())
-  servidor_acompanhando String? @db.Char(3)
-  viagem_diferente       String? @db.Char(3)
+  datareg                 DateTime  @default(now())
+  servidor_acompanhando   String?   @db.Char(3)
+  viagem_diferente        String?   @db.Char(3)
   justificativa_diferente String?
   data_ida_diferente      DateTime?
   data_volta_diferente    DateTime?
-  arcar_passagem          String? @db.Char(3)
+  arcar_passagem          String?   @db.Char(3)
   custos                  String[]
 
   @@id([id, evento_participantes_id, viagem_id])
@@ -410,6 +426,7 @@ model condutores {
   conta                  String?
   tipo                   String?                  @db.Char(1)
   solicitacao_condutores solicitacao_condutores[]
+  viagem_evento          viagem_evento[]
 }
 
 model solicitacao_condutores {
