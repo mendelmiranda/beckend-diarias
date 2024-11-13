@@ -5,7 +5,7 @@ export class CreateViagemEventoDto {
   evento_id: number;
  // evento: {connect: {id: number}};
   
-  solicitacao_id: never;//number;
+  solicitacao_id: number;
   //solicitacao: { connect: { id: number } }; 
 
   viagem_id: number;

@@ -15,6 +15,7 @@ import { CargoDiariasService } from '../cargo_diarias/cargo_diarias.service';
 import { EventoParticipantesService } from '../evento_participantes/evento_participantes.service';
 import { CreateViagemDto } from './dto/create-viagem.dto';
 import { UpdateViagemDto } from './dto/update-viagem.dto';
+import { CreateViagemEventoDto } from 'src/viagem_evento/dto/create-viagem_evento.dto';
 
 
 @Injectable()
@@ -51,18 +52,35 @@ export class ViagemService {
     }
   }
 
-  async createNova(dto: CreateViagemDto) {    
-    try{
+  async createNova(dto: CreateViagemDto, eventoId: number) {    
+    let resultado;
+    
+    try {
       const { valor_viagem, ...newDto } = dto;
   
-      return this.prisma.viagem.create({
+      resultado =  this.prisma.viagem.create({
         data: newDto,
+        select: {
+          id: true
+        }
       });
-    } catch(error){
+
+      const viagemEvento: CreateViagemEventoDto = {
+        evento_id: eventoId,
+        solicitacao_id: dto.solicitacao_id,
+        viagem_id: (await resultado).id ,
+        datareg: new Date(),        
+      }
+
+      await this.prisma.viagem_evento.create({ data: viagemEvento });
+
+    } catch(error) {
       console.log("Erro ao cadastrar viagem:", error);
       throw error;
     }    
-  }
+
+    return resultado;
+}
 
   
 
