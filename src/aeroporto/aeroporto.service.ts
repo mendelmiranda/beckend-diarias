@@ -6,7 +6,7 @@ import { UpdateAeroportoDto } from './dto/update-aeroporto.dto';
 
 @Injectable()
 export class AeroportoService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   create(createAeroportoDto: CreateAeroportoDto) {
     return 'This action adds a new aeroporto';
@@ -19,7 +19,17 @@ export class AeroportoService {
     );
   }
 
-  async getAeroportos(query: string): Promise<{ id: number; cidade: string }[]> {
+  async getAeroportos(query: string) {
+    const resultados = await this.prisma.$queryRaw`
+  SELECT * FROM aeroporto
+  WHERE cidade % ${query}
+  ORDER BY similarity(cidade, ${query}) DESC
+`;
+
+    return resultados;
+  }
+
+  /* async getAeroportos(query: string): Promise<{ id: number; cidade: string }[]> {
     try {
       const result = await this.prisma.aeroporto.findMany({
         where: {
@@ -55,7 +65,7 @@ export class AeroportoService {
       console.error('Erro ao buscar aeroportos:', error);
       throw error;
     }
-  }
+  } */
 
   async findCidadePais(descricao: string) {
     const resultado = this.prisma.$queryRaw(
