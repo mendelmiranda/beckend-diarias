@@ -208,6 +208,7 @@ model evento {
   evento_participantes evento_participantes[]
   anexo_evento         anexo_evento[]
   eventos_juntos       eventos_juntos[]
+  viagem_evento        viagem_evento[]
 
   @@id([id])
 }
@@ -322,15 +323,19 @@ model viagem {
 }
 
 model viagem_evento {
-  id        Int        @unique @default(autoincrement())
+  id        Int    @unique @default(autoincrement())
+  
   evento_id Int
-  evento    condutores @relation(fields: [evento_id], references: [id], onDelete: Cascade)
+  evento    evento? @relation(fields: [evento_id], references: [id], onDelete: Cascade)
 
   solicitacao_id Int
-  solicitacao    solicitacao @relation(fields: [solicitacao_id], references: [id], onDelete: Cascade)
+  solicitacao    solicitacao? @relation(fields: [solicitacao_id], references: [id], onDelete: Cascade)
 
-  viagem_id Int
-  viagem    viagem @relation(fields: [viagem_id], references: [id], onDelete: Cascade)
+  viagem_id    Int
+  viagem       viagem?      @relation(fields: [viagem_id], references: [id], onDelete: Cascade)
+
+  datareg DateTime @default(now()) @db.Timestamptz(3)
+  
 
   @@id([id, evento_id, solicitacao_id, viagem_id])
 }
@@ -426,7 +431,6 @@ model condutores {
   conta                  String?
   tipo                   String?                  @db.Char(1)
   solicitacao_condutores solicitacao_condutores[]
-  viagem_evento          viagem_evento[]
 }
 
 model solicitacao_condutores {
