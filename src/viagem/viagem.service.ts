@@ -58,7 +58,7 @@ export class ViagemService {
     try {
       const { valor_viagem, ...newDto } = dto;
   
-      resultado =  this.prisma.viagem.create({
+      resultado =  await this.prisma.viagem.create({
         data: newDto,
         select: {
           id: true
@@ -66,8 +66,8 @@ export class ViagemService {
       });
 
       const viagemEvento: CreateViagemEventoDto = {
-        evento_id: eventoId,
-        solicitacao_id: dto.solicitacao_id,
+        evento_id: +eventoId,
+        solicitacao_id: +dto.solicitacao_id,
         viagem_id: (await resultado).id ,
         datareg: new Date(),        
       }

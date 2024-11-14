@@ -31,4 +31,10 @@ export class ViagemEventoController {
   remove(@Param('id') id: string) {
     return this.viagemEventoService.remove(+id);
   }
+
+  @Get('/evento/:id')
+  findViagensPorEventoId(@Param('id') id: string) {
+    return this.viagemEventoService.findVigensPorEventoId(+id);
+  }
+
 }

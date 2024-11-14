@@ -39,8 +39,6 @@ import { AprovacaoDefinitivaDaofModule } from './aprovacao_definitiva_daof/aprov
 import { DiariaCondutorModule } from './diaria_condutor/diaria_condutor.module';
 import { PdfModule } from './pdf/pdf.module';
 import { ViagemEventoModule } from './viagem_evento/viagem_evento.module';
-import { ViagemEventoModule } from './viagem_evento/viagem_evento.module';
-
 
 
 @Module({
