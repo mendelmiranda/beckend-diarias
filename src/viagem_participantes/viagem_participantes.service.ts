@@ -8,6 +8,8 @@ export class ViagemParticipantesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(dto: CreateViagemParticipanteDto) {
+    console.log('entrou aqui', dto.custos);
+    
     return this.prisma.viagem_participantes.create({
         data: {
             evento_participantes: {
@@ -19,8 +21,16 @@ export class ViagemParticipantesService {
                 connect: {
                     id: dto.viagem_id
                 }
-            }
-            // Adicione outros campos se necessário
+            },
+            datareg: new Date(),
+            servidor_acompanhando: dto.servidor_acompanhando ?? '',
+            viagem_diferente: dto.viagem_diferente ?? '',
+            justificativa_diferente: dto.justificativa_diferente ?? '',
+            data_ida_diferente: dto.data_ida_diferente ?? undefined,
+            data_volta_diferente: dto.data_volta_diferente ?? undefined,
+            arcar_passagem: dto.arcar_passagem ?? '',
+            custos: dto.custos ?? [],
+            justificativa_custos: dto.justificativa_custos ?? ''            
         }
     });
   }
@@ -96,6 +106,21 @@ export class ViagemParticipantesService {
           },
         },
 
+      }
+    })
+  }
+
+  findParticipantesDaViagemPorId(viagemId: number) {
+    return this.prisma.viagem_participantes.findMany({
+      where: {
+        viagem_id: viagemId
+      },
+      include: {
+        evento_participantes: {
+          include: {
+            participante: true,
+          }
+        }
       }
     })
   }

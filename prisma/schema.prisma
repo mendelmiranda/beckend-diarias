@@ -369,6 +369,7 @@ model viagem_participantes {
   data_volta_diferente    DateTime?
   arcar_passagem          String?   @db.Char(3)
   custos                  String[]
+  justificativa_custos    String?
 
   @@id([id, evento_participantes_id, viagem_id])
 }

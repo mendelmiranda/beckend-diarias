@@ -8,5 +8,6 @@ export class CreateViagemParticipanteDto {
   data_ida_diferente?: Date;
   data_volta_diferente?: Date;
   arcar_passagem?: string;
-  custos?: String[];
+  custos?: string[];
+  justificativa_custos?: string;
 }
