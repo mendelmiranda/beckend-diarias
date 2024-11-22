@@ -8,7 +8,6 @@ export class ViagemParticipantesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(dto: CreateViagemParticipanteDto) {
-    console.log('entrou aqui', dto.custos);
     
     return this.prisma.viagem_participantes.create({
         data: {
