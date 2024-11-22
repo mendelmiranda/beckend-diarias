@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Put,
 } from '@nestjs/common';
 import { ViagemParticipantesService } from './viagem_participantes.service';
 import { CreateViagemParticipanteDto } from './dto/create-viagem_participante.dto';
@@ -15,7 +16,7 @@ import { UpdateViagemParticipanteDto } from './dto/update-viagem_participante.dt
 export class ViagemParticipantesController {
   constructor(
     private readonly viagemParticipantesService: ViagemParticipantesService,
-  ) {}
+  ) { }
 
   @Post()
   create(@Body() createViagemParticipanteDto: CreateViagemParticipanteDto) {
@@ -48,15 +49,14 @@ export class ViagemParticipantesController {
     return this.viagemParticipantesService.findParticipantesDaViagemPorId(+id);
   }
 
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateViagemParticipanteDto: UpdateViagemParticipanteDto,
-  ) {
-    return this.viagemParticipantesService.update(
-      +id,
-      updateViagemParticipanteDto,
-    );
+  @Put(':id')
+  update(@Param('id') id: string,@Body() updateViagemParticipanteDto: UpdateViagemParticipanteDto,) {
+
+    try {
+      return this.viagemParticipantesService.update(+id, updateViagemParticipanteDto);
+    } catch (e) {
+      console.log('erro', e);
+    }
   }
 
   @Delete(':id')

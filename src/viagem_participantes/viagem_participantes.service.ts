@@ -127,7 +127,24 @@ export class ViagemParticipantesService {
 
 
   update(id: number, updateViagemParticipanteDto: UpdateViagemParticipanteDto) {
-    return `This action updates a #${id} viagemParticipante`;
+    
+    return this.prisma.viagem_participantes.update(
+      {
+        where: {
+          id: id
+        },
+        data: {
+          servidor_acompanhando: updateViagemParticipanteDto.servidor_acompanhando,
+          viagem_diferente: updateViagemParticipanteDto.viagem_diferente,
+          justificativa_diferente: updateViagemParticipanteDto.justificativa_diferente,
+          data_ida_diferente: updateViagemParticipanteDto.data_ida_diferente,
+          data_volta_diferente: updateViagemParticipanteDto.data_volta_diferente,
+          arcar_passagem: updateViagemParticipanteDto.arcar_passagem,
+          custos: updateViagemParticipanteDto.custos,
+          justificativa_custos: updateViagemParticipanteDto.justificativa_custos
+        }
+      }
+    );
   }
 
   async remove(id: number) {
