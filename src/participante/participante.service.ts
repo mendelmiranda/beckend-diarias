@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { CreateParticipanteDto } from './dto/create-participante.dto';
 import { UpdateParticipanteDto } from './dto/update-participante.dto';
@@ -47,8 +47,8 @@ export class ParticipanteService {
     return `This action returns all participante`;
   }
 
-  pesquisarParticipantePorCpf(cpf: string) {
-    return this.prisma.participante.findFirst({
+  async pesquisarParticipantePorCpf(cpf: string) {    
+    const resultado = await this.prisma.participante.findFirst({
       where: {
         cpf: cpf,
         tipo: { not: 'S' },
@@ -58,6 +58,20 @@ export class ParticipanteService {
       },
       orderBy: [{ id: 'desc' }],
     });
+    
+    if (!resultado) {
+      throw new NotFoundException({
+        message: `Participante não encontrado`,
+        error: 'Not Found',
+        statusCode: 404,
+        details: {
+          cpf: cpf,
+          timestamp: new Date().toISOString()
+        }
+      });
+    }
+
+    return resultado;
   }
 
   pesquisarParticipanteServidorPorCpf(cpf: string) {
