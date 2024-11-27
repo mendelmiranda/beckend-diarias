@@ -34,7 +34,7 @@ export class AeroportoService {
       const resultados = await this.prisma.$queryRaw`
     WITH combined_results AS (
       SELECT 
-        'aeroporto' as tipo,
+        'cidade' as tipo,
         id,
         cidade,
         uf,
