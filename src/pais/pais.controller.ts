@@ -22,6 +22,11 @@ export class PaisController {
     return this.paisService.findOne(+id);
   }
 
+  @Get('/nome/:nome')
+  findPaises(@Param('nome') nome: string) {
+    return this.paisService.getPaisesPorNome(nome);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updatePaiDto: UpdatePaiDto) {
     return this.paisService.update(+id, updatePaiDto);

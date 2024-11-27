@@ -15,6 +15,16 @@ export class PaisService {
     return this.prisma.pais.findMany();
   }
 
+  async getPaisesPorNome(query: string) {
+    const resultados = await this.prisma.$queryRaw`
+  SELECT * FROM pais
+  WHERE nome % ${query}
+  ORDER BY similarity(nome, ${query}) DESC
+`;
+
+    return resultados;
+  }
+
   findOne(id: number) {
     return `This action returns a #${id} pai`;
   }
