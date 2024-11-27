@@ -29,6 +29,51 @@ export class AeroportoService {
     return resultados;
   }
 
+  async searchAeroportoEPais(query: string) {
+    try {
+      const resultados = await this.prisma.$queryRaw`
+    WITH combined_results AS (
+      SELECT 
+        'aeroporto' as tipo,
+        id,
+        cidade,
+        uf,
+        estado,
+        NULL as nome_pt,
+        NULL as sigla,
+        NULL as bacen,
+        similarity(cidade, ${query}) as sim_score
+      FROM aeroporto
+      WHERE cidade % ${query}
+      
+      UNION ALL
+      
+      SELECT 
+        'pais' as tipo,
+        id,
+        NULL as cidade,
+        NULL as uf,
+        NULL as estado,
+        nome_pt,
+        sigla,
+        bacen,
+        similarity(nome_pt, ${query}) as sim_score
+      FROM pais
+      WHERE nome_pt % ${query}
+    )
+    SELECT *
+    FROM combined_results
+    ORDER BY sim_score DESC
+  `;
+
+  return resultados;
+
+    } catch (error) {
+      console.error('Erro ao buscar aeroportos:', error);
+      throw error;
+    }
+  }
+
   /* async getAeroportos(query: string): Promise<{ id: number; cidade: string }[]> {
     try {
       const result = await this.prisma.aeroporto.findMany({

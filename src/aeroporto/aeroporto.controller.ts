@@ -26,6 +26,13 @@ export class AeroportoController {
     return this.aeroportoService.getAeroportos(nome);
   }
 
+  @Get('/pesquisar/pais/nome/:nome')
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(60)
+  findAllPaisesByNome(@Param('nome') nome: string) {
+    return this.aeroportoService.searchAeroportoEPais(nome);
+  }
+
   @Get('/descricao/:desc')
   findOneCidadePais(@Param('desc') desc: string) {
     return this.aeroportoService.findCidadePais(desc.toUpperCase());
