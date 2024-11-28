@@ -33,6 +33,7 @@ export class ViagemEventoService {
           include: {
             origem: true,
             destino: true,
+            pais: true,
           }
         }
       },

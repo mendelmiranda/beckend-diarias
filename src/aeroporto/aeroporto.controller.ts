@@ -23,7 +23,7 @@ export class AeroportoController {
   @UseInterceptors(CacheInterceptor)
   @CacheTTL(60)
   findAllByNome(@Param('nome') nome: string) {
-    return this.aeroportoService.getAeroportos(nome);
+    return this.aeroportoService.searchAeroportoEPais(nome);
   }
 
   @Get('/pesquisar/pais/nome/:nome')
