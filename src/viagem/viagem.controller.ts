@@ -73,11 +73,7 @@ export class ViagemController {
   }
 
   @Post('/v2/nova/:eventoId')
-  async createViagem(@Param('eventoId') eventoId: number, @Body() createViagemDto: CreateViagemDto) {
-    console.log('origem', createViagemDto.origem_id);
-    
-    console.log(createViagemDto);
-    
+  async createViagem(@Param('eventoId') eventoId: number, @Body() createViagemDto: CreateViagemDto) {    
     return await this.viagemService.createNova(createViagemDto, eventoId);  
   }
 
