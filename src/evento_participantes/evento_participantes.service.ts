@@ -14,9 +14,20 @@ export class EventoParticipantesService {
     const prop = 'evento';
     delete dto[prop];
 
-    return this.prisma.evento_participantes.create({
-      data: dto,
-    });
+    try{
+      return this.prisma.evento_participantes.create({
+        data: {
+          evento_id: dto.evento_id,
+          participante_id: dto.participante_id,
+        },
+      });
+
+    }catch(error){
+      console.log('Erro ao criar evento_participante', error);
+      throw new HttpException('Erro ao criar evento_participante', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    
   }
 
   findAll() {

@@ -24,51 +24,59 @@ export class ParticipanteController {
     private readonly participanteService: ParticipanteService,
     private readonly contaDiariaService: ContaDiariaService,
     private readonly eventoParticipanteService: EventoParticipantesService,
-  ) {}
+  ) { }
 
   @Post('/evento/:id')
   async create(
     @Param('id') idEvento: number,
     @Body() createParticipanteDto: CreateParticipanteDto,
-  ) {    
+  ) {
 
     const dateString = createParticipanteDto.data_nascimento as any;
 
     let resultado;
 
     if (createParticipanteDto.tipo !== 'S') {
-      const contaDto = createParticipanteDto.contaDiariaModel;
 
-      if (contaDto !== undefined) {
-        const conta: CreateContaDiariaDto = {
-          nome: contaDto.nome,
-          cpf: contaDto.cpf,
-          tipo: contaDto.tipo,
-          tipo_conta: contaDto.tipo_conta,
-          agencia: contaDto.agencia,
-          conta: contaDto.conta,
-          banco_id: contaDto.banco_id,
-          participante_id: contaDto.participante_id,
+      try {
+
+        const contaDto = createParticipanteDto.contaDiariaModel;
+
+        if (contaDto !== undefined) {
+          const conta: CreateContaDiariaDto = {
+            nome: contaDto.nome,
+            cpf: contaDto.cpf,
+            tipo: contaDto.tipo,
+            tipo_conta: contaDto.tipo_conta,
+            agencia: contaDto.agencia,
+            conta: contaDto.conta,
+            banco_id: contaDto.banco_id,
+            participante_id: contaDto.participante_id,
+          };
+          this.contaDiariaService.create(conta);
+        }
+
+        const prop = 'contaDiariaModel';
+        delete createParticipanteDto[prop];
+
+        const data: CreateParticipanteDto = {
+          ...createParticipanteDto,
+          //data_nascimento: Util.convertToDate(dateString),
+        };        
+
+        resultado = (await this.participanteService.create(data));        
+
+        const eventoPaticipanteDto: CreateEventoParticipanteDto = {
+          evento_id: parseInt(idEvento + ''),
+          participante_id: resultado,
         };
-        this.contaDiariaService.create(conta);
+
+        this.eventoParticipanteService.create(eventoPaticipanteDto);
+
+      } catch (e) {
+        console.log('erro', e);
       }
 
-      const prop = 'contaDiariaModel';
-      delete createParticipanteDto[prop];
-
-      const data: CreateParticipanteDto = {
-        ...createParticipanteDto,
-        data_nascimento: Util.convertToDate(dateString),
-      };
-
-      resultado = (await this.participanteService.create(data)).id;
-
-      const eventoPaticipanteDto: CreateEventoParticipanteDto = {
-        evento_id: parseInt(idEvento + ''),
-        participante_id: resultado,
-      };
-
-      this.eventoParticipanteService.create(eventoPaticipanteDto);
     } else {
 
       const data: CreateParticipanteDto = {
@@ -76,7 +84,7 @@ export class ParticipanteController {
         data_nascimento: new Date(dateString),
       };
 
-      resultado = await (await this.participanteService.create(data)).id;
+      resultado = await (await this.participanteService.create(data));
 
       const eventoPaticipanteDto: CreateEventoParticipanteDto = {
         evento_id: parseInt(idEvento + ''),
@@ -149,7 +157,7 @@ export class ParticipanteController {
       };
 
       //REFATORAR ESSE CÓDIGO - UPDATE
-      if ( updateParticipanteDto.tipo === 'C' || updateParticipanteDto.tipo === 'T' && id > 0) {
+      if (updateParticipanteDto.tipo === 'C' || updateParticipanteDto.tipo === 'T' && id > 0) {
         const remove = 'conta_diaria';
         delete data[remove];
         await this.participanteService.update(+id, data);
@@ -165,10 +173,10 @@ export class ParticipanteController {
         const del = 'id';
         delete modeloConta[del];
         delete modeloConta['participante_id'];
-        
+
         const idConta = contaX.id;
 
-        if ( idConta > 0 && idConta !== undefined) {
+        if (idConta > 0 && idConta !== undefined) {
           await this.contaDiariaService.update(contaX.id, modeloConta);
         } else {
           await this.contaDiariaService.create(contaX);
@@ -190,13 +198,13 @@ export class ParticipanteController {
 
 
   @Post('/conta/participante/s3i')
-  async createParticipanteS3i( @Body() createParticipanteDto: CreateParticipanteDto ) { 
+  async createParticipanteS3i(@Body() createParticipanteDto: CreateParticipanteDto) {
 
     const dateString = createParticipanteDto.data_nascimento as any;
     const data: CreateParticipanteDto = {
       ...createParticipanteDto,
       data_nascimento: Util.convertToDate(dateString),
-    };    
+    };
 
     return (await this.participanteService.createS3i(data));
   }

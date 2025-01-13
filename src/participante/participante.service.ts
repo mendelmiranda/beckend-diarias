@@ -9,7 +9,7 @@ import { CreateContaDiariaDto } from 'src/conta_diaria/dto/create-conta_diaria.d
 export class ParticipanteService {
   constructor(private prisma: PrismaService) { }
 
-  async create(dto: CreateParticipanteDto) {
+  async create(dto: CreateParticipanteDto) {   
 
     if (dto.tipo === "C" || dto.tipo === "T") {
       return this.cadastraColaborador(dto);
@@ -21,25 +21,36 @@ export class ParticipanteService {
   }
 
   async cadastraColaborador(dto: CreateParticipanteDto) {
+
     const remove = 'conta_diaria';
     const prop = 'conta_diaria';
     const contaX: conta_diaria = dto[prop][0];
 
     delete dto[remove];
 
-    const participante = this.prisma.participante.create({
+    const participante = await this.prisma.participante.create({
       data: dto,
     });
+    
+    const participanteId = participante.id;
 
     const modeloConta: CreateContaDiariaDto = {
       ...contaX,
-      participante_id: (await participante).id,
+      participante_id: participanteId,
     }
 
-    return this.prisma.conta_diaria.create({
-      data: modeloConta,
-    })
+    if(modeloConta.id > 0){
+      await this.prisma.conta_diaria.update({
+        where: { id: modeloConta.id },
+        data: modeloConta,
+      });
+    } else {
+      await this.prisma.conta_diaria.create({
+        data: modeloConta,
+      });
+    }
 
+    return participanteId;
 
   }
 
