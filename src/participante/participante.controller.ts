@@ -17,6 +17,7 @@ import { EventoParticipantesService } from '../evento_participantes/evento_parti
 import { CreateParticipanteDto } from './dto/create-participante.dto';
 import { UpdateParticipanteDto } from './dto/update-participante.dto';
 import { ParticipanteService } from './participante.service';
+import { parse } from 'path';
 
 @Controller('participante')
 export class ParticipanteController {
@@ -84,11 +85,12 @@ export class ParticipanteController {
         data_nascimento: new Date(dateString),
       };
 
-      resultado = await (await this.participanteService.create(data));
+      const result = await this.participanteService.create(data);
+      const id = typeof result === 'number' ? result : result.id;
 
       const eventoPaticipanteDto: CreateEventoParticipanteDto = {
         evento_id: parseInt(idEvento + ''),
-        participante_id: resultado,
+        participante_id: parseInt(id + ''),
       };
 
       this.eventoParticipanteService.create(eventoPaticipanteDto);
