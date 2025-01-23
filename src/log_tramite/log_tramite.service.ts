@@ -153,4 +153,37 @@ export class LogTramiteService {
       }
     })
   }
+
+
+  async findLogsTramiteFinalizado() {    
+    const resultado = await this.prisma.log_tramite.findMany({
+      where: {
+        cod_lotacao_destino: 80,
+        AND: {
+          status: 'FINALIZADO',
+        },
+      },
+      
+      include: {
+        tramite: {
+          include: {
+            log_tramite: true,
+            solicitacao: {
+              include: {
+                tramite: true,
+                eventos: {
+                  include: {
+                    tipo_evento: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return resultado;
+  }
+
 }

@@ -129,8 +129,6 @@ export class ParticipanteService {
       });
 
       if (existeParticipante) {
-        console.log('Participante já cadastrado', existeParticipante);
-
         return existeParticipante.id; // Retorna apenas o ID
       } else {
         const participante = await this.prisma.participante.create({

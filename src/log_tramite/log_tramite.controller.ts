@@ -38,6 +38,11 @@ export class LogTramiteController {
     return this.logTramiteService.findLogsTramitePorLotacao(+id);
   }
 
+  @Get('/presidencia/solicitacoes/finalizadas')
+  findLogsDaSolicitacaoFinalizada(@Param('id') id: string) {
+    return this.logTramiteService.findLogsTramiteFinalizado();
+  }
+
   @Get('/lotacao/:id/destino')
   findLogsDaSolicitacaoPorLotacaoIdDestino(@Param('id') id: string) {
     return this.logTramiteService.findLogsTramitePorLotacaoDestino(+id);
