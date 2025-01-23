@@ -80,10 +80,10 @@ export class TramiteService {
 
   async enviaPresidencia(status: string, solicitacaoId: number, mensagem?: string) {
     // this.emailService.enviarEmail(solicitacaoId, status, 'wendell.sacramento', mensagem);
-    this.emailService.enviarEmail(solicitacaoId, status, 'cons.michelhouat', mensagem);
-    this.emailService.enviarEmail(solicitacaoId, status, 'antonio.correa', mensagem);
-    this.emailService.enviarEmail(solicitacaoId, status, 'luzia.coelho', mensagem);
-    this.emailService.enviarEmail(solicitacaoId, status, 'alana.castro', mensagem);
+
+    this.emailService.enviarEmail(solicitacaoId, status, 'cons.reginaldo', mensagem);
+    this.emailService.enviarEmail(solicitacaoId, status, 'marines.dalla', mensagem);
+    this.emailService.enviarEmail(solicitacaoId, status, 'michelle.mello', mensagem);
   }
 
   async enviaDARAD(status: string, solicitacaoId: number, mensagem?: string) {
