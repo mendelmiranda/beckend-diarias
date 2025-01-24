@@ -13,8 +13,8 @@ async function bootstrap() {
     key: fs.readFileSync(`${root}/tce.ap.gov.br.key`),
     cert: fs.readFileSync(`${root}/STAR_tce_ap_gov_br.crt`),
     ca: [fs.readFileSync(`${root}/CER - CRT Files/SectigoRSADomainValidationSecureServerCA.crt`)],
-  };
-  */
+  };*/
+  
 
   const app = await NestFactory.create(AppModule, {
     //httpsOptions,
@@ -27,6 +27,7 @@ async function bootstrap() {
       'http://localhost:3001',
       'http://localhost:5173',
       'https://s3i.tce.ap.gov.br',
+      'https://10.10.22.16',
       'http://10.10.0.18:8084',
       'http://192.168.210.71:3000',
       'http://10.10.5.210:3000',

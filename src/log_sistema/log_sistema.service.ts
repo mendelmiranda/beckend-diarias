@@ -24,6 +24,7 @@ export class LogSistemaService {
       usuario:  usuario.nomeCompleto + ' '+ usuario.username,
       operacao: operacao,
     }
+
     await this.prisma.log_sistema.create({
       data: logSistemaDto,
     });

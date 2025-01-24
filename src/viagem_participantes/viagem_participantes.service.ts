@@ -5,33 +5,37 @@ import { PrismaService } from 'prisma/prisma.service';
 
 @Injectable()
 export class ViagemParticipantesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async create(dto: CreateViagemParticipanteDto) {
-    
-    return this.prisma.viagem_participantes.create({
+
+    try {
+      return this.prisma.viagem_participantes.create({
         data: {
-            evento_participantes: {
-                connect: {
-                    id: dto.evento_participantes_id
-                }
-            },
-            viagem: {
-                connect: {
-                    id: dto.viagem_id
-                }
-            },
-            datareg: new Date(),
-            servidor_acompanhando: dto.servidor_acompanhando ?? '',
-            viagem_diferente: dto.viagem_diferente ?? '',
-            justificativa_diferente: dto.justificativa_diferente ?? '',
-            data_ida_diferente: dto.data_ida_diferente ?? undefined,
-            data_volta_diferente: dto.data_volta_diferente ?? undefined,
-            arcar_passagem: dto.arcar_passagem ?? '',
-            custos: dto.custos ?? [],
-            justificativa_custos: dto.justificativa_custos ?? ''            
+          evento_participantes: {
+            connect: {
+              id: dto.evento_participantes_id
+            }
+          },
+          viagem: {
+            connect: {
+              id: dto.viagem_id
+            }
+          },
+          datareg: new Date(),
+          servidor_acompanhando: dto.servidor_acompanhando ?? '',
+          viagem_diferente: dto.viagem_diferente ?? '',
+          justificativa_diferente: dto.justificativa_diferente ?? '',
+          data_ida_diferente: dto.data_ida_diferente ?? undefined,
+          data_volta_diferente: dto.data_volta_diferente ?? undefined,
+          arcar_passagem: dto.arcar_passagem ?? '',
+          custos: dto.custos ?? [],
+          justificativa_custos: dto.justificativa_custos ?? ''
         }
-    });
+      });
+    } catch (e) {
+      console.log('erro', e);
+    }
   }
 
   findAll() {
@@ -64,7 +68,7 @@ export class ViagemParticipantesService {
     });
   }
 
-  findParticipanteDaViagem(id: number){
+  findParticipanteDaViagem(id: number) {
     return this.prisma.viagem_participantes.findFirst(
       {
         where: {
@@ -126,7 +130,7 @@ export class ViagemParticipantesService {
 
 
   update(id: number, updateViagemParticipanteDto: UpdateViagemParticipanteDto) {
-    
+
     return this.prisma.viagem_participantes.update(
       {
         where: {
@@ -149,8 +153,8 @@ export class ViagemParticipantesService {
   async remove(id: number) {
     const consultar = await this.findOne(id);
 
-    if(consultar){
-      const viagemId = consultar.viagem_id;      
+    if (consultar) {
+      const viagemId = consultar.viagem_id;
 
       const valorViagem = await this.prisma.valor_viagem.findFirst({
         where: {
@@ -158,14 +162,14 @@ export class ViagemParticipantesService {
         }
       });
 
-      if(valorViagem !== null){
+      if (valorViagem !== null) {
         await this.prisma.valor_viagem.delete({
           where: {
             id: valorViagem.id
           }
         });
-      }      
-     
+      }
+
     }
 
     return await this.prisma.viagem_participantes.delete({

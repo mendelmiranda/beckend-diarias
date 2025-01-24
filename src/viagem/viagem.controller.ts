@@ -14,7 +14,9 @@ export class ViagemController {
   @Post('/evento_participantes/:id')
   async create(@Param('id') id: number, @Body() createViagemDto: CreateViagemDto) {
 
-    const eventoId = createViagemDto['eventoId'];
+    try{
+
+      const eventoId = createViagemDto['eventoId'];
 
     const prop = 'eventoId';
     delete createViagemDto[prop];
@@ -28,6 +30,10 @@ export class ViagemController {
     }
 
     return await this.viagemParticipanteService.create(viagem_participante);       
+    }catch(e){
+      console.log('erro', e);
+
+    }
   }
 
   @Get('/simula/agrupamento/:id')
