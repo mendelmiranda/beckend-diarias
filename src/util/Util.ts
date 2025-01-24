@@ -1,4 +1,7 @@
-import moment from 'moment';
+//import moment from 'moment';
+
+const moment = require('moment');
+
 
 
 const calcularDiferencaDias = (dt1: Date, dt2: Date): number => {    
@@ -24,9 +27,13 @@ function convertToDate(dateString: string) {
     return dat;     
 }
 
-function totalDeDias(inicio: Date, fim: Date) {
+/* function totalDeDias(inicio: Date, fim: Date) {
     return moment(fim).diff(moment(inicio), 'days') + 1;
-}
+} */
+
+    export function totalDeDias(dataInicial: Date, dataFinal: Date): number {
+        return moment(dataFinal).diff(moment(dataInicial), 'days');
+      }
 
 const formataDataAmericana = () => {
     return moment(new Date()).format('MM-DD-yyyy');

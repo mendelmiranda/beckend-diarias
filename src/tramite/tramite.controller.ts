@@ -3,49 +3,49 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
   HttpStatus,
   Param,
   Post,
   Put
 } from '@nestjs/common';
+import { EventoParticipantesService } from 'src/evento_participantes/evento_participantes.service';
+import { CreateLogTramiteDto } from 'src/log_tramite/dto/create-log_tramite.dto';
+import { ViagemService } from 'src/viagem/viagem.service';
 import { CreateTramiteDto } from './dto/create-tramite.dto';
 import { UpdateTramiteDto } from './dto/update-tramite.dto';
 import { TramiteService } from './tramite.service';
-import { ViagemService } from 'src/viagem/viagem.service';
-import { EventoParticipantesService } from 'src/evento_participantes/evento_participantes.service';
-import { ApiResponse } from '@nestjs/swagger';
-import { CreateLogTramiteDto } from 'src/log_tramite/dto/create-log_tramite.dto';
 
 @Controller('tramite')
 export class TramiteController {
   constructor(private readonly tramiteService: TramiteService, private readonly viagemService: ViagemService, private readonly eParticipanteService: EventoParticipantesService) { }
 
   @Post('/:id/:nome')
-  @ApiResponse({ status: 200, description: 'Cadastra o tramite e calcula a diária para os participantes'})
-  async create(@Param('id') id: string, @Param('nome') nome: string, @Body() createTramiteDto: CreateTramiteDto) {
+async create(@Param('id') id: string, @Param('nome') nome: string, @Body() createTramiteDto: CreateTramiteDto) {
+  try {
     const parsedId = +id;
-
+    
     if (parsedId > 0) {
       await this.tramiteService.update(parsedId, createTramiteDto, nome);
-
     } else {
       const resultado = await this.tramiteService.create(createTramiteDto, nome);
-      const solicitacaoId = resultado.solicitacao_id;
-
       if (!await this.verificaColaborador(resultado.solicitacao_id)) {
-
         if (createTramiteDto.status === 'SOLICITADO') {
-          const resultadosViagem = await this.viagemService.calculaDiasParaDiaria(solicitacaoId);
+          const resultadosViagem = await this.viagemService.calculaDiasParaDiaria(resultado.solicitacao_id);
           await Promise.all(
             resultadosViagem.map(async (result) => {
               await this.cadastraValoresDaDiaria(result.viagem, result.participante.id, result.evento.id, result.totalDias);
-            }),
+            })
           );
         }
       }
     }
-    return 0;
+    return { success: true };
+  } catch (error) {
+    console.error('Erro:', error);
+    throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
   }
+}
 
   async cadastraValoresDaDiaria(idViagem: number, participanteId: number, eventoId: number, total: number) {
     return await this.viagemService.calculaDiaria(idViagem, participanteId, eventoId, total);
