@@ -83,7 +83,6 @@ const dateOptionsShort: object = {
 	day: "numeric",
 };
 
-
 function formataDataCurtaComHora(data: Date) {
     const formattedPublishDate = new Date(data).toLocaleDateString("pt-BR", dateOptionsHourShort);
     return formattedPublishDate;
@@ -113,3 +112,4 @@ export const Util = {
     convertToDateDB, subtractDays, formataDataAmericanaComParametro, horaAtual, calcularDiferencaDias,
     formataDataCurtaComHora
 }
+

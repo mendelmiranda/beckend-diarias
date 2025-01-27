@@ -1,13 +1,14 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { log_tramite, participante, tramite } from '@prisma/client';
+import { participante } from '@prisma/client';
+import { DateTime } from 'luxon';
 import { PrismaService } from 'prisma/prisma.service';
 import { EmailService } from 'src/email/email.service';
 import { CreateLogTramiteDto } from 'src/log_tramite/dto/create-log_tramite.dto';
 import { LogTramiteService } from 'src/log_tramite/log_tramite.service';
 import { CreateTramiteDto } from './dto/create-tramite.dto';
 import { UpdateTramiteDto } from './dto/update-tramite.dto';
-import { DateTime } from 'luxon';
+import { Util } from 'src/util/Util';
 
 
 @Injectable()
@@ -666,10 +667,32 @@ export class TramiteService {
 
     await this.enviarNotificacaoDoStatus(dto.status, dto.solicitacao_id, dto.cod_lotacao_destino);
 
+    await this.assinarDocumento(dto.solicitacao_id);
+
     return this.prisma.tramite.update({
       where: { id },
       data: dtoSemSolicitacao,
     });
+  }
+
+  async assinarDocumento(solicitacaoId: number) {
+    const pegaAssinatura = await this.prisma.assinatura.findFirst({
+      where: {
+        ativo: 'SIM',
+      },
+    });
+
+    const data: any = {
+      assinatura_id: pegaAssinatura.id,
+      solicitacao_id: solicitacaoId,
+      datareg: new Date(),
+      hora: Util.horaAtual(),
+    };
+
+    return await this.prisma.aprovacao_definitiva.create({
+      data: data
+    });
+
   }
 
   async updateDAOFLido(id: number) {
