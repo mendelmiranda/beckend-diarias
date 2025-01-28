@@ -667,7 +667,9 @@ export class TramiteService {
 
     await this.enviarNotificacaoDoStatus(dto.status, dto.solicitacao_id, dto.cod_lotacao_destino);
 
-    await this.assinarDocumento(dto.solicitacao_id);
+    if (dto.status === 'CONCLUIDO') {
+      await this.assinarDocumento(dto.solicitacao_id);
+    }
 
     return this.prisma.tramite.update({
       where: { id },
