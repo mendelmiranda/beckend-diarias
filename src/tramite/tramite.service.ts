@@ -104,7 +104,7 @@ export class TramiteService {
     this.emailService.enviarEmail(solicitacaoId, status, 'alessandra.rodrigues', mensagem);
     this.emailService.enviarEmail(solicitacaoId, status, 'cristiane.barbosa', mensagem);
     this.emailService.enviarEmail(solicitacaoId, status, 'neuma.almeida', mensagem);
-    this.emailService.enviarEmail(solicitacaoId, status, 'ademir.santos', mensagem);
+//    this.emailService.enviarEmail(solicitacaoId, status, 'ademir.santos', mensagem);
   }
 
   async enviaESCOLA(status: string, solicitacaoId: number, mensagem?: string) {
