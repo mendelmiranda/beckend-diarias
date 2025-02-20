@@ -17,7 +17,8 @@ import { EventoParticipantesService } from '../evento_participantes/evento_parti
 import { CreateParticipanteDto } from './dto/create-participante.dto';
 import { UpdateParticipanteDto } from './dto/update-participante.dto';
 import { ParticipanteService } from './participante.service';
-import { parse } from 'path';
+import { AnexoSolicitacaoService } from 'src/anexo_solicitacao/anexo_solicitacao.service';
+import { SearchParamsDto } from 'src/anexo_solicitacao/dto/search-params.dto';
 
 @Controller('participante')
 export class ParticipanteController {
@@ -25,6 +26,7 @@ export class ParticipanteController {
     private readonly participanteService: ParticipanteService,
     private readonly contaDiariaService: ContaDiariaService,
     private readonly eventoParticipanteService: EventoParticipantesService,
+    private readonly anexoSolicitacao: AnexoSolicitacaoService,
   ) { }
 
   @Post('/evento/:id')
@@ -216,4 +218,21 @@ export class ParticipanteController {
   remove(@Param('id') id: string) {
     return this.participanteService.remove(+id);
   }
+
+
+  @Get('/listar/servidores/ativos') 
+  findParticipantesEvento() {  
+    return this.anexoSolicitacao.pesquisarServidoresAtivos();
+  }
+
+  @Get('/listar/servidores/ativos/cpf/:cpf')
+  findParticipantesEventoPorCpf(@Param('cpf') cpf: string) {
+    return this.anexoSolicitacao.pesquisarServidoresAtivosPeloCpf(cpf);
+  }   
+
+  @Get('/filtrar/listar/servidores/ativos/nome/:nome')
+  findParticipantesEventoPorNome(@Param('nome') nome: string) {
+    return this.anexoSolicitacao.pesquisarServidoresAtivosPeloNome(nome);
+  }   
+
 }

@@ -4,13 +4,15 @@ import { UpdateAnexoSolicitacaoDto } from './dto/update-anexo_solicitacao.dto';
 import { PrismaService } from 'prisma/prisma.service';
 import { HttpService } from '@nestjs/axios';
 import * as FormData from 'form-data';
+import * as https from 'https';
+
 
 @Injectable()
 export class AnexoSolicitacaoService {
   constructor(
     private prisma: PrismaService,
     private readonly httpService: HttpService,
-  ) {}
+  ) { }
 
   create(dto: CreateAnexoSolicitacaoDto) {
     return this.prisma.anexo_evento.create({
@@ -86,7 +88,7 @@ export class AnexoSolicitacaoService {
   }
 
   removerUpload(idArquivo: number) {
-    
+
     if (idArquivo > 0)
       return this.httpService.axiosRef
         .delete('https://arquivos.tce.ap.gov.br:3000/files/' + idArquivo, {
@@ -99,6 +101,70 @@ export class AnexoSolicitacaoService {
         .then((result) => result.data)
         .catch((err) => console.log('removendo upload...'));
   }
+
+  async pesquisarServidoresAtivos() {
+    const url = 'https://10.10.21.19:5000/devops-servidor/search?ativo=SIM';
+    const headers = {
+      Accept: '/',
+      'X-API-KEY': 'FZTETvO9rlP15e9E9dDlPWUhDxV24GsrdH1e5e38ZX4dpzc6MW64sZmZUBkxCLhc',
+    };
+
+    // Cria um agente HTTPS que ignora a verificação de SSL
+    const httpsAgent = new https.Agent({
+      rejectUnauthorized: false,
+    });
+
+    try {
+      const response = await this.httpService.axiosRef.get(url, { headers, httpsAgent });
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao buscar servidores ativos:', error);
+      throw error;
+    }
+  }
+
+  async pesquisarServidoresAtivosPeloCpf(cpf: string) {
+    const url = 'https://10.10.21.19:5000/devops-servidor/search?ativo=SIM&cpf=' + cpf;
+    const headers = {
+      Accept: '/',
+      'X-API-KEY': 'FZTETvO9rlP15e9E9dDlPWUhDxV24GsrdH1e5e38ZX4dpzc6MW64sZmZUBkxCLhc',
+    };
+
+    // Cria um agente HTTPS que ignora a verificação de SSL
+    const httpsAgent = new https.Agent({
+      rejectUnauthorized: false,
+    });
+
+    try {
+      const response = await this.httpService.axiosRef.get(url, { headers, httpsAgent });
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao buscar servidores ativos:', error);
+      throw error;
+    }
+  }
+
+  async pesquisarServidoresAtivosPeloNome(nome: string) {
+    const url = 'https://10.10.21.19:5000/devops-servidor/search?ativo=SIM&nome=' + nome;
+    const headers = {
+      Accept: '/',
+      'X-API-KEY': 'FZTETvO9rlP15e9E9dDlPWUhDxV24GsrdH1e5e38ZX4dpzc6MW64sZmZUBkxCLhc',
+    };
+
+    // Cria um agente HTTPS que ignora a verificação de SSL
+    const httpsAgent = new https.Agent({
+      rejectUnauthorized: false,
+    });
+
+    try {
+      const response = await this.httpService.axiosRef.get(url, { headers, httpsAgent });
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao buscar servidores ativos:', error);
+      throw error;
+    }
+  }
+
 
 
 }
