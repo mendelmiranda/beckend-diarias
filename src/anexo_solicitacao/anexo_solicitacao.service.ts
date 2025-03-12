@@ -124,7 +124,7 @@ export class AnexoSolicitacaoService {
   }
 
   async pesquisarServidoresAtivosPeloCpf(cpf: string) {
-    const url = 'https://10.10.21.19:5000/devops-servidor/search?ativo=SIM&cpf=' + cpf;
+    const url = 'https://10.10.21.19:5001/devops-servidor/search?ativo=SIM&cpf=' + cpf;
     const headers = {
       Accept: '/',
       'X-API-KEY': 'FZTETvO9rlP15e9E9dDlPWUhDxV24GsrdH1e5e38ZX4dpzc6MW64sZmZUBkxCLhc',
@@ -145,7 +145,7 @@ export class AnexoSolicitacaoService {
   }
 
   async pesquisarServidoresAtivosPeloNome(nome: string) {
-    const url = 'https://10.10.21.19:5000/devops-servidor/search?ativo=SIM&nome=' + nome;
+    const url = 'https://10.10.21.19:5001/devops-servidor/search?ativo=SIM&nome=' + nome;
     const headers = {
       Accept: '/',
       'X-API-KEY': 'FZTETvO9rlP15e9E9dDlPWUhDxV24GsrdH1e5e38ZX4dpzc6MW64sZmZUBkxCLhc',
