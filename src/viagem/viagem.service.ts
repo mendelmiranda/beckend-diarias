@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { evento, participante } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
 import { Municipios } from 'src/calculo_diarias/diarias-enum';
@@ -550,7 +550,119 @@ export class ViagemService {
       },
     }); */
   }
+
+  async getViagensBySolicitacao(solicitacaoId: number) {
+    // Buscar todas as viagens relacionadas à solicitação
+    const viagens = await this.prisma.viagem.findMany({
+      where: {
+        solicitacao_id: solicitacaoId,
+      },
+      include: {
+        // Incluir dados da origem (aeroporto ou cidade)
+        origem: true,
+        cidade_origem: {
+          include: {
+            estado: true,
+          },
+        },
+        // Incluir dados do destino (aeroporto ou cidade)
+        destino: true,
+        cidade_destino: {
+          include: {
+            estado: true,
+          },
+        },
+        // Incluir dados do país
+        pais: true,
+        // Incluir viagem_evento para relacionar com eventos
+        viagem_evento: {
+          include: {
+            evento: {
+              include: {
+                tipo_evento: true,
+              },
+            },
+          },
+        },
+        // Incluir viagem_participantes para obter os participantes
+        viagem_participantes: {
+          include: {
+            evento_participantes: {
+              include: {
+                participante: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Processar dados para um formato mais amigável
+    return viagens.map(viagem => {
+      const eventos = viagem.viagem_evento.map(ve => ve.evento);
+      
+      // Obter participantes únicos
+      const participantes = viagem.viagem_participantes.map(vp => 
+        vp.evento_participantes.participante
+      );
+
+      // Determinar origem e destino formatados
+      let origem = 'Não especificado';
+      let destino = 'Não especificado';
+
+      if (viagem.exterior === 'SIM' && viagem.local_exterior) {
+        // Se for viagem ao exterior
+        origem = viagem.cidade_origem 
+          ? `${viagem.cidade_origem.descricao}/${viagem.cidade_origem.estado.uf}, Brasil` 
+          : 'Brasil';
+        destino = `${viagem.local_exterior}, ${viagem.pais.nome_pt}`;
+      } else {
+        // Se for viagem nacional
+        if (viagem.origem) {
+          origem = `Aeroporto: ${viagem.origem.cidade}/${viagem.origem.uf}`;
+        } else if (viagem.cidade_origem) {
+          origem = `${viagem.cidade_origem.descricao}/${viagem.cidade_origem.estado.uf}`;
+        }
+
+        if (viagem.destino) {
+          destino = `Aeroporto: ${viagem.destino.cidade}/${viagem.destino.uf}`;
+        } else if (viagem.cidade_destino) {
+          destino = `${viagem.cidade_destino.descricao}/${viagem.cidade_destino.estado.uf}`;
+        }
+      }
+
+      return {
+        id: viagem.id,
+        origem,
+        destino,
+        data_ida: viagem.data_ida,
+        data_volta: viagem.data_volta,
+        custos: viagem.custos,
+        valor_passagem: viagem.valor_passagem,
+        arcar_passagem: viagem.arcar_passagem,
+        justificativa: viagem.justificativa,
+        eventos: eventos.map(evento => ({
+          id: evento.id,
+          titulo: evento.titulo,
+          tipo: evento.tipo_evento.descricao,
+          inicio: evento.inicio,
+          fim: evento.fim,
+        })),
+        participantes: participantes.map(p => ({
+          id: p.id,
+          nome: p.nome,
+          cpf: p.cpf,
+          cargo: p.cargo,
+          classe: p.classe,
+          tipo: p.tipo,
+        })),
+      };
+    });
+  }
 }
+  
+
+
 
 //async cadastraValoresDaDiaria(idViagem: number, idEventoParticipante: number, eventoId: number){    
 

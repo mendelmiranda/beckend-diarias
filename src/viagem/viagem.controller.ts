@@ -83,4 +83,9 @@ export class ViagemController {
     return await this.viagemService.createNova(createViagemDto, eventoId);  
   }
 
+  @Get('/v2/participantes/viagem/solicitacao/:id')
+  findParticipantesDaViagemPelaSolicitacao(@Param('id') id: string) {
+    return this.viagemService.getViagensBySolicitacao(+id);
+  }
+
 }
