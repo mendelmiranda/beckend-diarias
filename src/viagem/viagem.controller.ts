@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, ParseIntPipe } from '@nestjs/common';
 import { ViagemService } from './viagem.service';
 import { CreateViagemDto } from './dto/create-viagem.dto';
 import { UpdateViagemDto } from './dto/update-viagem.dto';
@@ -83,9 +83,9 @@ export class ViagemController {
     return await this.viagemService.createNova(createViagemDto, eventoId);  
   }
 
-  @Get('/v2/participantes/viagem/solicitacao/:id')
-  findParticipantesDaViagemPelaSolicitacao(@Param('id') id: string) {
-    return this.viagemService.getViagensBySolicitacao(+id);
+  @Get(':id/participantes')
+  async listarParticipantesPorEvento(@Param('id', ParseIntPipe) eventoId: number) {
+    return this.viagemService.getParticipantesByEventoOtimizado(eventoId);
   }
 
 }

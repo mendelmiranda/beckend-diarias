@@ -551,114 +551,267 @@ export class ViagemService {
     }); */
   }
 
-  async getViagensBySolicitacao(solicitacaoId: number) {
-    // Buscar todas as viagens relacionadas à solicitação
-    const viagens = await this.prisma.viagem.findMany({
-      where: {
-        solicitacao_id: solicitacaoId,
-      },
-      include: {
-        // Incluir dados da origem (aeroporto ou cidade)
-        origem: true,
-        cidade_origem: {
-          include: {
-            estado: true,
-          },
+  async getParticipantesByEvento(eventoId: number) {
+      // Primeiro, buscar todos os participantes do evento
+      const eventosParticipantes = await this.prisma.evento_participantes.findMany({
+        where: {
+          evento_id: eventoId,
         },
-        // Incluir dados do destino (aeroporto ou cidade)
-        destino: true,
-        cidade_destino: {
-          include: {
-            estado: true,
-          },
-        },
-        // Incluir dados do país
-        pais: true,
-        // Incluir viagem_evento para relacionar com eventos
-        viagem_evento: {
-          include: {
-            evento: {
-              include: {
-                tipo_evento: true,
-              },
+        include: {
+          participante: true,
+          // Verificar se esse participante está vinculado a alguma viagem
+          viagem_participantes: {
+            include: {
+              viagem: true,
             },
           },
         },
-        // Incluir viagem_participantes para obter os participantes
-        viagem_participantes: {
-          include: {
-            evento_participantes: {
-              include: {
-                participante: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    // Processar dados para um formato mais amigável
-    return viagens.map(viagem => {
-      const eventos = viagem.viagem_evento.map(ve => ve.evento);
-      
-      // Obter participantes únicos
-      const participantes = viagem.viagem_participantes.map(vp => 
-        vp.evento_participantes.participante
-      );
-
-      // Determinar origem e destino formatados
-      let origem = 'Não especificado';
-      let destino = 'Não especificado';
-
-      if (viagem.exterior === 'SIM' && viagem.local_exterior) {
-        // Se for viagem ao exterior
-        origem = viagem.cidade_origem 
-          ? `${viagem.cidade_origem.descricao}/${viagem.cidade_origem.estado.uf}, Brasil` 
-          : 'Brasil';
-        destino = `${viagem.local_exterior}, ${viagem.pais.nome_pt}`;
-      } else {
-        // Se for viagem nacional
-        if (viagem.origem) {
-          origem = `Aeroporto: ${viagem.origem.cidade}/${viagem.origem.uf}`;
-        } else if (viagem.cidade_origem) {
-          origem = `${viagem.cidade_origem.descricao}/${viagem.cidade_origem.estado.uf}`;
-        }
-
-        if (viagem.destino) {
-          destino = `Aeroporto: ${viagem.destino.cidade}/${viagem.destino.uf}`;
-        } else if (viagem.cidade_destino) {
-          destino = `${viagem.cidade_destino.descricao}/${viagem.cidade_destino.estado.uf}`;
+      });
+    
+      // Separar participantes com e sem viagem
+      const participantesComViagem = [];
+      const participantesSemViagem = [];
+    
+      for (const eventoParticipante of eventosParticipantes) {
+        const participante = eventoParticipante.participante;
+        
+        // Se o participante tem pelo menos uma viagem associada
+        if (eventoParticipante.viagem_participantes && 
+            eventoParticipante.viagem_participantes.length > 0) {
+          
+          // Para cada viagem deste participante, obter detalhes
+          const viagensDoParticipante = await Promise.all(
+            eventoParticipante.viagem_participantes.map(async (vp) => {
+              const viagem = vp.viagem;
+              
+              // Buscar informações de origem e destino para essa viagem
+              const viagemCompleta = await this.prisma.viagem.findUnique({
+                where: {
+                  id: viagem.id,
+                },
+                include: {
+                  origem: true,
+                  destino: true,
+                  cidade_origem: {
+                    include: {
+                      estado: true,
+                    },
+                  },
+                  cidade_destino: {
+                    include: {
+                      estado: true,
+                    },
+                  },
+                  pais: true,
+                },
+              });
+              
+              // Formatar origem e destino
+              let origem = 'Não especificado';
+              let destino = 'Não especificado';
+    
+              if (viagemCompleta.exterior === 'SIM' && viagemCompleta.local_exterior) {
+                origem = viagemCompleta.cidade_origem 
+                  ? `${viagemCompleta.cidade_origem.descricao}/${viagemCompleta.cidade_origem.estado.uf}, Brasil` 
+                  : 'Brasil';
+                destino = `${viagemCompleta.local_exterior}, ${viagemCompleta.pais.nome_pt}`;
+              } else {
+                if (viagemCompleta.origem) {
+                  origem = `Aeroporto: ${viagemCompleta.origem.cidade}/${viagemCompleta.origem.uf}`;
+                } else if (viagemCompleta.cidade_origem) {
+                  origem = `${viagemCompleta.cidade_origem.descricao}/${viagemCompleta.cidade_origem.estado.uf}`;
+                }
+    
+                if (viagemCompleta.destino) {
+                  destino = `Aeroporto: ${viagemCompleta.destino.cidade}/${viagemCompleta.destino.uf}`;
+                } else if (viagemCompleta.cidade_destino) {
+                  destino = `${viagemCompleta.cidade_destino.descricao}/${viagemCompleta.cidade_destino.estado.uf}`;
+                }
+              }
+              
+              return {
+                id: viagem.id,
+                origem,
+                destino,
+                data_ida: viagem.data_ida,
+                data_volta: viagem.data_volta,
+                custos: viagem.custos,
+                valor_passagem: viagem.valor_passagem,
+                // Dados específicos da relação participante-viagem
+                servidor_acompanhando: vp.servidor_acompanhando,
+                viagem_diferente: vp.viagem_diferente,
+                data_ida_diferente: vp.data_ida_diferente,
+                data_volta_diferente: vp.data_volta_diferente,
+                arcar_passagem: vp.arcar_passagem,
+                custos_participante: vp.custos,
+              };
+            })
+          );
+          
+          participantesComViagem.push({
+            id: participante.id,
+            nome: participante.nome,
+            cpf: participante.cpf,
+            cargo: participante.cargo,
+            classe: participante.classe,
+            tipo: participante.tipo,
+            viagens: viagensDoParticipante,
+          });
+        } else {
+          // Participante não tem viagem associada
+          participantesSemViagem.push({
+            id: participante.id,
+            nome: participante.nome,
+            cpf: participante.cpf,
+            cargo: participante.cargo,
+            classe: participante.classe,
+            tipo: participante.tipo,
+          });
         }
       }
-
+    
       return {
-        id: viagem.id,
-        origem,
-        destino,
-        data_ida: viagem.data_ida,
-        data_volta: viagem.data_volta,
-        custos: viagem.custos,
-        valor_passagem: viagem.valor_passagem,
-        arcar_passagem: viagem.arcar_passagem,
-        justificativa: viagem.justificativa,
-        eventos: eventos.map(evento => ({
-          id: evento.id,
-          titulo: evento.titulo,
-          tipo: evento.tipo_evento.descricao,
-          inicio: evento.inicio,
-          fim: evento.fim,
-        })),
-        participantes: participantes.map(p => ({
-          id: p.id,
-          nome: p.nome,
-          cpf: p.cpf,
-          cargo: p.cargo,
-          classe: p.classe,
-          tipo: p.tipo,
-        })),
+        evento_id: eventoId,
+        participantesComViagem,
+        participantesSemViagem,
+        totalParticipantes: eventosParticipantes.length,
+        totalComViagem: participantesComViagem.length,
+        totalSemViagem: participantesSemViagem.length,
       };
-    });
-  }
+    }
+
+
+    async getParticipantesByEventoOtimizado(eventoId: number) {
+      // Buscar o evento com todos os participantes e suas viagens em uma única consulta
+      const evento = await this.prisma.evento.findUnique({
+        where: {
+          id: eventoId,
+        },
+        include: {
+          evento_participantes: {
+            include: {
+              participante: true,
+              viagem_participantes: {
+                include: {
+                  viagem: {
+                    include: {
+                      origem: true,
+                      destino: true,
+                      cidade_origem: {
+                        include: {
+                          estado: true,
+                        },
+                      },
+                      cidade_destino: {
+                        include: {
+                          estado: true,
+                        },
+                      },
+                      pais: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+    
+      if (!evento) {
+        throw new Error(`Evento com ID ${eventoId} não encontrado`);
+      }
+    
+      // Separar participantes com e sem viagem
+      const participantesComViagem = [];
+      const participantesSemViagem = [];
+    
+      for (const eventoParticipante of evento.evento_participantes) {
+        const participante = eventoParticipante.participante;
+        
+        // Se o participante tem pelo menos uma viagem associada
+        if (eventoParticipante.viagem_participantes && 
+            eventoParticipante.viagem_participantes.length > 0) {
+          
+          const viagensDoParticipante = eventoParticipante.viagem_participantes.map(vp => {
+            const viagem = vp.viagem;
+            
+            // Formatar origem e destino
+            let origem = 'Não especificado';
+            let destino = 'Não especificado';
+    
+            if (viagem.exterior === 'SIM' && viagem.local_exterior) {
+              origem = viagem.cidade_origem 
+                ? `${viagem.cidade_origem.descricao}/${viagem.cidade_origem.estado.uf}, Brasil` 
+                : 'Brasil';
+              destino = `${viagem.local_exterior}, ${viagem.pais.nome_pt}`;
+            } else {
+              if (viagem.origem) {
+                origem = `${viagem.origem.cidade}/${viagem.origem.uf}`;
+              } else if (viagem.cidade_origem) {
+                origem = `${viagem.cidade_origem.descricao}/${viagem.cidade_origem.estado.uf}`;
+              }
+    
+              if (viagem.destino) {
+                destino = `${viagem.destino.cidade}/${viagem.destino.uf}`;
+              } else if (viagem.cidade_destino) {
+                destino = `${viagem.cidade_destino.descricao}/${viagem.cidade_destino.estado.uf}`;
+              }
+            }
+            
+            return {
+              id: viagem.id,
+              origem,
+              destino,
+              data_ida: viagem.data_ida,
+              data_volta: viagem.data_volta,
+              custos: viagem.custos,
+              valor_passagem: viagem.valor_passagem,
+              // Dados específicos da relação participante-viagem
+              servidor_acompanhando: vp.servidor_acompanhando,
+              viagem_diferente: vp.viagem_diferente,
+              data_ida_diferente: vp.data_ida_diferente,
+              data_volta_diferente: vp.data_volta_diferente,
+              arcar_passagem: vp.arcar_passagem,
+              custos_participante: vp.custos,
+            };
+          });
+          
+          participantesComViagem.push({
+            id: participante.id,
+            nome: participante.nome,
+            cpf: participante.cpf,
+            cargo: participante.cargo,
+            classe: participante.classe,
+            tipo: participante.tipo,
+            viagens: viagensDoParticipante,
+          });
+        } else {
+          // Participante não tem viagem associada
+          participantesSemViagem.push({
+            id: participante.id,
+            nome: participante.nome,
+            cpf: participante.cpf,
+            cargo: participante.cargo,
+            classe: participante.classe,
+            tipo: participante.tipo,
+          });
+        }
+      }
+    
+      return {
+        evento_id: eventoId,
+        titulo: evento.titulo,
+        inicio: evento.inicio,
+        fim: evento.fim,
+        participantesComViagem,
+        participantesSemViagem,
+        totalParticipantes: evento.evento_participantes.length,
+        totalComViagem: participantesComViagem.length,
+        totalSemViagem: participantesSemViagem.length,
+      };
+    }
+
+
 }
   
 
