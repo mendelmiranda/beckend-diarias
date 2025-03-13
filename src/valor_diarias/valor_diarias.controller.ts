@@ -1,8 +1,7 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { ValorDiariasService } from './valor_diarias.service';
+import { Body, Controller, Delete, Get, Param, Post, Put, Req } from '@nestjs/common';
 import { CreateValorDiariaDto } from './dto/create-valor_diaria.dto';
 import { UpdateValorDiariaDto } from './dto/update-valor_diaria.dto';
-import { HttpService } from '@nestjs/axios';
+import { ValorDiariasService } from './valor_diarias.service';
 
 @Controller('valor-diarias')
 export class ValorDiariasController {
@@ -23,9 +22,12 @@ export class ValorDiariasController {
     return this.valorDiariasService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateValorDiariaDto: UpdateValorDiariaDto) {
-    return this.valorDiariasService.update(+id, updateValorDiariaDto);
+  @Put(':id')
+  update(@Param('id') id: string, @Body() updateValorDiariaDto: UpdateValorDiariaDto, @Req() request: Request) {
+    
+    const usuario = JSON.parse(request.headers['dados_client']);    
+    
+    return this.valorDiariasService.update(+id, updateValorDiariaDto, usuario);
   }
 
   @Delete(':id')

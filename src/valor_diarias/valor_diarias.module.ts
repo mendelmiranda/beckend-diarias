@@ -1,11 +1,12 @@
+import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
-import { ValorDiariasService } from './valor_diarias.service';
-import { ValorDiariasController } from './valor_diarias.controller';
+import { LogSistemaModule } from 'src/log_sistema/log_sistema.module';
 import { PrismaService } from '../../prisma/prisma.service';
-import { HttpModule, HttpService } from '@nestjs/axios';
+import { ValorDiariasController } from './valor_diarias.controller';
+import { ValorDiariasService } from './valor_diarias.service';
 
 @Module({
-  imports: [HttpModule],
+  imports: [HttpModule, LogSistemaModule],
   controllers: [ValorDiariasController],  
   providers: [ValorDiariasService, PrismaService]
   
