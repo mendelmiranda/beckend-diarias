@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
+  HttpStatus,
   Param,
   Post,
   Put,
@@ -15,6 +17,9 @@ import PesquisaSolicitacaoDTO from './dto/pesquisa-solicitacao.dto';
 import { UpdateSolicitacaoDto } from './dto/update-solicitacao.dto';
 import { Solicitacao } from './entities/solicitacao.entity';
 import { SolicitacaoService } from './solicitacao.service';
+import { PathParamsDto } from './dto/path-params.dto';
+import { DiariasResponseDto } from './dto/response.dto';
+import { SolicitacaoIdDto } from './dto/solicitacao-id.dto';
 
 @Controller('solicitacao')
 export class SolicitacaoController {
@@ -115,6 +120,45 @@ export class SolicitacaoController {
       data: solicitacoes,
       total,
     };
+  }
+
+  @Get('eventos/solicitacao/:solicitacao_id/participante/:participante_id')
+  async getEventosParticipante(@Param() params: PathParamsDto): Promise<DiariasResponseDto> {
+    try {
+      return await this.solicitacaoService.getEventosParticipante(
+        params.solicitacao_id, 
+        params.participante_id
+      );
+    } catch (error) {
+      if (error.status === HttpStatus.NOT_FOUND) {
+        throw new HttpException(
+          { message: 'Nenhum evento encontrado para este participante nesta solicitação' }, 
+          HttpStatus.NOT_FOUND
+        );
+      }
+      throw new HttpException(
+        { error: 'Erro ao buscar eventos' }, 
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  @Get('eventos/solicitacao/:solicitacao_id/diarias')
+  async getDiariasSolicitacao(@Param() params: SolicitacaoIdDto): Promise<DiariasResponseDto[]> {
+    try {
+      return await this.solicitacaoService.getDiariasBySolicitacao(params.solicitacao_id);
+    } catch (error) {
+      if (error.status === HttpStatus.NOT_FOUND) {
+        throw new HttpException(
+          { message: 'Nenhum evento ou participante encontrado para esta solicitação' }, 
+          HttpStatus.NOT_FOUND
+        );
+      }
+      throw new HttpException(
+        { error: 'Erro ao calcular diárias para esta solicitação' }, 
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 
 }
