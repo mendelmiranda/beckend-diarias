@@ -1,8 +1,7 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put, HttpStatus } from '@nestjs/common';
-import { EventoService } from './evento.service';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { CreateEventoDto } from './dto/create-evento.dto';
 import { UpdateEventoDto } from './dto/update-evento.dto';
-import { evento } from '@prisma/client';
+import { EventoService } from './evento.service';
 
 @Controller('evento')
 export class EventoController {
@@ -69,4 +68,11 @@ export class EventoController {
   remove(@Param('id') id: string) {
     return this.eventoService.remove(+id);
   }
+
+
+  @Get('/verifica/solicitacao/:id')
+  findVerificaViagemSolicitacao(@Param('id') id: number) {
+    return this.eventoService.verificarParticipantesComViagemPorSolicitacao(+id);
+  }
+
 }

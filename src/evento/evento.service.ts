@@ -5,7 +5,7 @@ import { UpdateEventoDto } from './dto/update-evento.dto';
 
 @Injectable()
 export class EventoService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async create(dto: CreateEventoDto) {
     try {
@@ -14,11 +14,11 @@ export class EventoService {
       });
     } catch (error) {
       console.log(error);
-      
+
       throw new Error(`Erro ao criar evento: ${error.message}`);
     }
   }
-  
+
 
   findAll() {
     return this.prisma.evento.findMany();
@@ -93,8 +93,8 @@ export class EventoService {
                 log_tramite: true,
               },
             },
-            }
-          },
+          }
+        },
         tipo_evento: true,
         evento_participantes: {
           include: {
@@ -146,6 +146,46 @@ export class EventoService {
       }
     }) */
   }
+
+
+  verificarParticipantesComViagemPorSolicitacao = async (solicitacaoId) => {
+    // 1. Encontrar todos os eventos da solicitação
+    const eventos = await this.prisma.evento.findMany({
+      where: {
+        solicitacao_id: solicitacaoId
+      },
+      include: {
+        evento_participantes: {
+          include: {
+            participante: true,
+            viagem_participantes: true
+          }
+        }
+      }
+    });
+  
+    // 2. Para cada evento, verificar participantes sem viagem
+    const resultados = eventos.map(evento => {
+      const participantesSemViagem = evento.evento_participantes.filter(
+        ep => ep.viagem_participantes.length === 0
+      );
+  
+      return {
+        evento_id: evento.id,
+        titulo: evento.titulo,
+        todosTemViagem: participantesSemViagem.length === 0,
+        participantesSemViagem: participantesSemViagem.map(ep => ({
+          id: ep.participante_id,
+          nome: ep.participante.nome,
+          cpf: ep.participante.cpf
+        }))
+      };
+    });
+  
+    return resultados;
+  };
+
+
 }
 
 /* async removerDadosPorSolicitacao(solicitacaoId: number) {    
