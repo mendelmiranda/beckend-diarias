@@ -16,6 +16,8 @@ import { EventoParticipantesService } from '../evento_participantes/evento_parti
 import { CreateViagemDto } from './dto/create-viagem.dto';
 import { UpdateViagemDto } from './dto/update-viagem.dto';
 import { CreateViagemEventoDto } from 'src/viagem_evento/dto/create-viagem_evento.dto';
+import { SolicitacaoService } from 'src/solicitacao/solicitacao.service';
+
 
 
 @Injectable()
@@ -28,6 +30,7 @@ export class ViagemService {
     private cargoDiariaService: CargoDiariasService,
     private valorViagemService: ValorViagemService,
     private eventoService: EventoService,
+    private solicitacaoService: SolicitacaoService
   ) { }
 
   async create(dto: CreateViagemDto) {
@@ -82,9 +85,31 @@ export class ViagemService {
     return resultado;
 }
 
+
+async calculaDiaria(idViagem: number, participanteId: number, eventoId: number, total: number, solicitacaoId: number) {
+    
+  const pesquisaValores = await this.solicitacaoService.getEventosParticipante(solicitacaoId, participanteId);
+
+  const eventoExterior = pesquisaValores.analise.eventos.find(evento => evento.exterior === "SIM");  
+  
+  if (eventoExterior) {
+    return this.calculaInternacional(idViagem, participanteId, eventoId, total);
+  }
+
+  const valorDiaria = pesquisaValores.valor_diaria;
+
+  const valorViagem: CreateValorViagemDto = {
+    viagem_id: idViagem,
+    tipo: 'DIARIA',
+    destino: 'NACIONAL',
+    valor_individual: valorDiaria,
+  };
+
+  return this.valorViagemService.create(valorViagem);
+}
   
 
-  async calculaDiaria(idViagem: number, participanteId: number, eventoId: number, total: number) {
+  async calculaInternacional(idViagem: number, participanteId: number, eventoId: number, total: number) {
     
     const localizaEvento = await this.eventoService.findOne(eventoId);
     const localizaViagem = await this.findOne(idViagem);

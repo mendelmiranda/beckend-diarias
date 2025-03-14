@@ -34,7 +34,7 @@ async create(@Param('id') id: string, @Param('nome') nome: string, @Body() creat
           const resultadosViagem = await this.viagemService.calculaDiasParaDiaria(resultado.solicitacao_id);
           await Promise.all(
             resultadosViagem.map(async (result) => {
-              await this.cadastraValoresDaDiaria(result.viagem, result.participante.id, result.evento.id, result.totalDias);
+              await this.cadastraValoresDaDiaria(result.viagem, result.participante.id, result.evento.id, result.totalDias, resultado.solicitacao_id);
             })
           );
         }
@@ -47,8 +47,8 @@ async create(@Param('id') id: string, @Param('nome') nome: string, @Body() creat
   }
 }
 
-  async cadastraValoresDaDiaria(idViagem: number, participanteId: number, eventoId: number, total: number) {
-    return await this.viagemService.calculaDiaria(idViagem, participanteId, eventoId, total);
+  async cadastraValoresDaDiaria(idViagem: number, participanteId: number, eventoId: number, total: number, solicitacaoId: number) {
+    return await this.viagemService.calculaDiaria(idViagem, participanteId, eventoId, total, solicitacaoId);
   }
 
   async verificaColaborador(solicitacaoId: number): Promise<boolean> {

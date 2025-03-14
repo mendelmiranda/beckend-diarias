@@ -7,5 +7,6 @@ import { LogSistemaService } from '../log_sistema/log_sistema.service';
 @Module({
   controllers: [SolicitacaoController],
   providers: [SolicitacaoService, PrismaService, LogSistemaService],
+  exports: [SolicitacaoService], // Certifique-se de exportá-lo
 })
 export class SolicitacaoModule {}
