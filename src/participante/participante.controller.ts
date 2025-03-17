@@ -8,6 +8,7 @@ import {
   Put
 } from '@nestjs/common';
 import { conta_diaria } from '@prisma/client';
+import { AnexoSolicitacaoService } from 'src/anexo_solicitacao/anexo_solicitacao.service';
 import { UpdateContaDiariaDto } from 'src/conta_diaria/dto/update-conta_diaria.dto';
 import { Util } from 'src/util/Util';
 import { ContaDiariaService } from '../conta_diaria/conta_diaria.service';
@@ -17,8 +18,6 @@ import { EventoParticipantesService } from '../evento_participantes/evento_parti
 import { CreateParticipanteDto } from './dto/create-participante.dto';
 import { UpdateParticipanteDto } from './dto/update-participante.dto';
 import { ParticipanteService } from './participante.service';
-import { AnexoSolicitacaoService } from 'src/anexo_solicitacao/anexo_solicitacao.service';
-import { SearchParamsDto } from 'src/anexo_solicitacao/dto/search-params.dto';
 
 @Controller('participante')
 export class ParticipanteController {
