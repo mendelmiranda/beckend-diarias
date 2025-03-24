@@ -630,7 +630,23 @@ export class TramiteService {
         ],
       },
       include: {
-        solicitacao: true,
+        solicitacao: {
+          include: {
+            eventos: {
+              include: {
+                evento_participantes: {
+                  include: {
+                    participante: {
+                      include: {
+                        conta_diaria: true,
+                      }
+                    }
+                  }
+                }
+              }
+            },
+          }
+        },
       },
     });
 
