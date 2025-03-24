@@ -927,7 +927,7 @@ export class SolicitacaoService {
       }
     }
   
-    private async processEventosParticipante(eventos: EventoParticipanteDto[]): Promise<DiariasResponseDto> {
+    /* private async processEventosParticipante(eventos: EventoParticipanteDto[]): Promise<DiariasResponseDto> {
       // Calcular as datas e totais
       const dataPrimeiroEvento = eventos.reduce(
         (min, e) => (e.inicio < min ? e.inicio : min),
@@ -1000,7 +1000,190 @@ export class SolicitacaoService {
         valores_diarias: valoresDiarias,
         valor_diaria: valorDiaria
       };
-    }
+    } */
+
+      private async processEventosParticipante(eventos: EventoParticipanteDto[]): Promise<DiariasResponseDto> {
+        // Calcular as datas e totais
+        const dataPrimeiroEvento = eventos.reduce(
+          (min, e) => (e.inicio < min ? e.inicio : min),
+          eventos[0].inicio
+        );
+      
+        const dataUltimoEvento = eventos.reduce(
+          (max, e) => (e.fim > max ? e.fim : max),
+          eventos[0].fim
+        );
+      
+        // Conjunto para armazenar dias únicos
+        const diasUnicos = new Set<string>();
+        
+        // Para cada evento, adicionar todos os dias do evento ao conjunto
+        eventos.forEach(evento => {
+          const dataInicio = new Date(evento.inicio);
+          const dataFim = new Date(evento.fim);
+          
+          // Percorrer cada dia do evento
+          const diaAtual = new Date(dataInicio);
+          while (diaAtual <= dataFim) {
+            // Adicionar o dia ao conjunto (formato ISO simplificado para data)
+            diasUnicos.add(diaAtual.toISOString().split('T')[0]);
+            // Avançar para o próximo dia
+            diaAtual.setDate(diaAtual.getDate() + 1);
+          }
+        });
+        
+        // Total de dias únicos (sem duplicações por sobreposições)
+        const totalDias = diasUnicos.size;
+        const totalEventos = eventos.length;
+        const primeiroEvento = eventos[0];
+      
+        // Buscar valores das diárias por cargo
+        let valoresDiarias: ValorDiariasDto | null = null;
+        if (primeiroEvento.participante_cargo) {
+          this.logger.log(`Cargo do participante encontrado: "${primeiroEvento.participante_cargo}"`);
+          valoresDiarias = await this.getValorDiariasByCargo(primeiroEvento.participante_cargo.trim());
+        } else {
+          this.logger.warn(`Participante ${primeiroEvento.participante_nome} (ID: ${primeiroEvento.participante_id}) não possui cargo definido`);
+        }
+      
+        // Calcular valor da diária com lógica de múltiplos eventos
+        let valorDiaria = 0;
+        if (valoresDiarias) {
+          // Verificamos se há múltiplos eventos ou apenas um
+          if (totalEventos > 1) {
+            // Múltiplos eventos: usamos total de dias únicos + meia diária
+            valorDiaria = this.calculaDiariasMultiplosEventos(
+              totalDias,
+              eventos, // Passamos todos os eventos para analisar cada um
+              valoresDiarias
+            );
+          } else {
+            // Evento único: mantemos o cálculo atual
+            valorDiaria = this.calculaValoresMelhorado(
+              totalDias, 
+              primeiroEvento.tem_passagem, 
+              primeiroEvento.exterior, 
+              valoresDiarias
+            );
+          }
+        } else {
+          this.logger.warn(`Não foi possível calcular diárias para o participante ${primeiroEvento.participante_nome} pois não foram encontrados valores de diárias para seu cargo`);
+        }
+      
+        const diasArray = Array.from(diasUnicos).sort();
+        this.logger.log(`Dias únicos para o participante ${primeiroEvento.participante_nome}: ${diasArray.join(', ')} (total: ${totalDias} dias)`);
+      
+        return {
+          analise: {
+            participante_nome: primeiroEvento.participante_nome,
+            participante_cpf: primeiroEvento.participante_cpf,
+            eventos,
+            data_primeiro_evento: dataPrimeiroEvento,
+            data_ultimo_evento: dataUltimoEvento,
+            total_dias: totalDias,
+            total_eventos: totalEventos
+          },
+          valores_diarias: valoresDiarias,
+          valor_diaria: valorDiaria
+        };
+      }
+
+      private calculaDiariasMultiplosEventos(
+        totalDias: number, 
+        eventos: EventoParticipanteDto[], 
+        valoresDiarias: ValorDiariasDto
+      ): number {
+        // Mapeamos cada dia único para o evento correspondente
+        const mapaDiasEventos = new Map<string, EventoParticipanteDto>();
+        
+        // Para cada evento, adicionamos seus dias ao mapa
+        // Se um dia já existe no mapa (está em mais de um evento),
+        // priorizamos eventos internacionais > com passagem > local
+        eventos.forEach(evento => {
+          const dataInicio = new Date(evento.inicio);
+          const dataFim = new Date(evento.fim);
+          
+          const diaAtual = new Date(dataInicio);
+          while (diaAtual <= dataFim) {
+            const diaStr = diaAtual.toISOString().split('T')[0];
+            
+            // Se o dia já está no mapa, verificamos a prioridade
+            if (mapaDiasEventos.has(diaStr)) {
+              const eventoExistente = mapaDiasEventos.get(diaStr);
+              
+              // Prioridade: internacional > com passagem > local
+              if (evento.exterior === 'SIM' && eventoExistente.exterior !== 'SIM') {
+                // Evento atual é internacional e o existente não
+                mapaDiasEventos.set(diaStr, evento);
+              } else if (evento.tem_passagem === 'SIM' && eventoExistente.tem_passagem !== 'SIM' && 
+                        eventoExistente.exterior !== 'SIM') {
+                // Evento atual tem passagem, o existente não, e o existente não é internacional
+                mapaDiasEventos.set(diaStr, evento);
+              }
+              // Nos outros casos, mantém o evento já registrado
+            } else {
+              // Dia ainda não está no mapa, então o adicionamos
+              mapaDiasEventos.set(diaStr, evento);
+            }
+            
+            // Avançar para o próximo dia
+            diaAtual.setDate(diaAtual.getDate() + 1);
+          }
+        });
+        
+        // Agora calculamos o valor total somando as diárias para cada dia
+        // de acordo com o tipo de evento de cada dia
+        let valorTotal = 0;
+        
+        // Contamos quantos dias de cada tipo temos
+        let diasDentro = 0;
+        let diasFora = 0;
+        let diasInternacional = 0;
+        
+        // Iteramos sobre todos os dias únicos
+        mapaDiasEventos.forEach((evento, dia) => {
+          if (evento.exterior === 'SIM') {
+            diasInternacional++;
+          } else if (evento.tem_passagem === 'SIM') {
+            diasFora++;
+          } else {
+            diasDentro++;
+          }
+        });
+        
+        // Calculamos o valor total de cada tipo
+        const valorDentro = diasDentro * valoresDiarias.dentro;
+        const valorFora = diasFora * valoresDiarias.fora;
+        const valorInternacional = diasInternacional * valoresDiarias.internacional;
+        
+        // Somamos os valores
+        valorTotal = valorDentro + valorFora + valorInternacional;
+        
+        this.logger.log(`Cálculo para múltiplos eventos:
+          Dias local: ${diasDentro} x ${valoresDiarias.dentro} = ${valorDentro}
+          Dias com passagem: ${diasFora} x ${valoresDiarias.fora} = ${valorFora}
+          Dias internacional: ${diasInternacional} x ${valoresDiarias.internacional} = ${valorInternacional}
+          Subtotal: ${valorTotal}`);
+        
+        // Adicionamos meia diária extra baseada no valor mais alto (internacional > fora > dentro)
+        let valorMeiaDiaria = 0;
+        if (diasInternacional > 0) {
+          valorMeiaDiaria = valoresDiarias.internacional / 2;
+          this.logger.log(`Meia diária adicional: ${valorMeiaDiaria} (internacional)`);
+        } else if (diasFora > 0) {
+          valorMeiaDiaria = valoresDiarias.fora / 2;
+          this.logger.log(`Meia diária adicional: ${valorMeiaDiaria} (fora)`);
+        } else {
+          valorMeiaDiaria = valoresDiarias.dentro / 2;
+          this.logger.log(`Meia diária adicional: ${valorMeiaDiaria} (dentro)`);
+        }
+        
+        // Valor final com meia diária
+        this.logger.log(`Valor total: ${valorTotal} + ${valorMeiaDiaria} = ${valorTotal + valorMeiaDiaria}`);
+        
+        return valorTotal + valorMeiaDiaria;
+      }
+      
   
     async getValorDiariasByCargo(cargo: string): Promise<ValorDiariasDto | null> {
       try {
