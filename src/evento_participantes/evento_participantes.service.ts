@@ -197,35 +197,12 @@ export class EventoParticipantesService {
                   viagem: {
                     select: {
                       id: true,
-                      cidade_destino: {
-                        include: {
-                          origem: true,
-                          destino: true,
-                        }
-                      },
-                      cidade_origem: {
-                        include: {
-                          origem: true,
-                          destino: true,
-                        }
-                      },
-                      destino: true,
-                      origem: {
-                        select: {
-                          cidade: true,
-                          estado: true,
-                        }
-                      },
-                      pais: true,
                       valor_viagem: {
                         select: {
                           valor_individual: true,
                           valor_grupo: true,
                           tipo: true,
-                          destino: true,
                           id: true,
-                          viagem_id: true,
-                          justificativa: true,
                         }
                       }
                     }
@@ -236,34 +213,79 @@ export class EventoParticipantesService {
           }
         }
       });
-
-      //Util.totalDeDias(evento.inicio, evento.fim)+2;
-
-      const resultadosAgrupados = eventos.map(evento => ({
-        id: evento.id,
-        titulo: evento.titulo,
-        tem_passagem: evento.tem_passagem,
-        inicio: evento.inicio,
-        fim: evento.fim,
-        totalDias: Util.totalDeDias(evento.inicio, evento.fim) + 1, //<=====CONFIRMAR
-        exterior: evento.exterior,
-        participantes: evento.evento_participantes.map(ep => ({
-          participanteId: ep.participante.id,
-          nomeParticipante: ep.participante.nome,
-          tipo: ep.participante.tipo,
-          cargo: ep.participante.cargo,
-          viagens: ep.viagem_participantes.map(vp => ({
-            viagem: vp.viagem,
-            id: vp.viagem.id,
-            valor_viagem: vp.viagem.valor_viagem,
-          }))
-        }))
-      }));
-
-      return resultadosAgrupados;
+  
+      // Vamos primeiro criar um mapa de participantes com o evento que tem mais dias
+      const participanteEventoMap = new Map();
+      
+      // Processar os eventos e calcular os dias para cada participante
+      eventos.forEach(evento => {
+        const totalDias = Util.totalDeDias(evento.inicio, evento.fim) + 1;
+        
+        evento.evento_participantes.forEach(ep => {
+          const participanteId = ep.participante.id;
+          
+          if (!participanteEventoMap.has(participanteId) || 
+              participanteEventoMap.get(participanteId).dias < totalDias) {
+            // Calcula o valor total das diárias para este participante
+            let valorDiaria = 0;
+            
+            ep.viagem_participantes.forEach(vp => {
+              vp.viagem.valor_viagem.forEach(valor => {
+                if (valor.valor_individual) {
+                  valorDiaria += valor.valor_individual * totalDias;
+                } else if (valor.valor_grupo) {
+                  valorDiaria += valor.valor_grupo;
+                }
+              });
+            });
+            
+            participanteEventoMap.set(participanteId, {
+              eventoId: evento.id,
+              dias: totalDias,
+              valorDiaria: valorDiaria,
+              nome: ep.participante.nome
+            });
+          }
+        });
+      });
+      
+      // Agora formatar a saída como desejado
+      const resultado = eventos.map(evento => {
+        const dataInicio = new Date(evento.inicio).toLocaleDateString('pt-BR');
+        const dataFim = new Date(evento.fim).toLocaleDateString('pt-BR');
+        
+        const participantesDoEvento = evento.evento_participantes.map(ep => {
+          const participanteInfo = participanteEventoMap.get(ep.participante.id);
+          
+          // Se este evento for o que tem mais dias para este participante, mostra a diária
+          if (participanteInfo && participanteInfo.eventoId === evento.id) {
+            return {
+              nome: ep.participante.nome,
+              valorDiaria: participanteInfo.valorDiaria > 0 ? 
+                `DIÁRIA ${participanteInfo.valorDiaria.toLocaleString('pt-BR', {
+                  style: 'currency', 
+                  currency: 'BRL'
+                })}` : ''
+            };
+          } else {
+            // Caso contrário, só mostra o nome
+            return {
+              nome: ep.participante.nome,
+              valorDiaria: ''
+            };
+          }
+        });
+        
+        return {
+          titulo: `${evento.titulo} DE ${dataInicio} ATÉ ${dataFim}`,
+          participantes: participantesDoEvento
+        };
+      });
+      
+      return resultado;
     } catch (error) {
-      // console.error('Erro ao buscar valores das diárias:', error);
-      // throw new HttpException('Erro ao processar a solicitação de valores das diárias.', HttpStatus.INTERNAL_SERVER_ERROR);
+      console.error('Erro ao buscar valores das diárias:', error);
+      throw new HttpException('Erro ao processar a solicitação de valores das diárias.', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
