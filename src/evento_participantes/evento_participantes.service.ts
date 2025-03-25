@@ -171,9 +171,10 @@ export class EventoParticipantesService {
 
   async findValoresDiarias(solicitacaoId: number) {
     try {
+      // Buscar eventos da solicitação
       const eventos = await this.prisma.evento.findMany({
         where: {
-          solicitacao_id: +solicitacaoId
+          solicitacao_id: +solicitacaoId,
         },
         select: {
           id: true,
@@ -190,104 +191,114 @@ export class EventoParticipantesService {
                   nome: true,
                   cargo: true,
                   tipo: true,
-                }
+                },
               },
               viagem_participantes: {
                 select: {
                   viagem: {
                     select: {
                       id: true,
-                      valor_viagem: {
-                        select: {
-                          valor_individual: true,
-                          valor_grupo: true,
-                          tipo: true,
-                          id: true,
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       });
-  
-      // Vamos primeiro criar um mapa de participantes com o evento que tem mais dias
+
+      // Buscar valores consolidados de diárias diretamente de valor_viagem por participante
+      const participantesIds = eventos
+        .flatMap((e) => e.evento_participantes.map((ep) => ep.participante.id))
+        .filter((id, index, self) => self.indexOf(id) === index); // IDs únicos
+
+      const valoresDiarias = await this.prisma.valor_viagem.findMany({
+        where: {
+          participante_id: { in: participantesIds },
+          tipo: 'DIÁRIA',
+        },
+        select: {
+          participante_id: true,
+          valor_individual: true,
+          valor_grupo: true,
+        },
+      });
+
+      // Criar um mapa de participantes com o evento que tem mais dias e o valor da diária
       const participanteEventoMap = new Map();
-      
-      // Processar os eventos e calcular os dias para cada participante
-      eventos.forEach(evento => {
+
+      eventos.forEach((evento) => {
         const totalDias = Util.totalDeDias(evento.inicio, evento.fim) + 1;
-        
-        evento.evento_participantes.forEach(ep => {
+
+        evento.evento_participantes.forEach((ep) => {
           const participanteId = ep.participante.id;
-          
-          if (!participanteEventoMap.has(participanteId) || 
-              participanteEventoMap.get(participanteId).dias < totalDias) {
-            // Calcula o valor total das diárias para este participante
-            let valorDiaria = 0;
-            
-            ep.viagem_participantes.forEach(vp => {
-              vp.viagem.valor_viagem.forEach(valor => {
-                if (valor.valor_individual) {
-                  valorDiaria += valor.valor_individual * totalDias;
-                } else if (valor.valor_grupo) {
-                  valorDiaria += valor.valor_grupo;
-                }
-              });
-            });
-            
+          const valorDiariaParticipante = valoresDiarias.find(
+            (v) => v.participante_id === participanteId,
+          );
+
+          // Se o participante tem um valor de diária consolidado
+          let valorDiaria = 0;
+          if (valorDiariaParticipante) {
+            valorDiaria = valorDiariaParticipante.valor_grupo || 0; // Usa valor_grupo como consolidado
+          }
+
+          // Verificar se este evento tem mais dias que o anterior para o participante
+          if (
+            !participanteEventoMap.has(participanteId) ||
+            participanteEventoMap.get(participanteId).dias < totalDias
+          ) {
             participanteEventoMap.set(participanteId, {
               eventoId: evento.id,
               dias: totalDias,
               valorDiaria: valorDiaria,
-              nome: ep.participante.nome
+              nome: ep.participante.nome,
             });
           }
         });
       });
-      
-      // Agora formatar a saída como desejado
-      const resultado = eventos.map(evento => {
+
+      // Formatando a saída
+      const resultado = eventos.map((evento) => {
         const dataInicio = new Date(evento.inicio).toLocaleDateString('pt-BR');
         const dataFim = new Date(evento.fim).toLocaleDateString('pt-BR');
-        
-        const participantesDoEvento = evento.evento_participantes.map(ep => {
+
+        const participantesDoEvento = evento.evento_participantes.map((ep) => {
           const participanteInfo = participanteEventoMap.get(ep.participante.id);
-          
-          // Se este evento for o que tem mais dias para este participante, mostra a diária
+
           if (participanteInfo && participanteInfo.eventoId === evento.id) {
             return {
               nome: ep.participante.nome,
-              valorDiaria: participanteInfo.valorDiaria > 0 ? 
-                `DIÁRIA ${participanteInfo.valorDiaria.toLocaleString('pt-BR', {
-                  style: 'currency', 
-                  currency: 'BRL'
-                })}` : ''
+              valorDiaria:
+                participanteInfo.valorDiaria > 0
+                  ? `DIÁRIA ${participanteInfo.valorDiaria.toLocaleString('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL',
+                    })}`
+                  : '',
             };
           } else {
-            // Caso contrário, só mostra o nome
             return {
               nome: ep.participante.nome,
-              valorDiaria: ''
+              valorDiaria: '',
             };
           }
         });
-        
+
         return {
           titulo: `${evento.titulo} DE ${dataInicio} ATÉ ${dataFim}`,
-          participantes: participantesDoEvento
+          participantes: participantesDoEvento,
         };
       });
-      
+
       return resultado;
     } catch (error) {
       console.error('Erro ao buscar valores das diárias:', error);
-      throw new HttpException('Erro ao processar a solicitação de valores das diárias.', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'Erro ao processar a solicitação de valores das diárias.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
-  }
+  }n
 
   async listaTerceirizadosPorEventosDaSolicitacao(solicitacaoId: number) {
     const eventos = await this.prisma.evento.findMany({

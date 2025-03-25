@@ -257,6 +257,7 @@ model participante {
   evento_participantes evento_participantes[]
   conta_diaria         conta_diaria[]
   eventos_juntos       eventos_juntos[]
+  valor_viagem         valor_viagem[]
 }
 
 model evento_participantes {
@@ -323,19 +324,18 @@ model viagem {
 }
 
 model viagem_evento {
-  id        Int    @unique @default(autoincrement())
-  
+  id Int @unique @default(autoincrement())
+
   evento_id Int
   evento    evento? @relation(fields: [evento_id], references: [id], onDelete: Cascade)
 
   solicitacao_id Int
   solicitacao    solicitacao? @relation(fields: [solicitacao_id], references: [id], onDelete: Cascade)
 
-  viagem_id    Int
-  viagem       viagem?      @relation(fields: [viagem_id], references: [id], onDelete: Cascade)
+  viagem_id Int
+  viagem    viagem? @relation(fields: [viagem_id], references: [id], onDelete: Cascade)
 
   datareg DateTime @default(now()) @db.Timestamptz(3)
-  
 
   @@id([id, evento_id, solicitacao_id, viagem_id])
 }
@@ -350,6 +350,9 @@ model valor_viagem {
   valor_grupo      Float?
   cotacao_dolar    Float?
   justificativa    String?
+
+  participante_id Int? // Novo campo para vincular diretamente ao participante
+  participante    participante? @relation(fields: [participante_id], references: [id], onDelete: Cascade)
 }
 
 model viagem_participantes {

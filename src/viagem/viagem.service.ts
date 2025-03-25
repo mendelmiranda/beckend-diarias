@@ -103,6 +103,7 @@ async calculaDiaria(idViagem: number, participanteId: number, eventoId: number, 
     tipo: 'DIARIA',
     destino: 'NACIONAL',
     valor_individual: valorDiaria,
+    participante_id: participanteId ?? 0
   };
 
   return this.valorViagemService.create(valorViagem);

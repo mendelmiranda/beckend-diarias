@@ -5,4 +5,6 @@ export class CreateValorViagemDto {
   valor_individual?: number;
   valor_grupo?: number;
 
+  participante_id?: number;
+
 }

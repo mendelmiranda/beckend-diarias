@@ -982,8 +982,3 @@ export class TramiteService {
   }
 
 }
-
-type ParticipanteTotalDias = {
-  participante: participante;
-  totalDias: number;
-};
