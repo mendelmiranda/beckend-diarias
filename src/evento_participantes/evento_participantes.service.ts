@@ -98,6 +98,8 @@ export class EventoParticipantesService {
       },
       select: {
         titulo: true,
+        inicio: true,
+        fim: true,
         evento_participantes: {
           select: {
             id: true,
@@ -179,117 +181,41 @@ export class EventoParticipantesService {
         select: {
           id: true,
           titulo: true,
-          tem_passagem: true,
           inicio: true,
           fim: true,
-          exterior: true,
           evento_participantes: {
-            select: {
+            include: {
               participante: {
                 select: {
                   id: true,
                   nome: true,
-                  cargo: true,
                   tipo: true,
-                },
-              },
-              viagem_participantes: {
-                select: {
-                  viagem: {
-                    select: {
-                      id: true,
-                    },
-                  },
+                  cpf: true,
+                  matricula: true,
+                  valor_viagem: true, // Incluído para calcular o valor da diária
                 },
               },
             },
           },
         },
       });
-
-      // Buscar valores consolidados de diárias diretamente de valor_viagem por participante
-      const participantesIds = eventos
-        .flatMap((e) => e.evento_participantes.map((ep) => ep.participante.id))
-        .filter((id, index, self) => self.indexOf(id) === index); // IDs únicos
-
-      const valoresDiarias = await this.prisma.valor_viagem.findMany({
-        where: {
-          participante_id: { in: participantesIds },
-          tipo: 'DIÁRIA',
-        },
-        select: {
-          participante_id: true,
-          valor_individual: true,
-          valor_grupo: true,
-        },
-      });
-
-      // Criar um mapa de participantes com o evento que tem mais dias e o valor da diária
-      const participanteEventoMap = new Map();
-
-      eventos.forEach((evento) => {
-        const totalDias = Util.totalDeDias(evento.inicio, evento.fim) + 1;
-
-        evento.evento_participantes.forEach((ep) => {
-          const participanteId = ep.participante.id;
-          const valorDiariaParticipante = valoresDiarias.find(
-            (v) => v.participante_id === participanteId,
-          );
-
-          // Se o participante tem um valor de diária consolidado
-          let valorDiaria = 0;
-          if (valorDiariaParticipante) {
-            valorDiaria = valorDiariaParticipante.valor_grupo || 0; // Usa valor_grupo como consolidado
-          }
-
-          // Verificar se este evento tem mais dias que o anterior para o participante
-          if (
-            !participanteEventoMap.has(participanteId) ||
-            participanteEventoMap.get(participanteId).dias < totalDias
-          ) {
-            participanteEventoMap.set(participanteId, {
-              eventoId: evento.id,
-              dias: totalDias,
-              valorDiaria: valorDiaria,
-              nome: ep.participante.nome,
-            });
-          }
-        });
-      });
-
-      // Formatando a saída
+  
+      // Processar os eventos para formatar a saída conforme o JSON desejado
       const resultado = eventos.map((evento) => {
-        const dataInicio = new Date(evento.inicio).toLocaleDateString('pt-BR');
-        const dataFim = new Date(evento.fim).toLocaleDateString('pt-BR');
-
-        const participantesDoEvento = evento.evento_participantes.map((ep) => {
-          const participanteInfo = participanteEventoMap.get(ep.participante.id);
-
-          if (participanteInfo && participanteInfo.eventoId === evento.id) {
-            return {
-              nome: ep.participante.nome,
-              valorDiaria:
-                participanteInfo.valorDiaria > 0
-                  ? `DIÁRIA ${participanteInfo.valorDiaria.toLocaleString('pt-BR', {
-                      style: 'currency',
-                      currency: 'BRL',
-                    })}`
-                  : '',
-            };
-          } else {
-            return {
-              nome: ep.participante.nome,
-              valorDiaria: '',
-            };
-          }
-        });
-
         return {
-          titulo: `${evento.titulo} DE ${dataInicio} ATÉ ${dataFim}`,
-          participantes: participantesDoEvento,
+          titulo: `${evento.titulo} DE ${this.formatDate(evento.inicio)} ATÉ ${this.formatDate(evento.fim)}`,
+          participantes: evento.evento_participantes.map((ep) => {
+            const valorDiaria = ep.participante.valor_viagem?.[0]?.valor_individual || "";
+            return {
+              nome: ep.participante.nome,
+              valorDiaria: valorDiaria ? `DIÁRIA R$ ${valorDiaria.toFixed(2).replace(".", ",")}` : "",
+              source: "valor_diarias",
+            };
+          }),
         };
       });
-
+  
+      
       return resultado;
     } catch (error) {
       console.error('Erro ao buscar valores das diárias:', error);
@@ -298,7 +224,15 @@ export class EventoParticipantesService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-  }n
+  }
+  
+  // Função auxiliar para formatar datas
+  formatDate(date: Date): string {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Meses começam em 0
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
 
   async listaTerceirizadosPorEventosDaSolicitacao(solicitacaoId: number) {
     const eventos = await this.prisma.evento.findMany({
