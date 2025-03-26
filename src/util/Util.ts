@@ -100,7 +100,7 @@ export const formataValorDiaria = (valor: number, destino: string) => {
     return Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
 }
 
-export const formataMascaraCpf = (cpf: string) => {
+function formataMascaraCpf(cpf: string){
     return cpf
         .replace(/[^\d]/g, "")
         .replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
@@ -110,6 +110,6 @@ export const formataMascaraCpf = (cpf: string) => {
 export const Util = {
     dataAtual, convertToDate,totalDeDias, formataDataAmericana, formataDataAmericanaBanco, 
     convertToDateDB, subtractDays, formataDataAmericanaComParametro, horaAtual, calcularDiferencaDias,
-    formataDataCurtaComHora
+    formataDataCurtaComHora, formataMascaraCpf
 }
 

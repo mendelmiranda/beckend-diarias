@@ -2,7 +2,7 @@
 import { Controller, Get, Param, Res } from '@nestjs/common';
 
 import { Response } from 'express';
-import { formataDataCurta, formataMascaraCpf, formataValorDiaria, Util } from 'src/util/Util';
+import { formataDataCurta, formataValorDiaria, Util } from 'src/util/Util';
 import { PdfServiceGenerator } from './pdf-service';
 
 
@@ -148,7 +148,7 @@ export class PdfController {
                     style: 'justificativa',
                   }
                 ],
-                ['Valor unitário: ' + formataValorDiaria(data.valor_total_inscricao!, "NACIONAL" ?? '') +
+                ['Valor unitário: ' + formataValorDiaria(data.valor_total_inscricao!, "NACIONAL") +
                   '\n' + 'Valor total: ' + formataValorDiaria(data.valor_evento!, "NACIONAL") +
                   '\n' + "Observação: " + data.observacao_valor]
               ]
@@ -172,8 +172,8 @@ export class PdfController {
 
         eventos.evento_participantes?.forEach((ep) => {
           const conta = ep.participante.conta_diaria?.find((a) => a);
-          const tipoConta = conta?.tipo_conta === "C" ? "CONTA CORRENTE" : "" || conta?.tipo_conta === "P" ? "CONTA POUPANÇA"
-              : "" || conta?.tipo_conta === "S" ? "CONTA SALÁRIO" : "";
+          const tipoConta = conta?.tipo_conta === "C" ? "CONTA CORRENTE" : conta?.tipo_conta === "P" ? "CONTA POUPANÇA"
+              : conta?.tipo_conta === "S" ? "CONTA SALÁRIO" : "";
   
           content.push(
             {
@@ -192,7 +192,7 @@ export class PdfController {
                     "Data Nasc:", formataDataCurta(new Date(Date.parse(ep.participante.data_nascimento))),
                   ],
                   ["RG:", ep.participante.rg],
-                  ["CPF:", formataMascaraCpf(ep.participante.cpf)],
+                  ["CPF:", Util.formataMascaraCpf(ep.participante.cpf)],
                   ["E-mail:", ep.participante.email],
                   ["Telefone:", ep.participante.telefone],
                   ["Lotação:", ep.participante.lotacao],

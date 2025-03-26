@@ -208,6 +208,8 @@ export class EventoParticipantesService {
             const valorDiaria = ep.participante.valor_viagem?.[0]?.valor_individual || "";
             return {
               nome: ep.participante.nome,
+              cpf: Util.formataMascaraCpf(ep.participante.cpf),
+              matricula: ep.participante.matricula,
               valorDiaria: valorDiaria ? `DIÁRIA R$ ${valorDiaria.toFixed(2).replace(".", ",")}` : "",
               source: "valor_diarias",
             };
