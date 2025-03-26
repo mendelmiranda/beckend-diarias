@@ -4,6 +4,7 @@ import { CreateEventoParticipanteDto } from './dto/create-evento_participante.dt
 import { UpdateEventoParticipanteDto } from './dto/update-evento_participante.dto';
 import { aeroporto, cidade, evento, pais, participante, viagem } from '@prisma/client';
 import { Util } from 'src/util/Util';
+import { differenceInDays } from 'date-fns';
 
 @Injectable()
 export class EventoParticipantesService {
@@ -181,8 +182,8 @@ export class EventoParticipantesService {
         select: {
           id: true,
           titulo: true,
-          inicio: true,
-          fim: true,
+          inicio: true, // Incluído para calcular o total de dias
+          fim: true,    // Incluído para calcular o total de dias
           evento_participantes: {
             include: {
               participante: {
@@ -191,6 +192,7 @@ export class EventoParticipantesService {
                   nome: true,
                   tipo: true,
                   cpf: true,
+                  cargo: true,
                   matricula: true,
                   valor_viagem: true, // Incluído para calcular o valor da diária
                 },
@@ -202,22 +204,35 @@ export class EventoParticipantesService {
   
       // Processar os eventos para formatar a saída conforme o JSON desejado
       const resultado = eventos.map((evento) => {
+        // Calcular o total de dias do evento
+        const totalDias = differenceInDays(new Date(evento.fim), new Date(evento.inicio)) + 1;
+  
         return {
           titulo: `${evento.titulo} DE ${this.formatDate(evento.inicio)} ATÉ ${this.formatDate(evento.fim)}`,
+          totalDias: totalDias, // Adiciona o total de dias ao JSON
           participantes: evento.evento_participantes.map((ep) => {
             const valorDiaria = ep.participante.valor_viagem?.[0]?.valor_individual || "";
+            const tipoDiaria = ep.participante.valor_viagem?.[0]?.tipo || "";
+            const destino = ep.participante.valor_viagem?.[0]?.destino || "";
+            const valorViagemId = ep.participante.valor_viagem?.[0]?.id || 0;
+
             return {
+              id: ep.participante.id,
               nome: ep.participante.nome,
+              tipo: ep.participante.tipo,
               cpf: Util.formataMascaraCpf(ep.participante.cpf),
+              cargo: ep.participante.cargo,
               matricula: ep.participante.matricula,
               valorDiaria: valorDiaria ? `DIÁRIA R$ ${valorDiaria.toFixed(2).replace(".", ",")}` : "",
+              tipo_diaria: tipoDiaria,
+              destino: destino,
+              valor_viagem_id: valorViagemId,
               source: "valor_diarias",
             };
           }),
         };
       });
   
-      
       return resultado;
     } catch (error) {
       console.error('Erro ao buscar valores das diárias:', error);
@@ -227,6 +242,7 @@ export class EventoParticipantesService {
       );
     }
   }
+  
   
   // Função auxiliar para formatar datas
   formatDate(date: Date): string {

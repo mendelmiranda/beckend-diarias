@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { EventoParticipantesService } from './evento_participantes.service';
 import { CreateEventoParticipanteDto } from './dto/create-evento_participante.dto';
@@ -50,7 +51,7 @@ export class EventoParticipantesController {
 
   //continuar
   @Get('/valor/diarias/solicitacao/:id')
-  async findValoresDiariasPorSolicitacao(@Param('id') id: number) {
+  async findValoresDiariasPorSolicitacao(@Param('id', ParseIntPipe) id: number) {
     const dados = await this.eventoParticipantesService.findValoresDiarias(id);    
     return dados;
   }

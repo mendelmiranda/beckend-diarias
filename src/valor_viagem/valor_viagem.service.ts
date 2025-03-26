@@ -46,14 +46,28 @@ export class ValorViagemService {
       }
     });
   }
-
-  update(id: number, updateValorViagemDto: UpdateValorViagemDto) {
-    return this.prisma.valor_viagem.update({
-      where: { id },
-      data: {
-        valor_individual: updateValorViagemDto.valor_individual
-      },
-    })
+  async update(id: number, updateValorViagemDto: UpdateValorViagemDto) {
+    
+    try {
+      // Converter a string para número
+      const valorIndividual = parseFloat(updateValorViagemDto.valor_individual.toString());
+      
+      // Verificar se a conversão resultou em um número válido
+      if (isNaN(valorIndividual)) {
+        throw new Error('Valor individual inválido: não é um número válido');
+      }
+      
+      const result = await this.prisma.valor_viagem.update({
+        where: { id },
+        data: {
+          valor_individual: valorIndividual // Agora usando o valor numérico
+        },
+      });
+      return result;
+    } catch (error) {
+      console.error('Erro detalhado no Prisma:', error);
+      throw error;
+    }
   }
 
   updateCotacao(id: number, cotacao: string) {
