@@ -1,9 +1,16 @@
-import { evento, valor_viagem } from "@prisma/client";
+import { aeroporto, cidade, evento, valor_viagem } from "@prisma/client";
 
 export class CreateViagemDto {
 
+  /* origem?: aeroporto;
+  destino?: aeroporto; */
+
   origem_id?: number;
   destino_id?: number;
+
+
+  /* cidade_origem?: cidade;
+  cidade_destino?: cidade; */
 
   cidade_origem_id: number;
   cidade_destino_id: number;

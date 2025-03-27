@@ -184,6 +184,8 @@ export class EventoParticipantesService {
           titulo: true,
           inicio: true, // Incluído para calcular o total de dias
           fim: true,    // Incluído para calcular o total de dias
+          valor_evento: true,
+          valor_total_inscricao: true,
           evento_participantes: {
             include: {
               participante: {
@@ -210,6 +212,8 @@ export class EventoParticipantesService {
         return {
           titulo: `${evento.titulo} DE ${this.formatDate(evento.inicio)} ATÉ ${this.formatDate(evento.fim)}`,
           totalDias: totalDias, // Adiciona o total de dias ao JSON
+          valor_evento: evento.valor_evento,
+          valor_total_inscricao: evento.valor_total_inscricao,
           participantes: evento.evento_participantes.map((ep) => {
             const valorDiaria = ep.participante.valor_viagem?.[0]?.valor_individual || "";
             const tipoDiaria = ep.participante.valor_viagem?.[0]?.tipo || "";

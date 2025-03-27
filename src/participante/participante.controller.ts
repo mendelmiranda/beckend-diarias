@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Post,
   Put
 } from '@nestjs/common';
@@ -233,5 +234,10 @@ export class ParticipanteController {
   findParticipantesEventoPorNome(@Param('nome') nome: string) {
     return this.anexoSolicitacao.pesquisarServidoresAtivosPeloNome(nome);
   }   
+
+  @Get('agrupar/daofi/solicitacao/:solicitacaoId')
+  async agruparParticipantes(@Param('solicitacaoId', ParseIntPipe) solicitacaoId: number) {
+    return this.participanteService.listarEventosComTodasViagens(solicitacaoId);
+  }
 
 }

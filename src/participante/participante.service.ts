@@ -156,6 +156,111 @@ export class ParticipanteService {
     return relevantFields.every(field => dto[field] === existeParticipante[field]);
   }
 
+  async listarEventosComTodasViagens(solicitacaoId: number) {
+    // Buscar todos os eventos da solicitação
+    const eventos = await this.prisma.evento.findMany({
+      where: {
+        solicitacao_id: solicitacaoId,
+      },
+      include: {
+        // Incluir participantes do evento
+        evento_participantes: {
+          include: {
+            participante: true,
+            // Incluir todas as viagens associadas a cada participante
+            viagem_participantes: {
+              include: {
+                viagem: {
+                  include: {
+                    origem: true,
+                    destino: true,
+                    cidade_origem: true,
+                    cidade_destino: true,
+                  }
+                }
+              }
+            }
+          },
+        },
+        // Incluir todas as viagens associadas ao evento
+        viagem_evento: {
+          include: {
+            viagem: {
+              include: {
+                origem: true,
+                destino: true,
+                cidade_origem: true,
+                cidade_destino: true,
+                // Incluir a relação com participantes dessa viagem
+                viagem_participantes: {
+                  include: {
+                    evento_participantes: {
+                      include: {
+                        participante: true,
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+        },
+      },
+    });
+  
+    // Formatar os eventos com todas as viagens e participantes
+    return eventos.map(evento => {
+      // Obter todas as viagens associadas ao evento
+      const viagens = evento.viagem_evento.map(ve => ve.viagem);
+  
+      // Mapear participantes do evento
+      const participantesDoEvento = evento.evento_participantes.map(ep => ({
+        id: ep.participante.id,
+        nome: ep.participante.nome,
+        cpf: ep.participante.cpf,
+        tipo: ep.participante.tipo,
+        matricula: ep.participante.matricula,
+        // Associar as viagens específicas deste participante
+        viagens: ep.viagem_participantes.map(vp => ({
+          id: vp.viagem.id,
+          data_ida: vp.viagem.data_ida,
+          data_volta: vp.viagem.data_volta,
+          origem: vp.viagem.origem_id && vp.viagem.origem ? vp.viagem.origem.cidade : 
+                  vp.viagem.cidade_origem_id && vp.viagem.cidade_origem ? vp.viagem.cidade_origem.descricao : 'Não especificado',
+          destino: vp.viagem.destino_id && vp.viagem.destino ? vp.viagem.destino.cidade : 
+                   vp.viagem.cidade_destino_id && vp.viagem.cidade_destino ? vp.viagem.cidade_destino.descricao : 'Não especificado',
+          valor_passagem: vp.viagem.valor_passagem,
+        }))
+      }));
+  
+      return {
+        id: evento.id,
+        titulo: evento.titulo,
+        inicio: evento.inicio,
+        fim: evento.fim,
+        participantes: participantesDoEvento,
+        // Incluir todas as viagens do evento
+        viagens: viagens.map(viagem => ({
+          id: viagem.id,
+          data_ida: viagem.data_ida,
+          data_volta: viagem.data_volta,
+          origem: viagem.origem_id && viagem.origem ? viagem.origem.cidade : 
+                  viagem.cidade_origem_id && viagem.cidade_origem ? viagem.cidade_origem.descricao : 'Não especificado',
+          destino: viagem.destino_id && viagem.destino ? viagem.destino.cidade : 
+                   viagem.cidade_destino_id && viagem.cidade_destino ? viagem.cidade_destino.descricao : 'Não especificado',
+          valor_passagem: viagem.valor_passagem,
+          participantes: viagem.viagem_participantes.map(vp => ({
+            id: vp.evento_participantes.participante.id,
+            nome: vp.evento_participantes.participante.nome,
+            cpf: vp.evento_participantes.participante.cpf,
+            tipo: vp.evento_participantes.participante.tipo,
+            matricula: vp.evento_participantes.participante.matricula,
+          }))
+        }))
+      };
+    });
+  }
+
 
 
 }
