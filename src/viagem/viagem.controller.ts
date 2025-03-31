@@ -88,4 +88,10 @@ export class ViagemController {
     return this.viagemService.getParticipantesByEventoOtimizado(eventoId);
   }
 
+
+  @Get('/total/passagem/solicitacao/:id')
+  async total(@Param('id', ParseIntPipe) eventoId: number) {
+    return this.viagemService.getTotalPassagemPorSolicitacao(eventoId);
+  }
+
 }

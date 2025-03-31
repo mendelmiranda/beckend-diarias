@@ -15,7 +15,7 @@ export class EventoParticipantesService {
     const prop = 'evento';
     delete dto[prop];
 
-    try{
+    try {
       return this.prisma.evento_participantes.create({
         data: {
           evento_id: dto.evento_id,
@@ -23,12 +23,12 @@ export class EventoParticipantesService {
         },
       });
 
-    }catch(error){
+    } catch (error) {
       console.log('Erro ao criar evento_participante', error);
       throw new HttpException('Erro ao criar evento_participante', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    
+
   }
 
   findAll() {
@@ -186,6 +186,7 @@ export class EventoParticipantesService {
           fim: true,    // Incluído para calcular o total de dias
           valor_evento: true,
           valor_total_inscricao: true,
+          observacao_valor: true,
           evento_participantes: {
             include: {
               participante: {
@@ -203,17 +204,18 @@ export class EventoParticipantesService {
           },
         },
       });
-  
+
       // Processar os eventos para formatar a saída conforme o JSON desejado
       const resultado = eventos.map((evento) => {
         // Calcular o total de dias do evento
         const totalDias = differenceInDays(new Date(evento.fim), new Date(evento.inicio)) + 1;
-  
+
         return {
           titulo: `${evento.titulo} DE ${this.formatDate(evento.inicio)} ATÉ ${this.formatDate(evento.fim)}`,
           totalDias: totalDias, // Adiciona o total de dias ao JSON
           valor_evento: evento.valor_evento,
           valor_total_inscricao: evento.valor_total_inscricao,
+          observacao: evento.observacao_valor,
           participantes: evento.evento_participantes.map((ep) => {
             const valorDiaria = ep.participante.valor_viagem?.[0]?.valor_individual || "";
             const tipoDiaria = ep.participante.valor_viagem?.[0]?.tipo || "";
@@ -236,7 +238,7 @@ export class EventoParticipantesService {
           }),
         };
       });
-  
+
       return resultado;
     } catch (error) {
       console.error('Erro ao buscar valores das diárias:', error);
@@ -246,8 +248,8 @@ export class EventoParticipantesService {
       );
     }
   }
-  
-  
+
+
   // Função auxiliar para formatar datas
   formatDate(date: Date): string {
     const day = String(date.getDate()).padStart(2, '0');

@@ -837,6 +837,22 @@ async calculaDiaria(idViagem: number, participanteId: number, eventoId: number, 
       };
     }
 
+    async getTotalPassagemPorSolicitacao(solicitacaoId: number): Promise<number> {
+      const result = await this.prisma.valor_viagem.aggregate({
+        _sum: {
+          valor_individual: true,
+        },
+        where: {
+          tipo: 'PASSAGEM',
+          viagem: {
+            solicitacao_id: solicitacaoId,
+          },
+        },
+      });
+  
+      return result._sum.valor_individual ?? 0;
+    }
+
 
 }
   
