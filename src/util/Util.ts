@@ -106,6 +106,13 @@ function formataMascaraCpf(cpf: string){
         .replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
 }
 
+export function formatCurrency(value: number): string {
+    return value.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    });
+  }
+
 
 export const Util = {
     dataAtual, convertToDate,totalDeDias, formataDataAmericana, formataDataAmericanaBanco, 
