@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { CreateEventoDto } from './dto/create-evento.dto';
 import { UpdateEventoDto } from './dto/update-evento.dto';
+import { Prisma } from '@prisma/client';
+import { Evento } from './entities/evento.entity';
 
 @Injectable()
 export class EventoService {
@@ -184,6 +186,86 @@ export class EventoService {
   
     return resultados;
   };
+
+
+  async verificarDuplicado(params: {
+    titulo: string;
+    inicio: Date;
+    fim: Date;
+    tipo_evento_id: number;
+    cidade_id?: number;
+    exterior: string;
+    pais_id?: number;
+    local_exterior?: string;
+    id_atual?: number;
+    solicitacao_id: number;
+  }): Promise<{ duplicado: boolean; evento?: Evento; mensagem?: string }> {
+    const {
+      titulo,
+      inicio,
+      fim,
+      tipo_evento_id,
+      cidade_id,
+      exterior,
+      pais_id,
+      local_exterior,
+      id_atual,
+      solicitacao_id,
+    } = params;
+
+    const whereClause: Prisma.eventoWhereInput = {
+      titulo,
+      inicio: {
+        gte: new Date(new Date(inicio).setHours(0, 0, 0, 0)),
+        lte: new Date(new Date(inicio).setHours(23, 59, 59, 999)),
+      },
+      fim: {
+        gte: new Date(new Date(fim).setHours(0, 0, 0, 0)),
+        lte: new Date(new Date(fim).setHours(23, 59, 59, 999)),
+      },
+      tipo_evento_id,
+    };
+
+    // Adicionar verificação de localização
+    if (exterior === 'SIM') {
+      whereClause.exterior = 'SIM';
+      whereClause.pais_id = pais_id;
+      
+      if (local_exterior) {
+        whereClause.local_exterior = local_exterior;
+      }
+    } else {
+      whereClause.exterior = 'NAO';
+      whereClause.cidade_id = cidade_id;
+    }
+
+    // Excluir o próprio evento da verificação (para updates)
+    if (id_atual && id_atual > 0) {
+      whereClause.id = {
+        not: id_atual,
+      };
+    }
+
+    const eventosExistentes = await this.prisma.evento.findMany({
+      where: whereClause,
+      include: {
+        tipo_evento: true,
+        cidade: true,
+        pais: true,
+      },
+      take: 1,
+    });
+
+    if (eventosExistentes.length > 0) {
+      return {
+        duplicado: true,
+        evento: eventosExistentes[0],
+        mensagem: 'Já existe um evento com as mesmas características cadastrado.',
+      };
+    }
+
+    return { duplicado: false };
+  }
 
 
 }
