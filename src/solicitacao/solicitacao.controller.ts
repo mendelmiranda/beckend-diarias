@@ -71,6 +71,11 @@ export class SolicitacaoController {
     return this.solicitacaoService.pesquisarResponsaveis();
   }
 
+  @Get('/andamento/editaveis')
+  listarSolicitacoesEditaveis() {
+    return this.solicitacaoService.getSolicitacoesEditaveis();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.solicitacaoService.findOne(+id);

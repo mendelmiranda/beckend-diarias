@@ -709,6 +709,32 @@ export class SolicitacaoService {
     });
   }
 
+  async getSolicitacoesEditaveis() {
+    return this.prisma.solicitacao.findMany({
+      where: {
+        status: 'NAO',
+        tramite: {
+          some: {
+            log_tramite: {
+              some: {
+                status: 'APROVADO'
+              }
+            }
+          }
+        }
+      },
+      include: {
+        tramite: {
+          include: {
+            log_tramite: true,
+          },
+        }
+      }
+    })
+  }
+
+
+
   ///testandooooo
 
   /* async getEventosParticipante(solicitacaoId: number, participanteId: number): Promise<DiariasResponseDto> {
