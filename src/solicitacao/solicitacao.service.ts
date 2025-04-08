@@ -1298,6 +1298,70 @@ export class SolicitacaoService {
     }
 
 
+    /**
+     * Método para buscar participantes sem viagem em uma solicitação específica no resumo.
+     * 
+     * @param solicitacaoId - ID da solicitação a ser pesquisada.
+     * @returns Um objeto contendo detalhes dos participantes sem viagem.
+     */
+    async findParticipantesSemViagem(solicitacaoId: number) {
+      // Verificar se a solicitação existe
+      const solicitacao = await this.prisma.solicitacao.findUnique({
+        where: { id: solicitacaoId },
+      });
+  
+      if (!solicitacao) {
+        throw new NotFoundException(`Solicitação com ID ${solicitacaoId} não encontrada`);
+      }
+  
+      // Buscar todos os participantes de eventos desta solicitação
+      const eventos = await this.prisma.evento.findMany({
+        where: { solicitacao_id: solicitacaoId },
+        include: {
+          evento_participantes: {
+            include: {
+              participante: true,
+              viagem_participantes: true,
+            },
+          },
+        },
+      });
+  
+      // Estrutura para armazenar o resultado
+      const resultado = [];
+  
+      // Para cada evento, verificar participantes sem viagem
+      for (const evento of eventos) {
+        const participantesSemViagem = evento.evento_participantes
+          .filter(ep => ep.viagem_participantes.length === 0)
+          .map(ep => ({
+            participante_id: ep.participante_id,
+            nome: ep.participante.nome,
+            cpf: ep.participante.cpf,
+            evento_id: evento.id,
+            /* evento_titulo: evento.titulo, */
+          }));
+  
+        if (participantesSemViagem.length > 0) {
+          resultado.push({
+            evento_id: evento.id,
+            evento_titulo: evento.titulo,
+            participantes_sem_viagem: participantesSemViagem,
+          });
+        }
+      }
+  
+      return {
+        solicitacao_id: solicitacaoId,
+        total_participantes_sem_viagem: resultado.reduce(
+          (acc, evento) => acc + evento.participantes_sem_viagem.length, 
+          0
+        ),
+        eventos: resultado,
+      };
+    }
+
+
 
 }
 

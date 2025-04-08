@@ -166,4 +166,10 @@ export class SolicitacaoController {
     }
   }
 
+
+  @Get('participantes/viagem/solicitacao/:id')
+  findVerificaParticipantesComViagemNoResumo(@Param('id') id: string) {
+    return this.solicitacaoService.findParticipantesSemViagem(+id);
+  }
+
 }
