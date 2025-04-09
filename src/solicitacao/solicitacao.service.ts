@@ -1337,6 +1337,7 @@ export class SolicitacaoService {
           .map(ep => ({
             participante_id: ep.participante_id,
             nome: ep.participante.nome,
+            matricula: ep.participante.matricula,
             cpf: ep.participante.cpf,
             evento_id: evento.id,
             /* evento_titulo: evento.titulo, */

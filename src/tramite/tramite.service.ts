@@ -609,19 +609,16 @@ export class TramiteService {
   }
 
   async listarContador(status: string, cod_lotacao_destino: number) {
-    let statusNome;
-    if (status === 'VALORES_ESCOLA') {
-      statusNome = 'CONDUTOR_INFO';
-    }
 
-    const statusQuery = status === 'VALORES_ESCOLA' ? ['VALORES_ESCOLA', 'CONDUTOR_INFO'] : [status];
-
+    // Dividir a string de status em um array, considerando que os valores estão separados por vírgula
+    const statusQuery = status.split(',').map(s => s.trim());
+  
     const tramites = await this.prisma.tramite.findMany({
       where: {
         AND: [
           {
             status: {
-              in: statusQuery, // Usa a operação 'in' para buscar por múltiplos status
+              in: statusQuery, // Agora 'in' vai funcionar corretamente com o array de status
             },
           },
           {
@@ -634,6 +631,12 @@ export class TramiteService {
           include: {
             eventos: {
               include: {
+                cidade: {
+                  include: {
+                    estado: true,
+                  },
+                },
+                
                 evento_participantes: {
                   include: {
                     participante: {
@@ -649,16 +652,16 @@ export class TramiteService {
         },
       },
     });
-
+  
     const tramitesFormatados = tramites.map(tramite => {
       return {
         ...tramite,
         datareg: tramite.solicitacao.datareg ? DateTime.fromJSDate(tramite.solicitacao.datareg).toFormat('dd/MM/yyyy') : null,
       };
     });
-
+  
     const contador = tramitesFormatados.length;
-
+  
     return { tramites: tramitesFormatados, contador };
   }
 
