@@ -35,7 +35,7 @@ export class PdfServiceGenerator {
 
   async generatePdf(docDefinition): Promise<Buffer> {
     const pdfDocGenerator = this.printer.createPdfKitDocument(docDefinition);
-    const chunks: Buffer[] = [];
+    const chunks: Uint8Array[] = [];
 
     return new Promise((resolve, reject) => {
       pdfDocGenerator.on('data', (chunk) => chunks.push(chunk));
@@ -47,4 +47,9 @@ export class PdfServiceGenerator {
       pdfDocGenerator.end();
     });
   }
+
+  
+
+
+
 }

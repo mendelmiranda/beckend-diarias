@@ -144,7 +144,7 @@ export class PdfController {
               body: [
                 [
                   {
-                    text: 'INFORMAÇÕES RELIZADAS: ESCOLA DE CONTAS',
+                    text: 'VALORES DO EVENTO',
                     style: 'justificativa',
                   }
                 ],
@@ -241,7 +241,7 @@ export class PdfController {
             let valorDiaria = 0;
             let diariasDesc = "";
   
-            vp.viagem.valor_viagem?.filter((a) => a.tipo === "DIARIA").forEach((diarias) => {
+            vp.viagem.valor_viagem?.filter((a) =>  a.participante_id === ep.participante.id && a.tipo === "DIARIA").forEach((diarias) => {
                 valorDiaria += diarias.valor_individual ?? 0;
   
                 if (diarias.justificativa !== undefined && diarias.justificativa?.length > 0) {
