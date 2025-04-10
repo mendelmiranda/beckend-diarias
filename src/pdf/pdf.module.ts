@@ -6,9 +6,10 @@ import { SolicitacaoService } from 'src/solicitacao/solicitacao.service';
 import { PrismaService } from 'prisma/prisma.service';
 import { LogSistemaService } from 'src/log_sistema/log_sistema.service';
 import { SolicitacaoCondutoresService } from 'src/solicitacao_condutores/solicitacao_condutores.service';
+import { AprovacaoDefinitivaDaofService } from 'src/aprovacao_definitiva_daof/aprovacao_definitiva_daof.service';
 
 @Module({
   controllers: [PdfController],
-  providers: [PdfService, PdfServiceGenerator, SolicitacaoService, PrismaService, LogSistemaService, SolicitacaoCondutoresService]
+  providers: [PdfService, PdfServiceGenerator, SolicitacaoService, PrismaService, LogSistemaService, SolicitacaoCondutoresService, AprovacaoDefinitivaDaofService]
 })
 export class PdfModule {}

@@ -1,6 +1,7 @@
 // pdf.service.ts
 
 import { Injectable } from '@nestjs/common';
+import { AprovacaoDefinitivaDaofService } from 'src/aprovacao_definitiva_daof/aprovacao_definitiva_daof.service';
 const PdfPrinter = require('pdfmake');
 import { SolicitacaoService } from 'src/solicitacao/solicitacao.service';
 import { SolicitacaoCondutoresService } from 'src/solicitacao_condutores/solicitacao_condutores.service';
@@ -8,7 +9,9 @@ import { SolicitacaoCondutoresService } from 'src/solicitacao_condutores/solicit
 @Injectable()
 export class PdfServiceGenerator {
   
-    constructor( private solicitacaoService: SolicitacaoService, private readonly solicitacaoCondutoresService: SolicitacaoCondutoresService) {}
+    constructor( private solicitacaoService: SolicitacaoService, 
+      private readonly solicitacaoCondutoresService: SolicitacaoCondutoresService, 
+    private readonly aprovacaoDefinitivaDaofiService: AprovacaoDefinitivaDaofService) {}
 
     async pesquisaSolicitacaoPorId(id: number) {
         return await this.solicitacaoService.detalhesDaSolicitacao(id).catch((e) => {
@@ -20,6 +23,12 @@ export class PdfServiceGenerator {
 
     getCondutoresDaSolicitacao( id: number) {
       return this.solicitacaoCondutoresService.findAll(id);
+    }
+
+    getAssinaturaDoDocumentoDAOF(solicitacaoId: number){
+
+        return this.aprovacaoDefinitivaDaofiService.findAssinaturaDiretorDAOF(solicitacaoId);
+
     }
 
 

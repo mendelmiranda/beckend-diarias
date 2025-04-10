@@ -2,7 +2,7 @@
 import { Controller, Get, Param, Res } from '@nestjs/common';
 
 import { Response } from 'express';
-import { formataDataCurta, formataValorDiaria, Util } from 'src/util/Util';
+import { formataDataCurta, Util } from 'src/util/Util';
 import { PdfServiceGenerator } from './pdf-service';
 
 
@@ -148,8 +148,8 @@ export class PdfController {
                     style: 'justificativa',
                   }
                 ],
-                ['Valor unitário: ' + formataValorDiaria(data.valor_total_inscricao!, "NACIONAL") +
-                  '\n' + 'Valor total: ' + formataValorDiaria(data.valor_evento!, "NACIONAL") +
+                ['Valor unitário: ' + Util.formataValorDiaria(data.valor_total_inscricao!, "NACIONAL") +
+                  '\n' + 'Valor total: ' + Util.formataValorDiaria(data.valor_evento!, "NACIONAL") +
                   '\n' + "Observação: " + data.observacao_valor]
               ]
             }
@@ -245,9 +245,9 @@ export class PdfController {
                 valorDiaria += diarias.valor_individual ?? 0;
   
                 if (diarias.justificativa !== undefined && diarias.justificativa?.length > 0) {
-                  diariasDesc += formataValorDiaria(diarias.valor_individual ?? 0, "NACIONAL") + " (Justificativa: " + diarias.justificativa +")\n";
+                  diariasDesc += Util.formataValorDiaria(diarias.valor_individual ?? 0, "NACIONAL") + " (Justificativa: " + diarias.justificativa +")\n";
                 } else {
-                  diariasDesc += formataValorDiaria(diarias.valor_individual ?? 0, "NACIONAL") + "\n";
+                  diariasDesc += Util.formataValorDiaria(diarias.valor_individual ?? 0, "NACIONAL") + "\n";
                 }
               });
   
@@ -456,7 +456,7 @@ export class PdfController {
                         + "Validade CNH: " + formataDataCurta(condutor.condutores?.validade_cnh as Date) + " Categoria: " + condutor.condutores?.categoria_cnh + '\n'
                         + "Celular: " + condutor.condutores?.celular + '\n' + "Endereço: " + condutor.condutores?.endereco + '\n' + "Agencia: " + condutor.condutores?.agencia + '\n' 
                         + "CC: " + condutor.condutores?.conta + " Banco: " + condutor.condutores?.banco + "\n \n" 
-                        + "Diária Condutor: " + formataValorDiaria(valorDiaria, "NACIONAL") + "\n"
+                        + "Diária Condutor: " + Util.formataValorDiaria(valorDiaria, "NACIONAL") + "\n"
                         + "Veículo: " + condutor.veiculo + "\n\n"
                     ] 
       
@@ -477,10 +477,54 @@ export class PdfController {
       text: "\n",
     });
 
+    const addAssinaturaDAOFI = async () => {
+      try {
+        const ass = await this.pegarAssinaturaDoDocumentoDAOF(sol.id!);
+        if (!ass?.assinatura_daof) {
+          return 'Aguardando assinatura do documento.';
+        }
+        return 'Assinado por: ' + ass.assinatura_daof.diretor + ' em ' + Util.formataDataNovas(ass.datareg) + ' as '+ass.hora;
+      } catch (error) {
+        console.error('Erro ao buscar assinatura:', error);
+        return 'Não foi possível carregar a assinatura.';
+      }
+    };
     
+    const assinaturaDAOFI = await addAssinaturaDAOFI();
 
-    
-    
+    try{
+      content.push(
+        {
+          style: 'justificativa',
+          table: {
+            widths: ['*'],
+            body: [
+              ['DISPONIBILIDADE: DIRETORIA DA AREA ORCAMENTÁRIA FINANCEIRA/DAOFI'],
+              [sol.empenho_daofi?.map(a => {
+                return (
+  
+                  ['Data: ' + Util.formataDataNovas(a.datareg), 
+                  a.tipo === "D" ? "Diárias 339014" : a.tipo === "P" ? "Passagens 339033" : a.tipo === "I" ? "Inscrição/Curso 339039"  :
+                  a.tipo === "F" ? "\nPessoa Física 339036" : '',
+                  'Saldo Inicial: ' + Util.formataValorDiaria(a.saldo_inicial, 'NACIONAL') +
+                  '\nValor Reservado: ' + Util.formataValorDiaria(a.valor_reservado, 'NACIONAL') + 
+                  '\nValor Pós Reserva: ' + Util.formataValorDiaria(a.valor_pos_reserva ?? 0, 'NACIONAL') + '\n',
+                  a.acao === '2072' ? 'AÇÂO 2072 - Planejamento Estratégico 2024 a 2028\n\n' : '' +
+                  a.acao === '2446' ? 'AÇÃO 2446 - MANUTENÇÃO E FUNCIONAMENTO DO TCE/AP E DO PRÉDIO ANEXO\n\n' : '' +
+                  a.acao === '2445' ? 'AÇÃO 2445 - TREINAMENTO E CAPACITAÇÃO DE RECURSOS HUMANOS\n\n' : '' +
+                  '\nObservação: ' + a.observacao]
+                )
+            })],
+            
+              [''+assinaturaDAOFI]
+            ]
+          }
+        },
+      )
+    }catch(e) {
+      console.log(e);
+      
+    }
     
 
     const docDefinition = {
@@ -520,6 +564,12 @@ export class PdfController {
       res.status(500).send('Error generating PDF');
     }
   }
+
+
+  pegarAssinaturaDoDocumentoDAOF = async (solicitacaoId: number) => {
+    return await this.pdfService
+      .getAssinaturaDoDocumentoDAOF(solicitacaoId);
+  };
 
 
   exibeCustos = (index: number): string => {

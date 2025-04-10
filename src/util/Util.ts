@@ -1,7 +1,7 @@
 //import moment from 'moment';
 
 const moment = require('moment');
-
+import Moment from 'moment';
 
 
 const calcularDiferencaDias = (dt1: Date, dt2: Date): number => {    
@@ -93,7 +93,7 @@ export function formataDataCurta(data: Date) {
     return formattedPublishDate;
 }
 
-export const formataValorDiaria = (valor: number, destino: string) => {
+const formataValorDiaria = (valor: number, destino: string) => {
     if (destino === "INTERNACIONAL") {
         return Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(valor);
     }
@@ -113,10 +113,34 @@ export function formatCurrency(value: number): string {
     });
   }
 
+  const formataDataDate = (valor?: Date) => {
+    if(valor === null)
+        return null;
+
+    if (typeof valor === 'number')
+        valor = new Date(valor);
+
+    return Moment(valor).format('DD/MM/yyyy');
+}  
+
+const formataDataNovas = (valor: Date | number | null | undefined) => {
+    if (valor === null)
+        return null;
+
+    if (typeof valor === 'number')
+        valor = new Date(valor);
+
+    
+    moment.locale('pt-br');
+    
+    return moment(valor).format('DD/MM/yyyy');
+}
+
+
 
 export const Util = {
     dataAtual, convertToDate,totalDeDias, formataDataAmericana, formataDataAmericanaBanco, 
     convertToDateDB, subtractDays, formataDataAmericanaComParametro, horaAtual, calcularDiferencaDias,
-    formataDataCurtaComHora, formataMascaraCpf
+    formataDataCurtaComHora, formataMascaraCpf, formataDataDate, formataValorDiaria, formataDataNovas
 }
 
