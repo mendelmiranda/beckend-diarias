@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateEncaminharSolicitacaoDto } from './dto/create-encaminhar_solicitacao.dto';
 import { UpdateEncaminharSolicitacaoDto } from './dto/update-encaminhar_solicitacao.dto';
 import { PrismaService } from 'prisma/prisma.service';
+import { encaminhar_solicitacao } from '@prisma/client';
 
 @Injectable()
 export class EncaminharSolicitacaoService {
@@ -31,7 +32,32 @@ export class EncaminharSolicitacaoService {
     });
   }
 
-  async findAvisoDoTramite(codLotacao: number) {
+
+  async verificarSolicitacoesPorSetor(setorId: number): Promise<encaminhar_solicitacao[]> {
+    try {
+      const solicitacoes = await this.prisma.encaminhar_solicitacao.findMany({
+        where: {
+          cod_lotacao_destino: setorId,
+          // Outras condições que você possa ter
+        },
+        include: {
+          solicitacao: true, // Se você precisa incluir relações
+        },
+      });
+      
+      // Sempre retorne um array, mesmo que vazio
+      return solicitacoes || [];
+    } catch (error) {
+      console.log(`Erro ao buscar solicitações para o setor ${setorId}`, error.stack);
+      // Ainda retorne um array vazio em caso de erro, ou rethrow se preferir
+      return [];
+      // Ou relance o erro para ser tratado pelo tratador global
+      // throw new InternalServerErrorException('Erro ao buscar solicitações');
+    }
+  }
+  
+
+  /* async findAvisoDoTramite(codLotacao: number) {
     let resultado;
     try {
       if (Number.isNaN(codLotacao)) {
@@ -49,14 +75,34 @@ export class EncaminharSolicitacaoService {
       // console.error("Erro ao buscar avisos do trâmite:", error);
       //throw error;  // Ou manipule o erro como preferir
     }
-  }
+  } */
 
 
   update(id: number, updateEncaminharSolicitacaoDto: UpdateEncaminharSolicitacaoDto) {
-    return this.prisma.encaminhar_solicitacao.update({
-      where: { id },
-      data: updateEncaminharSolicitacaoDto,
-    });
+    try{
+      return this.prisma.encaminhar_solicitacao.update({
+        where: { id },
+        data: updateEncaminharSolicitacaoDto,
+      });
+    }catch(e){
+      console.error("Erro ao atualizar o trâmite:", e);
+    }
+  }
+  atualizarLidoTodasDoSetor(setorId: number) {
+    try {
+      return this.prisma.encaminhar_solicitacao.updateMany({
+        where: { 
+          cod_lotacao_destino: setorId,
+          lido: { not: 'S' }
+        },
+        data: {
+          lido: 'S',
+        },
+      });
+    } catch (e) {
+      console.error("Erro ao atualizar os trâmites:", e);
+      throw e;
+    }
   }
 
   remove(id: number) {
