@@ -94,4 +94,14 @@ export class ViagemController {
     return this.viagemService.getTotalPassagemPorSolicitacao(eventoId);
   }
 
+  @Get('solicitacao/:id/tem-passagem/eficiente')
+  async verificarTemPassagemEficiente(@Param('id', ParseIntPipe) solicitacaoId: number) {
+    const temPassagem = await this.viagemService.verificarPassagemEficiente(solicitacaoId);
+    
+    return {
+      solicitacaoId,
+      temPassagem
+    };
+  }
+
 }

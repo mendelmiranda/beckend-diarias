@@ -854,6 +854,102 @@ async calculaDiaria(idViagem: number, participanteId: number, eventoId: number, 
     }
 
 
+    /**
+   * Verifica se existe pelo menos um valor com o tipo PASSAGEM na tabela valor_viagem
+   * para uma determinada solicitação
+   * @param solicitacaoId ID da solicitação
+   * @returns Promise<boolean> true se existir pelo menos uma passagem, false caso contrário
+   */
+  async existeValorPassagem(solicitacaoId: number): Promise<boolean> {
+    // Primeiro, encontre todas as viagens relacionadas à solicitação
+    const viagens = await this.prisma.viagem.findMany({
+      where: {
+        solicitacao_id: solicitacaoId
+      },
+      select: {
+        id: true
+      }
+    });
+
+    // Se não houver viagens, não pode haver passagens
+    if (viagens.length === 0) {
+      return false;
+    }
+
+    // Extrair os IDs das viagens
+    const viagemIds = viagens.map(viagem => viagem.id);
+
+    // Verificar se existe pelo menos um registro em valor_viagem com tipo PASSAGEM
+    // e associado a uma das viagens encontradas
+    const passagem = await this.prisma.valor_viagem.findFirst({
+      where: {
+        tipo: 'PASSAGEM',
+        viagem_id: {
+          in: viagemIds
+        }
+      }
+    });
+
+    // Retorna true se encontrou pelo menos um registro, false caso contrário
+    return !!passagem;
+  }
+  
+  /**
+   * Método usando count para verificar a existência de passagens (mais eficiente para grandes volumes)
+   */
+  async contarPassagens(solicitacaoId: number): Promise<boolean> {
+    // Primeiro, encontre todas as viagens relacionadas à solicitação
+    const viagens = await this.prisma.viagem.findMany({
+      where: {
+        solicitacao_id: solicitacaoId
+      },
+      select: {
+        id: true
+      }
+    });
+
+    // Se não houver viagens, não pode haver passagens
+    if (viagens.length === 0) {
+      return false;
+    }
+
+    // Extrair os IDs das viagens
+    const viagemIds = viagens.map(viagem => viagem.id);
+    
+    // Conta quantos registros satisfazem a condição
+    const count = await this.prisma.valor_viagem.count({
+      where: {
+        tipo: 'PASSAGEM',
+        viagem_id: {
+          in: viagemIds
+        }
+      }
+    });
+    
+    // Retorna true se existir pelo menos um registro
+    return count > 0;
+  }
+
+  /**
+   * Método mais eficiente que faz tudo em uma única consulta
+   */
+  async verificarPassagemEficiente(solicitacaoId: number): Promise<boolean> {
+    // Esta consulta conta quantas viagens relacionadas à solicitação têm 
+    // pelo menos um valor_viagem do tipo PASSAGEM
+    const resultado = await this.prisma.$queryRaw`
+      SELECT COUNT(*) > 0 AS tem_passagem
+      FROM viagem v
+      JOIN valor_viagem vv ON v.id = vv.viagem_id
+      WHERE v.solicitacao_id = ${solicitacaoId}
+      AND vv.tipo = 'PASSAGEM'
+      LIMIT 1
+    `;
+    
+    // O resultado será um array com um objeto { tem_passagem: boolean }
+    return resultado[0]?.tem_passagem || false;
+  }
+
+
 }
   
 
