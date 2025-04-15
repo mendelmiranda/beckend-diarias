@@ -1,9 +1,26 @@
-// builders/sections/eventos.builder.ts
 import { Injectable } from '@nestjs/common';
+import { fontSize } from 'pdfkit';
 import { formataDataCurta, Util } from 'src/util/Util';
 
 interface EventosBuilderData {
   eventos: any[];
+}
+
+// Interface para auxiliar o agrupamento de viagens
+interface ViagemKey {
+  origem: string;
+  destino: string;
+  dataIda: string;
+  dataVolta: string;
+  viagemDiferente: string;
+  dataIdaDiferente?: string;
+  dataVoltaDiferente?: string;
+}
+
+// Interface para viagens agrupadas
+interface AgrupamentoViagem {
+  viagem: any;
+  participantes: any[];
 }
 
 @Injectable()
@@ -20,21 +37,23 @@ export class EventosBuilder {
       content.push({
         text: "\n\n" + evento.titulo.toUpperCase(),
         style: "texto",
+        
       });
 
       // Detalhes do evento
       content.push(
         {
           text: evento.tipo_evento?.descricao,
-          style: "textoNormal",
+          style: "subtitulos",
+          
         },
         {
           text: "De " + formataDataCurta(evento.inicio as Date) + " a " + formataDataCurta(evento.fim as Date) + "\n\n",
           style: "textoNormal",
         },
         {
-          text: evento.informacoes + "\n\n",
-          style: "textoNormal",
+          text: evento.informacoes,
+          fontSize: 11,
         }
       );
 
@@ -53,9 +72,9 @@ export class EventosBuilder {
         }
       
         content.push({
-          text: "Local do Evento: ",
+          text: "Local do Evento: "+text,
           style: "textoNormal",
-        }, { text });
+        });
       });
 
       // Valores do evento
@@ -95,11 +114,329 @@ export class EventosBuilder {
           style: "texto",
         });
 
-        // Renderizar participantes
-        content.push(...this.renderParticipantes(evento.evento_participantes));
+        // Renderizar participantes e suas viagens (agrupadas quando possível)
+        content.push(...this.renderParticipantesComViagensAgrupadas(evento.evento_participantes));
       });
     });
 
+    return content;
+  }
+
+  private renderParticipantesComViagensAgrupadas(participantes: any[]): any[] {
+    const content = [];
+
+    if (!participantes || participantes.length === 0) {
+      return content;
+    }
+
+    // Primeiro renderizamos os dados individuais de cada participante
+    participantes.forEach((ep) => {
+      content.push(
+        {
+          style: "textoNormal",
+          layout: "noBorders",
+          table: {
+            body: [
+              ["Nome:", ep.participante.nome],
+              [
+                "Matrícula: ",
+                ep.participante.matricula === null
+                  ? "Colaborador/Teceirizado"
+                  : ep.participante.matricula,
+              ],
+              [
+                "Data Nasc:", formataDataCurta(new Date(Date.parse(ep.participante.data_nascimento))),
+              ],
+              ["CPF:", Util.formataMascaraCpf(ep.participante.cpf)],
+              ["E-mail:", ep.participante.email],
+              ["Lotação:", ep.participante.lotacao],
+              ["Cargo:", ep.participante.cargo],
+            ],
+          },
+        },
+        { text: "\n" }
+      );
+    });
+
+    // Depois agrupamos as viagens semelhantes
+    const viagensAgrupadas = this.agruparViagens(participantes);
+    
+    // Adicionamos a seção de viagens com agrupamento
+    if (viagensAgrupadas.length > 0) {
+      content.push({
+        text: "\n\nVIAGENS\n\n",
+        style: "texto",
+      });
+      
+      content.push(...this.renderViagensAgrupadas(viagensAgrupadas));
+    }
+
+    return content;
+  }
+
+  private getChaveViagem(viagem: any): ViagemKey {
+    const origem = viagem.cidade_origem ? 
+      `${viagem.cidade_origem.descricao} - ${viagem.cidade_origem.estado?.uf}` : 
+      (viagem.origem ? `${viagem.origem.cidade} - ${viagem.origem.uf}` : '');
+    
+    const cidadeDestino = viagem.cidade_destino?.descricao + " - " + viagem.cidade_destino?.estado?.uf;
+    const destino = viagem?.destino?.cidade === undefined ? cidadeDestino : 
+      viagem?.destino?.cidade + " - " + viagem?.destino?.uf;
+    
+    const dataIda = viagem.data_ida ? formataDataCurta(viagem.data_ida as Date) : '';
+    const dataVolta = viagem.data_volta ? formataDataCurta(viagem.data_volta as Date) : '';
+    const viagemDiferente = viagem.viagem_diferente || 'NAO';
+    
+    const chave: ViagemKey = {
+      origem,
+      destino,
+      dataIda,
+      dataVolta,
+      viagemDiferente
+    };
+    
+    if (viagemDiferente === 'SIM') {
+      chave.dataIdaDiferente = viagem.data_ida_diferente ? formataDataCurta(viagem.data_ida_diferente as Date) : '';
+      chave.dataVoltaDiferente = viagem.data_volta_diferente ? formataDataCurta(viagem.data_volta_diferente as Date) : '';
+    }
+    
+    return chave;
+  }
+
+  private agruparViagens(participantes: any[]): AgrupamentoViagem[] {
+    const viagensMap = new Map<string, AgrupamentoViagem>();
+    
+    // Coletamos todas as viagens de todos os participantes
+    participantes.forEach(ep => {
+      if (ep.viagem_participantes && ep.viagem_participantes.length > 0) {
+        ep.viagem_participantes.forEach(vp => {
+          const chaveViagem = this.getChaveViagem(vp.viagem);
+          const chaveString = JSON.stringify(chaveViagem);
+          
+          if (!viagensMap.has(chaveString)) {
+            viagensMap.set(chaveString, {
+              viagem: vp.viagem,
+              participantes: []
+            });
+          }
+          
+          viagensMap.get(chaveString)!.participantes.push({
+            participante: ep.participante,
+            viagem_participante: vp
+          });
+        });
+      }
+    });
+    
+    return Array.from(viagensMap.values());
+  }
+
+  private renderViagensAgrupadas(viagensAgrupadas: AgrupamentoViagem[]): any[] {
+    const content = [];
+    
+    viagensAgrupadas.forEach((agrupamento, index) => {
+      const viagem = agrupamento.viagem;
+      const participantes = agrupamento.participantes;
+      
+      // Formata destino e origem
+      const local = viagem.cidade_destino?.descricao + " - " + viagem.cidade_destino?.estado?.uf;
+      const cidadeDestino = viagem?.destino?.cidade === undefined ? local : 
+        viagem?.destino?.cidade + " - " + viagem?.destino?.uf;
+
+      let origem = "";
+      if (viagem.evento?.tem_passagem === "NAO") {
+        origem = viagem.cidade_origem?.descricao + " - " + viagem.cidade_origem?.estado?.uf;
+      } else {
+        origem = viagem.origem?.cidade + " - " + viagem.origem?.uf;
+      }
+      
+      // Título da viagem e participantes
+      content.push({
+        text: `\nViagem ${index + 1}: ${origem} → ${cidadeDestino}`,
+        style: "subheader"
+      });
+
+      content.push({
+        text: `Ida: ${viagem.data_ida ? formataDataCurta(viagem.data_ida as Date) : "Não especificada"}`,
+        style: "textoNormal",
+      });
+
+      if (viagem.deslocamento === "SIM") {
+        content.push({
+          text: "Com deslocamento",
+          style: "textoNormal",
+        });
+      } else {
+        content.push({
+          text: `Volta: ${viagem.data_volta ? formataDataCurta(viagem.data_volta as Date) : "Não especificada"}`,
+          style: "textoNormal",
+        });
+      }
+      
+      // Lista de participantes na viagem
+      content.push({
+        text: `\nParticipantes desta viagem (${participantes.length}):`,
+        style: "textoNormal"
+      });
+      
+      const participantesNomes = participantes.map((p, idx) => 
+        `${idx + 1}. ${p.participante.nome}`
+      );
+      
+      content.push({
+        ul: participantesNomes,
+        style: "textoNormal"
+      });
+      
+      // Custos da viagem
+      const custos = viagem.custos?.map((custoIndex) => {
+        const custosOpcoes = [
+          "Viagem - trecho de ida ou volta",
+          "Inscrição de cursos e eventos",
+          "Outros",
+        ];
+        return custosOpcoes[custoIndex] || "Custo não especificado";
+      });
+      
+      // Informações adicionais sobre a viagem
+      content.push({
+        text: "\nDetalhes da viagem:",
+        style: "textoNormal"
+      });
+      
+      // Informações sobre viagem com datas diferentes
+      if (viagem.viagem_diferente === "SIM") {
+        content.push({
+          text: "Viagem com datas diferentes",
+          style: "textoNormal",
+        });
+        
+        content.push({
+          text: `Ida diferente: ${formataDataCurta(viagem.data_ida_diferente as Date)}`,
+          style: "textoNormal",
+        });
+        
+        content.push({
+          text: `Volta diferente: ${formataDataCurta(viagem.data_volta_diferente as Date)}`,
+          style: "textoNormal",
+        });
+        
+        content.push({
+          text: `Justificativa: ${viagem.justificativa_diferente}`,
+          style: "textoNormal",
+        });
+      }
+      
+      // Informações sobre arcar com custos
+      content.push({
+        text: `Vai arcar com algum custo? ${viagem.arcar_passagem || "NÃO"}`,
+        style: "textoNormal",
+      });
+      
+      if (viagem.arcar_passagem === "SIM") {
+        content.push({
+          text: `Custos: ${custos}`,
+          style: "textoNormal",
+        });
+        
+        content.push({
+          text: `Justificativa: ${viagem.justificativa}`,
+          style: "textoNormal",
+        });
+      }
+      
+      // Informações sobre servidor acompanhando
+      content.push({
+        text: `Servidor Acompanhando Conselheiro ou Procurador Geral? ${viagem.servidor_acompanhando || "NÃO"}`,
+        style: "textoNormal",
+      });
+      
+      // Informações sobre pernoite
+      if (viagem.viagem_pernoite === "SIM") {
+        content.push({
+          text: `Viagem com pernoite: ${viagem.justificativa_municipios}`,
+          style: "textoNormal",
+        });
+      }
+      
+      // Informações sobre viagem superior a 6 horas
+      if (viagem.viagem_superior === "SIM") {
+        content.push({
+          text: `Viagem será superior a 6 horas: ${viagem.justificativa_municipios}`,
+          style: "textoNormal",
+        });
+      }
+      
+      // Informações individuais de diárias por participante
+      content.push({
+        text: "\nInformações de diárias por participante:",
+        style: "textoNormal"
+      });
+      
+      participantes.forEach(p => {
+        let valorDiaria = 0;
+        let diariasDesc = "";
+        
+        if (viagem.valor_viagem) {
+          viagem.valor_viagem
+            .filter((a) => a.participante_id === p.participante.id && a.tipo === "DIARIA")
+            .forEach((diaria) => {
+              valorDiaria += diaria.valor_individual ?? 0;
+  
+              if (diaria.justificativa !== undefined && diaria.justificativa?.length > 0) {
+                diariasDesc += Util.formataValorDiaria(diaria.valor_individual ?? 0, "NACIONAL") + " (Justificativa: " + diaria.justificativa + ")\n";
+              } else {
+                diariasDesc += Util.formataValorDiaria(diaria.valor_individual ?? 0, "NACIONAL") + "\n";
+              }
+            });
+        }
+
+        
+        const conta = p.participante.conta_diaria?.find((a) => a);
+        const tipoConta = conta?.tipo_conta === "C" ? "CONTA CORRENTE" : 
+                          conta?.tipo_conta === "P" ? "CONTA POUPANÇA" :
+                          conta?.tipo_conta === "S" ? "CONTA SALÁRIO" : "";
+        
+        content.push({
+          text: `\nParticipante: ${p.participante.nome}`,
+          style: "textoNormal"
+        });
+        
+        content.push({
+          text: `Valor Diária: ${diariasDesc || "Não informado"}`,
+          style: "textoNormal",
+        });
+        
+        content.push({
+          style: "textoNormal",
+          layout: "noBorders",
+          table: {
+            body: [
+              ["DADOS BANCÁRIOS", ""],
+              [
+                {
+                  style: "textoNormal",
+                  layout: "noBorders",
+                  table: {
+                    body: [
+                      ["Banco:", conta?.banco?.banco ?? ""],
+                      ["Tipo:", tipoConta],
+                      ["Agência:", conta?.agencia ?? ""],
+                      ["Conta:", conta?.conta ?? ""],
+                    ],
+                  },
+                },
+                ""
+              ],
+            ],
+          },
+        });
+      });
+      
+      // Separador entre viagens
+      content.push({ text: "\n" + "-".repeat(30) + "\n", style: "textoNormal" });
+    });
+    
     return content;
   }
 
@@ -133,10 +470,8 @@ export class EventosBuilder {
               [
                 "Data Nasc:", formataDataCurta(new Date(Date.parse(ep.participante.data_nascimento))),
               ],
-              ["RG:", ep.participante.rg],
               ["CPF:", Util.formataMascaraCpf(ep.participante.cpf)],
               ["E-mail:", ep.participante.email],
-              ["Telefone:", ep.participante.telefone],
               ["Lotação:", ep.participante.lotacao],
               ["Cargo:", ep.participante.cargo],
             ],
@@ -145,7 +480,7 @@ export class EventosBuilder {
         { text: "\n" }
       );
 
-      // Renderizar viagens do participante
+      // Renderizar viagens do participante (mantido para compatibilidade, mas será substituído pela versão agrupada)
       content.push(...this.renderViagens(ep));
     });
 
@@ -242,7 +577,7 @@ export class EventosBuilder {
                   table: {
                     body: [
                       ["Banco:", conta?.banco?.banco ?? ""],
-                      ["Tipo:", tipoConta ?? ""],
+                      ["Tipo:", tipoConta],
                       ["Agência:", conta?.agencia ?? ""],
                       ["Conta:", conta?.conta ?? ""],
                     ],

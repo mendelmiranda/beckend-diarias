@@ -9,4 +9,7 @@ export interface PdfContent {
 export interface PdfDocDefinition {
   content: any[];
   styles: Record<string, any>;
+  pageMargins?: number[];
+  pageSize?: string;
+  pageOrientation?: string;
 }

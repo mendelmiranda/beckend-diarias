@@ -1,4 +1,3 @@
-// builders/sections/header.builder.ts
 import { Injectable } from '@nestjs/common';
 import { Util } from 'src/util/Util';
 
@@ -21,7 +20,7 @@ export class HeaderBuilder {
 
     // Cabeçalho
     content.push({
-      text: "TRIBUNAL DE CONTAS DO ESTADO DO AMAPÁ",
+      text: "TRIBUNAL DE CONTAS DO ESTADO",
       style: "header",
     });
 
@@ -38,8 +37,9 @@ export class HeaderBuilder {
     // Tabela de informações do responsável
     content.push({
       style: "titulosHeader",
-      layout: "noBorders",
       table: {
+        widths: ['*', '*', '*'], // Larguras iguais, preenchendo toda a largura disponível
+        headerRows: 1,
         body: [
           ["Responsável", "Lotação", "Data Solicitação"],
           [
@@ -49,21 +49,47 @@ export class HeaderBuilder {
           ],
         ],
       },
+      layout: 'noBorders',
+      margin: [0, 10, 0, 10]
     });
 
-    content.push({ text: "\n\n" });
+    // Justificativa - Título
+    content.push({
+      text: "Justificativa",
+      style: "titulosHeader",
+      margin: [0, 10, 0, 5],
+    });
 
-    // Justificativa
-    content.push(
-      {
-        text: "Justificativa",
-        style: "texto",
+    // Justificativa - Conteúdo - Use table para garantir largura total
+    content.push({
+      table: {
+        widths: ['*'], // Utiliza toda a largura disponível
+        body: [
+          [{
+            text: solicitacao.justificativa,
+            fontSize: 11,
+            alignment: 'justify' // Força a justificação do texto
+          }]
+        ]
       },
-      {
-        text: solicitacao.justificativa ?? "\n\n",
-        style: "textoNormal",
-      }
-    );
+      layout: 'noBorders', // Sem bordas visíveis
+      margin: [0, 0, 0, 5]
+    });
+    
+
+    // Linha horizontal
+    content.push({
+      canvas: [
+        {
+          type: 'line',
+          x1: 0, y1: 0,
+          x2: 515, y2: 0, // Largura total da página A4 menos margens
+          lineWidth: 1,
+          lineColor: '#999999'
+        }
+      ],
+      margin: [0, 0, 0, 10]
+    });
 
     return content;
   }

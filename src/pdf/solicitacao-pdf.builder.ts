@@ -67,6 +67,9 @@ export class SolicitacaoPdfBuilder {
       return {
         content,
         styles: this.getStyles(),
+        pageMargins: [30, 30, 30, 30],
+        pageSize: 'A4',
+        pageOrientation: 'portrait',
       };
     }
 
@@ -77,12 +80,13 @@ export class SolicitacaoPdfBuilder {
         bold: true,
       },
       texto: {
-        fontSize: 12,
+        fontSize: 10,
         bold: true,
       },
       textoNormal: {
-        fontSize: 11,
+        fontSize: 10,
         bold: false,
+        width: '100%'
       },
       titulosHeader: {
         fontSize: 11,
@@ -97,6 +101,11 @@ export class SolicitacaoPdfBuilder {
       titulos: {
         fontSize: 11,
         bold: true,
+      },
+      subtitulos: {
+        fontSize: 10,
+        bold: true,
+        italics: true,
       },
       textos: {
         fontSize: 10,
