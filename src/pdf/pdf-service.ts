@@ -1,64 +1,68 @@
 // pdf.service.ts
-
 import { Injectable } from '@nestjs/common';
 import { AprovacaoDefinitivaDaofService } from 'src/aprovacao_definitiva_daof/aprovacao_definitiva_daof.service';
-const PdfPrinter = require('pdfmake');
 import { SolicitacaoService } from 'src/solicitacao/solicitacao.service';
 import { SolicitacaoCondutoresService } from 'src/solicitacao_condutores/solicitacao_condutores.service';
+import { PdfGenerator } from './pdf-generator.service';
+import { SolicitacaoPdfBuilder } from './solicitacao-pdf.builder';
+import { AprovacaoDefinitiva } from '../aprovacao_definitiva/entities/aprovacao_definitiva.entity';
+import { AprovacaoDefinitivaService } from 'src/aprovacao_definitiva/aprovacao_definitiva.service';
+
 
 @Injectable()
-export class PdfServiceGenerator {
-  
-    constructor( private solicitacaoService: SolicitacaoService, 
-      private readonly solicitacaoCondutoresService: SolicitacaoCondutoresService, 
-    private readonly aprovacaoDefinitivaDaofiService: AprovacaoDefinitivaDaofService) {}
+export class PdfService {
+  constructor(
+    private solicitacaoService: SolicitacaoService,
+    private solicitacaoCondutoresService: SolicitacaoCondutoresService,
+    private aprovacaoDefinitivaDaofiService: AprovacaoDefinitivaDaofService,
+    private aprovacaoDefinitivaService: AprovacaoDefinitivaService,
+    private pdfGenerator: PdfGenerator,
+    private solicitacaoPdfBuilder: SolicitacaoPdfBuilder,
+  ) {}
 
-    async pesquisaSolicitacaoPorId(id: number) {
-        return await this.solicitacaoService.detalhesDaSolicitacao(id).catch((e) => {
-            console.error(e);
-            return null;
-        }
-        );
+  async generateSolicitacaoPdf(id: number): Promise<Buffer> {
+    // Buscar todos os dados necessários
+    const solicitacao = await this.pesquisaSolicitacaoPorId(id);
+    if (!solicitacao) {
+      throw new Error(`Solicitação com ID ${id} não encontrada`);
     }
 
-    getCondutoresDaSolicitacao( id: number) {
-      return this.solicitacaoCondutoresService.findAll(id);
-    }
+    const condutores = await this.getCondutoresDaSolicitacao(id);
+    const assinatura = await this.getAssinaturaDoDocumentoDAOF(id);
+    const assinaturaPresidente = await this.getAssinaturaDefinitivaPresidencia(id);
 
-    getAssinaturaDoDocumentoDAOF(solicitacaoId: number){
+    // Construir o documento PDF
+    const docDefinition = this.solicitacaoPdfBuilder.build({
+      solicitacao,
+      condutores,
+      assinatura,
+      assinaturaPresidente,
+    });
 
-        return this.aprovacaoDefinitivaDaofiService.findAssinaturaDiretorDAOF(solicitacaoId);
+    // Gerar o PDF
+    return this.pdfGenerator.generatePdf(docDefinition);
+  }
 
-    }
-
-
-    
-  private printer = new PdfPrinter({
-    Roboto: {
-      normal: 'fonts/Roboto-Regular.ttf',
-      bold: 'fonts/Roboto-Medium.ttf',
-      italics: 'fonts/Roboto-Italic.ttf',
-      bolditalics: 'fonts/Roboto-MediumItalic.ttf'
-    }
-  });
-
-  async generatePdf(docDefinition): Promise<Buffer> {
-    const pdfDocGenerator = this.printer.createPdfKitDocument(docDefinition);
-    const chunks: Uint8Array[] = [];
-
-    return new Promise((resolve, reject) => {
-      pdfDocGenerator.on('data', (chunk) => chunks.push(chunk));
-      pdfDocGenerator.on('end', () => {
-        const result = Buffer.concat(chunks);
-        resolve(result);
-      });
-      pdfDocGenerator.on('error', (err) => reject(err));
-      pdfDocGenerator.end();
+  async pesquisaSolicitacaoPorId(id: number) {
+    return await this.solicitacaoService.detalhesDaSolicitacao(id).catch((e) => {
+      console.error(e);
+      return null;
     });
   }
 
-  
+  getCondutoresDaSolicitacao(id: number) {
+    return this.solicitacaoCondutoresService.findAll(id);
+  }
 
+  getAssinaturaDoDocumentoDAOF(solicitacaoId: number) {
+    return this.aprovacaoDefinitivaDaofiService.findAssinaturaDiretorDAOF(
+      solicitacaoId,
+    );
+  }
 
-
+  getAssinaturaDefinitivaPresidencia(solicitacaoId: number) {
+    return this.aprovacaoDefinitivaService.findAssinaturaPresidente(
+      solicitacaoId,
+    );
+  }
 }
