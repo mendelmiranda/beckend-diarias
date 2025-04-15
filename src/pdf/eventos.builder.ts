@@ -25,6 +25,7 @@ interface AgrupamentoViagem {
 
 @Injectable()
 export class EventosBuilder {
+  
   build(data: EventosBuilderData): any[] {
     const { eventos } = data;
     const content = [];
