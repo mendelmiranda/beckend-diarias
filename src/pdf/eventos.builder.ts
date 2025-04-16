@@ -125,40 +125,77 @@ export class EventosBuilder {
 
   private renderParticipantesComViagensAgrupadas(participantes: any[]): any[] {
     const content = [];
-
+  
     if (!participantes || participantes.length === 0) {
       return content;
     }
-
-    // Primeiro renderizamos os dados individuais de cada participante
-    participantes.forEach((ep) => {
-      content.push(
-        {
+  
+    // Agrupamos os participantes em pares
+    for (let i = 0; i < participantes.length; i += 2) {
+      const leftParticipant = participantes[i];
+      const rightParticipant = i + 1 < participantes.length ? participantes[i + 1] : null;
+      
+      // Cria tabela com dois participantes lado a lado
+      const rowContent = {
+        columns: [
+          // Primeiro participante (esquerda)
+          {
+            width: rightParticipant ? '50%' : '*', // Se não tiver participante à direita, ocupa toda largura
+            style: "textoNormal",
+            layout: "noBorders",
+            table: {
+              body: [
+                ["Nome:", leftParticipant.participante.nome],
+                [
+                  "Matrícula: ",
+                  leftParticipant.participante.matricula === null
+                    ? "Colaborador/Teceirizado"
+                    : leftParticipant.participante.matricula,
+                ],
+                [
+                  "Data Nasc:", formataDataCurta(new Date(Date.parse(leftParticipant.participante.data_nascimento))),
+                ],
+                ["CPF:", Util.formataMascaraCpf(leftParticipant.participante.cpf)],
+                ["E-mail:", leftParticipant.participante.email],
+                ["Lotação:", leftParticipant.participante.lotacao],
+                ["Cargo:", leftParticipant.participante.cargo],
+              ],
+            },
+          }
+        ]
+      };
+      
+      // Adiciona o segundo participante ao lado direito (se existir)
+      if (rightParticipant) {
+        rowContent.columns.push({
+          width: '50%',
           style: "textoNormal",
           layout: "noBorders",
           table: {
             body: [
-              ["Nome:", ep.participante.nome],
+              ["Nome:", rightParticipant.participante.nome],
               [
                 "Matrícula: ",
-                ep.participante.matricula === null
+                rightParticipant.participante.matricula === null
                   ? "Colaborador/Teceirizado"
-                  : ep.participante.matricula,
+                  : rightParticipant.participante.matricula,
               ],
               [
-                "Data Nasc:", formataDataCurta(new Date(Date.parse(ep.participante.data_nascimento))),
+                "Data Nasc:", formataDataCurta(new Date(Date.parse(rightParticipant.participante.data_nascimento))),
               ],
-              ["CPF:", Util.formataMascaraCpf(ep.participante.cpf)],
-              ["E-mail:", ep.participante.email],
-              ["Lotação:", ep.participante.lotacao],
-              ["Cargo:", ep.participante.cargo],
+              ["CPF:", Util.formataMascaraCpf(rightParticipant.participante.cpf)],
+              ["E-mail:", rightParticipant.participante.email],
+              ["Lotação:", rightParticipant.participante.lotacao],
+              ["Cargo:", rightParticipant.participante.cargo],
             ],
           },
-        },
-        { text: "\n" }
-      );
-    });
-
+        });
+      }
+      
+      content.push(rowContent);
+      content.push({ text: "\n" });
+    }
+  
     // Depois agrupamos as viagens semelhantes
     const viagensAgrupadas = this.agruparViagens(participantes);
     
@@ -171,7 +208,7 @@ export class EventosBuilder {
       
       content.push(...this.renderViagensAgrupadas(viagensAgrupadas));
     }
-
+  
     return content;
   }
 

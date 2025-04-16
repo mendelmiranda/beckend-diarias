@@ -38,7 +38,7 @@ export class HeaderBuilder {
     content.push({
       style: "titulosHeader",
       table: {
-        widths: ['*', '*', '*'], // Larguras iguais, preenchendo toda a largura disponível
+        widths: ['*', '33%', '24%'], // Define larguras percentuais para preencher 100% da largura
         headerRows: 1,
         body: [
           ["Responsável", "Lotação", "Data Solicitação"],
@@ -50,7 +50,8 @@ export class HeaderBuilder {
         ],
       },
       layout: 'noBorders',
-      margin: [0, 10, 0, 10]
+      margin: [0, 10, 0, 10],
+      width: '100%' // Força a tabela a usar 100% da largura disponível
     });
 
     // Justificativa - Título
@@ -83,7 +84,7 @@ export class HeaderBuilder {
         {
           type: 'line',
           x1: 0, y1: 0,
-          x2: 515, y2: 0, // Largura total da página A4 menos margens
+          x2: 595-2*40, y2: 0, // Largura total da página A4 (595) menos as margens (40 de cada lado)
           lineWidth: 1,
           lineColor: '#999999'
         }
