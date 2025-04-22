@@ -93,8 +93,8 @@ export class EventosBuilder {
                     style: 'justificativa',
                   }
                 ],
-                ['Valor unitário: ' + Util.formataValorDiaria(data.valor_total_inscricao!, "NACIONAL") +
-                  '\n' + 'Valor total: ' + Util.formataValorDiaria(data.valor_evento!, "NACIONAL") +
+                ['Valor unitário: ' + Util.formataValorDiaria(data.valor_evento!, "NACIONAL") +
+                  '\n' + 'Valor total: ' + Util.formataValorDiaria(data.valor_total_inscricao!, "NACIONAL") +
                   '\n' + "Observação: " + data.observacao_valor]
               ]
             }
