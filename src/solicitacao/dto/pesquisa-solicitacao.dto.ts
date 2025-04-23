@@ -5,4 +5,6 @@ export default interface PesquisaSolicitacaoDTO {
     cpf_responsavel?: string;
     status?: string;
     numero?: string;
+
+    id?: number;
 }

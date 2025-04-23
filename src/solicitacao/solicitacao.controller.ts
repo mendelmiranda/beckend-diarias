@@ -23,12 +23,12 @@ import { SolicitacaoIdDto } from './dto/solicitacao-id.dto';
 
 @Controller('solicitacao')
 export class SolicitacaoController {
-  constructor(private readonly solicitacaoService: SolicitacaoService) {}
+  constructor(private readonly solicitacaoService: SolicitacaoService) { }
 
   @Post()
   create(@Body() createSolicitacaoDto: CreateSolicitacaoDto, @Req() request: Request) {
     const usuario = JSON.parse(request.headers['dados_client']);
-    
+
     let d = new Date();
     d.setTime(d.getTime() - new Date().getTimezoneOffset() * 60 * 1000);
 
@@ -37,12 +37,12 @@ export class SolicitacaoController {
       datareg: d,
       status: 'NAO',
     };
-    
-    return this.solicitacaoService.create(solicitacao, usuario);    
+
+    return this.solicitacaoService.create(solicitacao, usuario);
   }
 
   @Post('/consulta/setores')
-  listarSolicitacaoPorSetores(@Body() consulta: ConsultaSetoresDto) {    
+  listarSolicitacaoPorSetores(@Body() consulta: ConsultaSetoresDto) {
     return this.solicitacaoService.findSolicitacoesDeAcordoComSetor(consulta);
   }
 
@@ -82,7 +82,7 @@ export class SolicitacaoController {
   }
 
   @Put(':id')
-  update( @Param('id') id: string, @Body() updateSolicitacaoDto: UpdateSolicitacaoDto, @Req() request: Request ) {
+  update(@Param('id') id: string, @Body() updateSolicitacaoDto: UpdateSolicitacaoDto, @Req() request: Request) {
     const usuario = JSON.parse(request.headers['dados_client']);
 
     return this.solicitacaoService.update(+id, updateSolicitacaoDto, usuario);
@@ -104,9 +104,9 @@ export class SolicitacaoController {
 
 
   @Post('/pesquisar')
-  pesquisarSolicitacoes(@Body() dto: PesquisaSolicitacaoDTO) {   
+  pesquisarSolicitacoes(@Body() dto: PesquisaSolicitacaoDTO) {
 
-    if(parseInt(dto.numero) > 0 && dto.dataInicio === undefined) {
+    if (parseInt(dto.numero) > 0 && dto.dataInicio === undefined) {
       return this.solicitacaoService.pesquisarSolicitacaoPorNumero(+dto.numero);
     }
     return this.solicitacaoService.pesquisarSolicitacoes(dto);
@@ -131,18 +131,18 @@ export class SolicitacaoController {
   async getEventosParticipante(@Param() params: PathParamsDto): Promise<DiariasResponseDto> {
     try {
       return await this.solicitacaoService.getEventosParticipante(
-        params.solicitacao_id, 
+        params.solicitacao_id,
         params.participante_id
       );
     } catch (error) {
       if (error.status === HttpStatus.NOT_FOUND) {
         throw new HttpException(
-          { message: 'Nenhum evento encontrado para este participante nesta solicitação' }, 
+          { message: 'Nenhum evento encontrado para este participante nesta solicitação' },
           HttpStatus.NOT_FOUND
         );
       }
       throw new HttpException(
-        { error: 'Erro ao buscar eventos' }, 
+        { error: 'Erro ao buscar eventos' },
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
@@ -155,12 +155,12 @@ export class SolicitacaoController {
     } catch (error) {
       if (error.status === HttpStatus.NOT_FOUND) {
         throw new HttpException(
-          { message: 'Nenhum evento ou participante encontrado para esta solicitação' }, 
+          { message: 'Nenhum evento ou participante encontrado para esta solicitação' },
           HttpStatus.NOT_FOUND
         );
       }
       throw new HttpException(
-        { error: 'Erro ao calcular diárias para esta solicitação' }, 
+        { error: 'Erro ao calcular diárias para esta solicitação' },
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
@@ -171,5 +171,47 @@ export class SolicitacaoController {
   findVerificaParticipantesComViagemNoResumo(@Param('id') id: string) {
     return this.solicitacaoService.findParticipantesSemViagem(+id);
   }
+
+
+  @Post('/pesquisa/geral/header')
+  async pesquisarSolicitacoes2(@Body() queryParams: PesquisaSolicitacaoDTO) {
+    
+    console.log('Parâmetros recebidos:', queryParams); // Mensagem mais clara
+    
+
+    // Validar o parâmetro obrigatório
+    if (!queryParams.cod_lotacao) {
+      return {
+        success: false,
+        message: 'O parâmetro cod_lotacao é obrigatório',
+      };
+    }
+
+    // Converter datas de string para objeto Date se necessário
+    if (queryParams.dataInicio) {
+      queryParams.dataInicio = new Date(queryParams.dataInicio);
+    }
+
+    if (queryParams.dataFim) {
+      queryParams.dataFim = new Date(queryParams.dataFim);
+    }
+
+    try {
+      const solicitacoes = await this.solicitacaoService.pesquisaHeaderDaSolicitacao(queryParams);
+      console.log('solicitacoes xxx', solicitacoes);
+      return {
+        success: true,
+        data: solicitacoes,
+      };
+
+    } catch (error) {
+      return {
+        success: false,
+        message: `Erro ao pesquisar solicitações: ${error.message}`,
+      };
+    }
+  }
+
+
 
 }
