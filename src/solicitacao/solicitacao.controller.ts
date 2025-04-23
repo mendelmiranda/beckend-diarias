@@ -198,7 +198,7 @@ export class SolicitacaoController {
 
     try {
       const solicitacoes = await this.solicitacaoService.pesquisaHeaderDaSolicitacao(queryParams);
-      console.log('solicitacoes xxx', solicitacoes);
+      
       return {
         success: true,
         data: solicitacoes,

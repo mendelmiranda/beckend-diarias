@@ -1362,7 +1362,7 @@ export class SolicitacaoService {
     };
   }
 
-  pesquisaHeaderDaSolicitacao(params: PesquisaSolicitacaoDTO) {
+  pesquisaHeaderDaSolicitacao(params: PesquisaSolicitacaoDTO) {    
     
     try {
       // Construir objeto de condições para a busca
@@ -1388,7 +1388,7 @@ export class SolicitacaoService {
   
         // Condição de data (entre dataInicio e dataFim)
         if (params.dataInicio && params.dataFim) {
-          whereConditions.data_solicitacao = {
+          whereConditions.datareg = {
             gte: params.dataInicio,
             lte: params.dataFim,
           };
@@ -1398,9 +1398,11 @@ export class SolicitacaoService {
           whereConditions.cpf_responsavel = params.cpf_responsavel;
         }
       }
+
+      //console.log('whereConditions', JSON.stringify(whereConditions));
   
       // Executar a consulta com os filtros
-      return this.prisma.solicitacao.findMany({
+      const resultado =  this.prisma.solicitacao.findMany({
         where: whereConditions,
         include: {
           tramite: {
@@ -1459,6 +1461,11 @@ export class SolicitacaoService {
           },
         },
       });
+
+      //console.log('Total de resultados:', resultado.length);
+
+      return resultado;
+
     } catch (e) {
       this.logger.error(`Erro ao buscar solicitações: ${e.message}`, e.stack);
       if (e instanceof NotFoundException) {
