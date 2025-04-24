@@ -1,12 +1,12 @@
 // pdf.service.ts
 import { Injectable } from '@nestjs/common';
+import { PDFDocument } from 'pdf-lib';
+import { AprovacaoDefinitivaService } from 'src/aprovacao_definitiva/aprovacao_definitiva.service';
 import { AprovacaoDefinitivaDaofService } from 'src/aprovacao_definitiva_daof/aprovacao_definitiva_daof.service';
 import { SolicitacaoService } from 'src/solicitacao/solicitacao.service';
 import { SolicitacaoCondutoresService } from 'src/solicitacao_condutores/solicitacao_condutores.service';
 import { PdfGenerator } from './pdf-generator.service';
 import { SolicitacaoPdfBuilder } from './solicitacao-pdf.builder';
-import { AprovacaoDefinitiva } from '../aprovacao_definitiva/entities/aprovacao_definitiva.entity';
-import { AprovacaoDefinitivaService } from 'src/aprovacao_definitiva/aprovacao_definitiva.service';
 
 
 @Injectable()
@@ -20,7 +20,7 @@ export class PdfService {
     private solicitacaoPdfBuilder: SolicitacaoPdfBuilder,
   ) {}
 
-  async generateSolicitacaoPdf(id: number): Promise<Buffer> {
+  /* async generateSolicitacaoPdf(id: number): Promise<Buffer> {
     // Buscar todos os dados necessários
     const solicitacao = await this.pesquisaSolicitacaoPorId(id);
     if (!solicitacao) {
@@ -41,7 +41,54 @@ export class PdfService {
 
     // Gerar o PDF
     return this.pdfGenerator.generatePdf(docDefinition);
-  }
+  } */
+
+    async generateSolicitacaoPdf(id: number, comAnexo: boolean): Promise<Buffer> {
+      const solicitacao = await this.pesquisaSolicitacaoPorId(id);
+      if (!solicitacao) throw new Error(`Solicitação com ID ${id} não encontrada`);
+    
+      const condutores = await this.getCondutoresDaSolicitacao(id);
+      const assinatura = await this.getAssinaturaDoDocumentoDAOF(id);
+      const assinaturaPresidente = await this.getAssinaturaDefinitivaPresidencia(id);
+    
+      const docDefinition = this.solicitacaoPdfBuilder.build({
+        solicitacao,
+        condutores,
+        assinatura,
+        assinaturaPresidente,
+      });
+    
+      // Gera PDF principal
+      const pdfmakeBytes = await this.pdfGenerator.generatePdf(docDefinition);
+      const mainPDF = await PDFDocument.load(new Uint8Array(pdfmakeBytes));
+    
+      // ⚠️ Verifica se deve anexar os PDFs externos
+      if (comAnexo) {
+        const anexoUrls = solicitacao.eventos
+          ?.flatMap((evento) =>
+            evento.anexo_evento?.map(
+              (anexo) =>
+                `https://arquivos.tce.ap.gov.br:3000/download/${anexo.api_anexo_id}`
+            ) || []
+          ) || [];
+    
+        for (const url of anexoUrls) {
+          try {
+            const response = await fetch(url);
+            const anexoBuffer = await response.arrayBuffer();
+            const anexoPDF = await PDFDocument.load(new Uint8Array(anexoBuffer));
+            const pages = await mainPDF.copyPages(anexoPDF, anexoPDF.getPageIndices());
+            pages.forEach((page) => mainPDF.addPage(page));
+          } catch (err) {
+            console.error(`Erro ao anexar PDF de ${url}`, err);
+          }
+        }
+      }
+    
+      const mergedPDFBytes = await mainPDF.save();
+      return Buffer.from(mergedPDFBytes);
+    }
+    
 
   async pesquisaSolicitacaoPorId(id: number) {
     return await this.solicitacaoService.detalhesDaSolicitacao(id).catch((e) => {

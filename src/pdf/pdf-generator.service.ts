@@ -1,9 +1,17 @@
 // pdf-generator.service.ts
 import { Injectable } from '@nestjs/common';
 const PdfPrinter = require('pdfmake');
+import * as pdfMake from 'pdfmake/build/pdfmake';
+import * as pdfFonts from 'pdfmake/build/vfs_fonts';
+
 
 @Injectable()
 export class PdfGenerator {
+
+  constructor() {
+    // Inicializa as fontes virtuais no pdfMake
+    (pdfMake as any).vfs = pdfFonts.pdfMake.vfs;
+  }
   
   private printer = new PdfPrinter({
     Roboto: {
@@ -20,8 +28,9 @@ export class PdfGenerator {
     }
   });
 
-  async generatePdf(docDefinition: any): Promise<Buffer> {
+  /* async generatePdf(docDefinition: any): Promise<Buffer> {
     const pdfDocGenerator = this.printer.createPdfKitDocument(docDefinition);
+
     const chunks: Uint8Array[] = [];
 
     return new Promise((resolve, reject) => {
@@ -33,5 +42,20 @@ export class PdfGenerator {
       pdfDocGenerator.on('error', (err) => reject(err));
       pdfDocGenerator.end();
     });
-  }
+  } */
+
+    generatePdf(docDefinition: any): Promise<Buffer> {
+      const pdfDoc = pdfMake.createPdf(docDefinition);
+  
+      return new Promise((resolve, reject) => {
+        pdfDoc.getBuffer((buffer: Buffer) => {
+          resolve(buffer);
+        });
+      });
+    }
+  
+    // 🆕 Este é o método que faltava
+    createPdfMakeDoc(docDefinition: any) {
+      return pdfMake.createPdf(docDefinition);
+    }
 }
