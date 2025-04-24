@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -20,6 +21,7 @@ import { SolicitacaoService } from './solicitacao.service';
 import { PathParamsDto } from './dto/path-params.dto';
 import { DiariasResponseDto } from './dto/response.dto';
 import { SolicitacaoIdDto } from './dto/solicitacao-id.dto';
+import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 
 @Controller('solicitacao')
 export class SolicitacaoController {
@@ -210,6 +212,14 @@ export class SolicitacaoController {
         message: `Erro ao pesquisar solicitações: ${error.message}`,
       };
     }
+  }
+
+
+  @Get('/consulta/pdf-gerado')
+  async getSolicitacoesComPDFGerado(@Query('id') id?: string) {
+    
+    const resultado = await this.solicitacaoService.findSolicitacoesComPDFGerado(id);
+    return { data: resultado };
   }
 
 

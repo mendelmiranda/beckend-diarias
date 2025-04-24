@@ -1475,6 +1475,35 @@ export class SolicitacaoService {
     }
   }
 
+  async findSolicitacoesComPDFGerado(id?: string) {    
+
+    try {
+      if (id) {
+        const solicitacao = await this.prisma.solicitacao.findFirst({
+          where: {
+            status: 'PDF_GERADO',
+            id: parseInt(id, 10),
+          },
+        });
+        return solicitacao ? [solicitacao] : [];
+      }
+  
+      const solicitacoes = await this.prisma.solicitacao.findMany({
+        where: {
+          status: 'PDF_GERADO',
+        },
+        take: 10,
+      });
+  
+      return solicitacoes;
+    } catch (error) {
+      this.logger.error(`Erro ao buscar solicitações com PDF gerado: ${error.message}`, error.stack);
+      throw new InternalServerErrorException('Erro ao buscar solicitações com PDF gerado');
+    }
+  }
+  
+
+
 
 
 }
