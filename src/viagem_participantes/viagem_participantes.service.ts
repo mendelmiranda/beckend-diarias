@@ -30,7 +30,10 @@ export class ViagemParticipantesService {
           data_volta_diferente: dto.data_volta_diferente ?? undefined,
           arcar_passagem: dto.arcar_passagem ?? '',
           custos: dto.custos ?? [],
-          justificativa_custos: dto.justificativa_custos ?? ''
+          justificativa_custos: dto.justificativa_custos ?? '',
+          viagem_superior: dto.viagem_superior ?? '',
+          viagem_pernoite: dto.viagem_pernoite ?? '',
+          justificativa_municipios: dto.justificativa_municipios ?? '',
         }
       });
     } catch (e) {

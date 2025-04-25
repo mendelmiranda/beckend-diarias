@@ -10,4 +10,9 @@ export class CreateViagemParticipanteDto {
   arcar_passagem?: string;
   custos?: string[];
   justificativa_custos?: string;
+
+  viagem_superior?: string;
+  viagem_pernoite?: string;
+  justificativa_municipios?: string;
+  
 }

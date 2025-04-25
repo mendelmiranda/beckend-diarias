@@ -374,6 +374,10 @@ model viagem_participantes {
   custos                  String[]
   justificativa_custos    String?
 
+  viagem_superior String?   @db.Char(3)
+  viagem_pernoite String?   @db.Char(3)
+  justificativa_municipios String?
+
   @@id([id, evento_participantes_id, viagem_id])
 }
 
