@@ -330,6 +330,7 @@ export class EventosBuilder {
         if (viagem.viagem_pernoite === "SIM") observacoes.push("Com pernoite");
         if (viagem.viagem_superior === "SIM") observacoes.push("Viagem >6h");
         if (viagem.servidor_acompanhando === "SIM") observacoes.push("Com servidor");
+        
 
         const vp = p.viagem_participante; // pega o objeto da viagem_participante
 
@@ -343,6 +344,10 @@ export class EventosBuilder {
 
         if (vp?.justificativa_diferente) {
           observacoes.push("Justificativa: " + vp.justificativa_diferente);
+        }
+
+        if(vp?.justificativa_municipios) {
+          observacoes.push("Justificativa: " + vp.justificativa_municipios);
         }
 
         tableBody.push([
