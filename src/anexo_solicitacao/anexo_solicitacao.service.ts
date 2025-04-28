@@ -103,7 +103,7 @@ export class AnexoSolicitacaoService {
   }
 
   async pesquisarServidoresAtivos() {
-    const url = 'https://10.10.21.19:5000/devops-servidor/search?ativo=SIM';
+    const url = 'https://10.10.21.19:5001/devops-servidor/search?ativo=SIM';
     const headers = {
       Accept: '/',
       'X-API-KEY': 'FZTETvO9rlP15e9E9dDlPWUhDxV24GsrdH1e5e38ZX4dpzc6MW64sZmZUBkxCLhc',
