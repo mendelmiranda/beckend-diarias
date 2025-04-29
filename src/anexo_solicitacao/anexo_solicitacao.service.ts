@@ -165,6 +165,27 @@ export class AnexoSolicitacaoService {
     }
   }
 
+  async listarSetores() {
+    const url = 'https://10.10.21.19:5001/devops-servidor/search?ativo=SIM&campos=cod_lotacao,lotacao';
+    const headers = {
+      Accept: '/',
+      'X-API-KEY': 'FZTETvO9rlP15e9E9dDlPWUhDxV24GsrdH1e5e38ZX4dpzc6MW64sZmZUBkxCLhc',
+    };
+
+    // Cria um agente HTTPS que ignora a verificação de SSL
+    const httpsAgent = new https.Agent({
+      rejectUnauthorized: false,
+    });
+
+    try {
+      const response = await this.httpService.axiosRef.get(url, { headers, httpsAgent });
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao buscar servidores ativos:', error);
+      throw error;
+    }
+  }
+
 
 
 }

@@ -240,4 +240,10 @@ export class ParticipanteController {
     return this.participanteService.listarEventosComTodasViagens(solicitacaoId);
   }
 
+
+  @Get('setores/ativos')
+  async listarSetoresAtivos() {
+    return this.anexoSolicitacao.listarSetores();
+  }
+
 }
