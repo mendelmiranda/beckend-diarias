@@ -3,11 +3,12 @@ import {
   Controller,
   Delete,
   Get,
-  HttpException,
-  HttpStatus,
+  HttpCode,
+  InternalServerErrorException,
   Param,
+  ParseIntPipe,
   Post,
-  Put
+  Put,
 } from '@nestjs/common';
 import { EventoParticipantesService } from 'src/evento_participantes/evento_participantes.service';
 import { CreateLogTramiteDto } from 'src/log_tramite/dto/create-log_tramite.dto';
@@ -16,162 +17,210 @@ import { CreateTramiteDto } from './dto/create-tramite.dto';
 import { UpdateTramiteDto } from './dto/update-tramite.dto';
 import { TramiteService } from './tramite.service';
 
-@Controller('tramite')
-export class TramiteController {
-  constructor(private readonly tramiteService: TramiteService, private readonly viagemService: ViagemService, private readonly eParticipanteService: EventoParticipantesService) { }
-
-  @Post('/:id/:nome')
-async create(@Param('id') id: string, @Param('nome') nome: string, @Body() createTramiteDto: CreateTramiteDto) {
-  try {
-    const parsedId = +id;
-    
-    if (parsedId > 0) {
-      await this.tramiteService.update(parsedId, createTramiteDto, nome);
-    } else {
-      const resultado = await this.tramiteService.create(createTramiteDto, nome);
-      if (!await this.verificaColaborador(resultado.solicitacao_id)) {
-        if (createTramiteDto.status === 'SOLICITADO') {
-          const resultadosViagem = await this.viagemService.calculaDiasParaDiaria(resultado.solicitacao_id);
-          await Promise.all(
-            resultadosViagem.map(async (result) => {
-              await this.cadastraValoresDaDiaria(result.viagem, result.participante.id, result.evento.id, result.totalDias, resultado.solicitacao_id);
-            })
-          );
-        }
-      }
-    }
-    return { success: true };
-  } catch (error) {
-    console.error('Erro:', error);
-    throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-  }
+/**
+ * Consolidated definition of explicit status strings used across the controller.
+ * Moving magic strings to a shared enum helps catch typos and makes refactors easier.
+ */
+export enum TramiteStatus {
+  SOLICITADO = 'SOLICITADO',
+  RECUSADO = 'RECUSADO',
 }
 
-  async cadastraValoresDaDiaria(idViagem: number, participanteId: number, eventoId: number, total: number, solicitacaoId: number) {
-    return await this.viagemService.calculaDiaria(idViagem, participanteId, eventoId, total, solicitacaoId);
+@Controller('tramite')
+export class TramiteController {
+  constructor(
+    private readonly tramiteService: TramiteService,
+    private readonly viagemService: ViagemService,
+    private readonly eParticipanteService: EventoParticipantesService, // ⚠ TODO: consider renaming
+  ) {}
+
+  /**
+   * POST /tramite/:id/:nome
+   * Up‑serts (create or update) a trâmite depending on the numeric value of :id.
+   */
+  @Post(':id/:nome')
+  @HttpCode(200)
+  async upsert(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('nome') nome: string,
+    @Body() dto: CreateTramiteDto,
+  ): Promise<{ success: boolean }> {
+    try {
+      if (id > 0) {
+        await this.tramiteService.update(id, dto, nome);
+        return { success: true };
+      }
+
+      const created = await this.tramiteService.create(dto, nome);
+
+      const possuiColaborador = await this.hasColaborador(created.solicitacao_id);
+
+      if (!possuiColaborador && dto.status === TramiteStatus.SOLICITADO) {
+        const viagens = await this.viagemService.calculaDiasParaDiaria(
+          created.solicitacao_id,
+        );
+
+        await Promise.all(
+          viagens.map((v) =>
+            this.viagemService.calculaDiaria(
+              v.viagem,
+              v.participante.id,
+              v.evento.id,
+              v.totalDias,
+              created.solicitacao_id,
+            ),
+          ),
+        );
+      }
+
+      return { success: true };
+    } catch (error: any) {
+      throw new InternalServerErrorException(error?.message ?? error);
+    }
   }
 
-  async verificaColaborador(solicitacaoId: number): Promise<boolean> {
-    try {
-      const resultado = await this.tramiteService.findOneSolicitacaoColaborador(solicitacaoId);
-  
-      // Verifica se algum dos eventos contém um participante do tipo 'S'.
-      const temParticipanteTipoS = resultado.some(eventos =>
-        eventos.eventos.some(ep =>
-          ep.evento_participantes.some(part => part.participante.tipo === 'C' || part.participante.tipo === 'T')
-        )
-      );      
-  
-      return temParticipanteTipoS;
-    } catch (error) {
-      console.error("Erro ao verificar colaborador", error);
-      throw error; // Relança o erro ou trata conforme necessário.
-    }
-    
-  }
+  /* ---------------------------------------------------------------------------
+   * READ‑ONLY ENDPOINTS
+   * -------------------------------------------------------------------------*/
 
   @Get()
   findAll() {
     return this.tramiteService.findAll();
   }
 
-  @Get('/verifica/notificacao')
+  @Get('verifica/notificacao')
   findTramiteNotificacao() {
     return this.tramiteService.findTramiteParaNoticiacao();
   }
 
-  @Get('/solicitacao/:id')
-  findTramiteSolicitracao(@Param('id') id: string) {
-    return this.tramiteService.findOneSolicitacao(+id);
+  @Get('solicitacao/:id')
+  findTramiteSolicitacao(@Param('id', ParseIntPipe) id: number) {
+    return this.tramiteService.findOneSolicitacao(id);
   }
 
-  @Get('/todas/solicitacao/:id')
-  findTramitesDaSolicitracao(@Param('id') id: string) {
-    return this.tramiteService.findTramitesDaSolicitacao(+id);
+  @Get('todas/solicitacao/:id')
+  findTramitesDaSolicitacao(@Param('id', ParseIntPipe) id: number) {
+    return this.tramiteService.findTramitesDaSolicitacao(id);
   }
 
-  @Get('/lotacao/:id')
-  findTramitePorLocatacao(@Param('id') id: string) {
-    return this.tramiteService.findTramitePorLotacao(+id);
+  @Get('lotacao/:id')
+  findTramitePorLotacao(@Param('id', ParseIntPipe) id: number) {
+    return this.tramiteService.findTramitePorLotacao(id);
   }
 
-  @Get('/lotacao/:id/origem')
-  findTramitePorLocatacaoNaOrigem(@Param('id') id: string) {
-    return this.tramiteService.findTramitePorLotacaoAprovadosDaOrigem(+id);
+  @Get('lotacao/:id/origem')
+  findTramitePorLotacaoNaOrigem(@Param('id', ParseIntPipe) id: number) {
+    return this.tramiteService.findTramitePorLotacaoAprovadosDaOrigem(id);
   }
 
-  @Get('/presidencia/todos')
+  @Get('presidencia/todos')
   findTramitePresidencia() {
     return this.tramiteService.findTramitePresidencia();
   }
 
-  @Get('/solicitacoes/empenhados')
+  @Get('solicitacoes/empenhados')
   findEmpenhados() {
     return this.tramiteService.findEmpenhados();
   }
 
-  @Get('/solicitacoes/concluidas')
+  @Get('solicitacoes/concluidas')
   findConcluidas() {
     return this.tramiteService.findConcluidas();
   }
 
-  @Get('/envia-email')
-  enviaEmail() {
-    //this.tramiteService.enviarNotificacaoDoStatus("SOLICITADO", "12");
-    return HttpStatus.OK;
-  }
-
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.tramiteService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.tramiteService.findOne(id);
   }
 
-  @Get('/solicitacao/login/:login')
+  @Get('solicitacao/login/:login')
   localizarSolicitacoesPeloLogin(@Param('login') login: string) {
     return this.tramiteService.listarSolicitacoesPeloLogin(login);
   }
 
+  /* ---------------------------------------------------------------------------
+   * UPDATE ENDPOINTS
+   * -------------------------------------------------------------------------*/
+
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateTramiteDto: UpdateTramiteDto) {
-    return this.tramiteService.update(+id, updateTramiteDto);
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateTramiteDto) {
+    return this.tramiteService.update(id, dto);
   }
 
-  @Put('/daof/lido/tramite/:id')
-  updateLidoDAOF(@Param('id') id: string, @Body() updateTramiteDto: UpdateTramiteDto) {
-    return this.tramiteService.updateDAOFLido(+id);
+  @Put('daof/lido/tramite/:id')
+  updateLidoDAOF(@Param('id', ParseIntPipe) id: number) {
+    return this.tramiteService.updateDAOFLido(id);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.tramiteService.remove(+id);
-  }
-
-  @Put('/status/:id/:nome')
+  @Put('status/:id/:nome')
   updateStatus(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Param('nome') nome: string,
     @Body() dto: CreateTramiteDto,
   ) {
-    return this.tramiteService.updateStatus(+id, 'RECUSADO', nome, dto);
+    return this.tramiteService.updateStatus(id, TramiteStatus.RECUSADO, nome, dto);
   }
 
-  @Put('/reverter/status/:id')
-  updateStatusAoReverterTramite(@Param('id') id: string,@Body() dto: UpdateTramiteDto,) {
-    return this.tramiteService.updateStatusAoReverterTramite(+id, dto);
+  @Put('reverter/status/:id')
+  updateStatusAoReverterTramite(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateTramiteDto,
+  ) {
+    return this.tramiteService.updateStatusAoReverterTramite(id, dto);
   }
 
-  @Get('/consulta/detalhes/servidor/:cpf')
+  /* ---------------------------------------------------------------------------
+   * DELETE ENDPOINT
+   * -------------------------------------------------------------------------*/
+
+  @Delete(':id')
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.tramiteService.remove(id);
+  }
+
+  /* ---------------------------------------------------------------------------
+   * DOMAIN‑SPECIFIC AUXILIARY ENDPOINTS
+   * -------------------------------------------------------------------------*/
+
+  @Get('envia-email')
+  enviaEmail() {
+    // TODO: move this to a dedicated Notifications module/service.
+    return 200;
+  }
+
+  @Get('consulta/detalhes/servidor/:cpf')
   pesquisaServidor(@Param('cpf') cpf: string) {
     return this.tramiteService.pesquisaServidorGOVBR(cpf);
   }
 
-
-  @Post('/processar/encaminhamento/log-tramite/:logTramiteId/solicitacao/:solicitacaoId')
-  processarEncaminhamento(@Param('logTramiteId') logTramiteId: number, @Param('solicitacaoId') solicitacaoId: number, @Body() createTramiteDto: CreateLogTramiteDto) {    
-        
-    //if(!logTramiteId === undefined || !solicitacaoId === undefined) return;
-    return this.tramiteService.voltaSolicitacaoParaDeterminadoSetor(logTramiteId, solicitacaoId, createTramiteDto);
+  @Post('processar/encaminhamento/log-tramite/:logTramiteId/solicitacao/:solicitacaoId')
+  processarEncaminhamento(
+    @Param('logTramiteId', ParseIntPipe) logTramiteId: number,
+    @Param('solicitacaoId', ParseIntPipe) solicitacaoId: number,
+    @Body() dto: CreateLogTramiteDto,
+  ) {
+    return this.tramiteService.voltaSolicitacaoParaDeterminadoSetor(
+      logTramiteId,
+      solicitacaoId,
+      dto,
+    );
   }
 
+  /* ---------------------------------------------------------------------------
+   * PRIVATE HELPERS (controller scope)
+   * Consider moving them to a Domain Service if reused elsewhere.
+   * -------------------------------------------------------------------------*/
 
+  private async hasColaborador(solicitacaoId: number): Promise<boolean> {
+    const eventos =
+      await this.tramiteService.findOneSolicitacaoColaborador(solicitacaoId);
+
+    return eventos.some((e) =>
+      e.eventos.some((ep) =>
+        ep.evento_participantes.some((p) =>
+          ['C', 'T'].includes(p.participante.tipo),
+        ),
+      ),
+    );
+  }
 }

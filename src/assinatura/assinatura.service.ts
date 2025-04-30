@@ -33,6 +33,20 @@ export class AssinaturaService {
       }
     )
   }
+  
+  async findAssinaturaByNome(nome: string) {
+    const assinatura = await this.prisma.assinatura.findFirst({
+      where: {
+        presidente_exercicio: {
+          contains: nome,
+          mode: 'insensitive', // Para busca case insensitive
+        }
+      }
+    });
+    
+    return assinatura; // Retorna null se não encontrar
+  }
+
 
   findOne(id: number) {
     return `This action returns a #${id} assinatura`;

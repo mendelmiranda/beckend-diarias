@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, NotFoundException } from '@nestjs/common';
 import { AssinaturaService } from './assinatura.service';
 import { CreateAssinaturaDto } from './dto/create-assinatura.dto';
 import { UpdateAssinaturaDto } from './dto/update-assinatura.dto';
@@ -27,6 +27,17 @@ export class AssinaturaController {
   findOne(@Param('id') id: string) {
     return this.assinaturaService.findOne(+id);
   }
+
+  @Get('/nome/:nome')
+async findAssinaturaByNome(@Param('nome') nome: string) {
+  const assinatura = await this.assinaturaService.findAssinaturaByNome(nome);
+  
+  if (!assinatura) {
+    throw new NotFoundException(`Assinatura com nome ${nome} não encontrada`);
+  }
+  
+  return assinatura;
+}
 
   @Put(':id')
   update(@Param('id') id: string, @Body() updateAssinaturaDto: UpdateAssinaturaDto) {
