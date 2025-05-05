@@ -7,9 +7,10 @@ import { EventoParticipantesModule } from 'src/evento_participantes/evento_parti
 import { ViagemModule } from 'src/viagem/viagem.module';
 import { ParticipanteController } from './participante.controller';
 import { ParticipanteService } from './participante.service';
+import { ParticipanteConsultasController } from './participante-consultas.controller';
 
 @Module({
-  controllers: [ParticipanteController],
+  controllers: [ParticipanteController, ParticipanteConsultasController],
   providers: [ParticipanteService],
   imports: [PrismaModule, ContaDiariaModule, EventoParticipantesModule, EventoModule, ViagemModule, AnexoSolicitacaoModule],
   

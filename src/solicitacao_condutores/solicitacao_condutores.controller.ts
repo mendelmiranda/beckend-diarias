@@ -31,4 +31,11 @@ export class SolicitacaoCondutoresController {
   remove(@Param('id') id: number) {    
     return this.solicitacaoCondutoresService.remove(+id);
   }
+
+  @Post('/novo/condutor-servidor/nome/:nome/cpf/:cpf')
+  async createCondutorServidor(@Body() createSolicitacaoCondutoreDto: CreateSolicitacaoCondutoreDto, @Param('nome') nome: string, @Param('cpf') cpf: string) {
+    console.log('createCondutorServidor', nome, cpf, createSolicitacaoCondutoreDto);
+    
+    return this.solicitacaoCondutoresService.createCondutorServidor(cpf, nome, createSolicitacaoCondutoreDto);
+  }
 }

@@ -49,4 +49,52 @@ export class SolicitacaoCondutoresService {
       },
     });
   }
+
+  
+  async createCondutorServidor(
+    cpf: string,
+    nome: string,
+    dto: CreateSolicitacaoCondutoreDto,
+  ) {
+    try {
+      const condutor = await this.findOrCreateCondutor(cpf, nome);
+  
+      // Verifica se já existe a associação condutor <-> solicitacao
+      const solicitacaoCondutorExistente = await this.prisma.solicitacao_condutores.findFirst({
+        where: {
+          condutores_id: condutor.id,
+          solicitacao_id: dto.solicitacao_id,
+        },
+      });
+  
+      if (solicitacaoCondutorExistente) {
+        // Já existe, retorna a associação existente (ou lance erro, conforme regra de negócio)
+        return solicitacaoCondutorExistente;
+      }
+  
+      // Caso não exista, cria a associação
+      return await this.prisma.solicitacao_condutores.create({
+        data: {
+          condutores_id: condutor.id,
+          solicitacao_id: dto.solicitacao_id,
+          veiculo: dto.veiculo,
+        },
+      });
+    } catch (error) {
+      console.error('Erro ao criar condutor ou solicitação:', error);
+      throw error;
+    }
+  }
+  
+  private async findOrCreateCondutor(cpf: string, nome: string) {
+    let condutor = await this.prisma.condutores.findFirst({ where: { cpf } });
+  
+    if (!condutor) {
+      condutor = await this.prisma.condutores.create({
+        data: { cpf, nome, tipo: 'S', validade_cnh: new Date()},
+      });
+    }
+  
+    return condutor;
+  }
 }

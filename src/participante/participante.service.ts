@@ -262,5 +262,77 @@ export class ParticipanteService {
   }
 
 
+  async findParticipantesEmEventosAtuais() {
+    const today = new Date();
+    
+    // Formatando a data para evitar problemas com timezone
+    today.setHours(0, 0, 0, 0);
+    
+    return this.prisma.participante.findMany({
+      select: {
+        id: true,
+        nome: true,
+        matricula: true,
+        lotacao: true,
+        evento_participantes: {
+          select: {
+            evento: {
+              select: {
+                id: true,
+                titulo: true,
+                inicio: true,
+                fim: true,
+                exterior: true,
+                local_exterior: true,
+                informacoes: true,
+                tem_passagem: true,
+                solicitacao: {
+                  select: {
+                    id: true,
+                    status: true,
+                  },
+                },
+              },
+            },
+          },
+          where: {
+            evento: {
+              inicio: {
+                lte: today,
+              },
+              fim: {
+                gte: today,
+              },
+              solicitacao: {
+                status: 'PDF_GERADO',
+              },
+            },
+          },
+        },
+      },
+      where: {
+        evento_participantes: {
+          some: {
+            evento: {
+              inicio: {
+                lte: today,
+              },
+              fim: {
+                gte: today,
+              },
+              solicitacao: {
+                status: 'PDF_GERADO',
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        nome: 'asc',
+      },
+    });
+  }
+
+
 
 }
