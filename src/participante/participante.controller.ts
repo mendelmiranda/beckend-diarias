@@ -246,4 +246,9 @@ export class ParticipanteController {
     return this.anexoSolicitacao.listarSetores();
   }
 
+  @Get('search/cargos/todos')
+  async listarCargos() {
+    return this.anexoSolicitacao.listarCargos();
+  }
+
 }

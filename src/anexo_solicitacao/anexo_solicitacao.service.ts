@@ -5,6 +5,7 @@ import { PrismaService } from 'prisma/prisma.service';
 import { HttpService } from '@nestjs/axios';
 import * as FormData from 'form-data';
 import * as https from 'https';
+import axios from 'axios';
 
 
 @Injectable()
@@ -184,6 +185,31 @@ export class AnexoSolicitacaoService {
       console.error('Erro ao buscar servidores ativos:', error);
       throw error;
     }
+  }
+
+//baseURL: 'https://10.10.21.19:5001/devops-servidor/search?ativo=SIM&campos=cargo',
+
+  async listarCargos() {
+
+    const url = 'https://10.10.21.19:5001/devops-servidor/search?ativo=SIM&campos=cargo';
+    const headers = {
+      Accept: '/',
+      'X-API-KEY': 'FZTETvO9rlP15e9E9dDlPWUhDxV24GsrdH1e5e38ZX4dpzc6MW64sZmZUBkxCLhc',
+    };
+
+    // Cria um agente HTTPS que ignora a verificação de SSL
+    const httpsAgent = new https.Agent({
+      rejectUnauthorized: false,
+    });
+
+    try {
+      const response = await this.httpService.axiosRef.get(url, { headers, httpsAgent });
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao buscar servidores ativos:', error);
+      throw error;
+    }
+    
   }
 
 
