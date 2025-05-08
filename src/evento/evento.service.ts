@@ -300,16 +300,16 @@ export class EventoService {
   }
 
 
-  async getCidadesMaisSolicitadas(limit = 5): Promise<CidadeMaisSolicitada[]> {
+  async getCidadesMaisSolicitadas(limit: number = 5): Promise<CidadeMaisSolicitada[]> {
     console.log('Buscando cidades mais solicitadas com limite:', limit);
-  
+
     try {
       const estadosNacionais = await this.prisma.$queryRaw<CidadeMaisSolicitada[]>(
         Prisma.sql`
           SELECT 
-            e.descricao as estado, 
+            e.descricao AS estado, 
             e.uf, 
-            COUNT(ev.id) as total
+            COUNT(ev.id) AS total
           FROM evento ev
           JOIN cidade c ON ev.cidade_id = c.id
           JOIN estado e ON c.estado_id = e.id
@@ -319,13 +319,13 @@ export class EventoService {
           LIMIT ${limit}
         `,
       );
-  
+
       console.log('Cidades mais solicitadas:', estadosNacionais);
-  
+
       return estadosNacionais;
     } catch (error) {
       console.error('Erro ao obter cidades mais solicitadas:', error);
-      throw new Error(`Erro ao obter cidades mais solicitadas: ${error.message}`);
+      throw new Error(`Erro ao obter cidades mais solicitadas: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
     }
   }
 
