@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { CreateEventoDto } from './dto/create-evento.dto';
 import { UpdateEventoDto } from './dto/update-evento.dto';
@@ -316,7 +316,13 @@ export class EventoService {
         LIMIT ${Prisma.raw("5")} `);
       return resultados;
     } catch (error) {
-      console.error('Erro ao obter cidades mais solicitadas:', error);
+      console.error('Erro no serviço:', error)
+      console.error('Erro no serviço:', {
+        message: error.message,
+        stack: error.stack,
+        code: error.code,
+        raw: error,
+      });
       throw error;
     }
   }

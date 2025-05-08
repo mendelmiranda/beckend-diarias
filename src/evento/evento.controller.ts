@@ -124,13 +124,11 @@ export class EventoController {
       
     } catch (error) {
       console.error('Erro no controller:', error);
-  
-      // Retorna erro com mensagem clara e status 500
       throw new HttpException({
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        statusCode: 500,
         message: 'Erro ao buscar cidades mais solicitadas',
-        error: error.message,
-      }, HttpStatus.INTERNAL_SERVER_ERROR);
+        error: error instanceof Error ? error.message : JSON.stringify(error),
+      }, 500);
     }
 
       return resultado;
