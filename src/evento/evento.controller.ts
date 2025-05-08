@@ -106,4 +106,35 @@ export class EventoController {
     }
   }
 
+
+  @Get('/dashboard/top-eventos')
+  listarTop3() {
+    return this.eventoService.getTopEventTypes();
+  }
+
+  @Get('/dashboard/top/cidades')
+  async getCidadesMaisSolicitadas() {
+    let resultado: any;
+
+    try {
+       resultado = await this.eventoService.getCidadesMaisSolicitadas();
+
+      console.log('Resultado do controller:', resultado);      
+
+      
+    } catch (error) {
+      console.error('Erro no controller:', error);
+  
+      // Retorna erro com mensagem clara e status 500
+      throw new HttpException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Erro ao buscar cidades mais solicitadas',
+        error: error.message,
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+      return resultado;
+  }
+
+
 }

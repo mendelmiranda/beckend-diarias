@@ -165,13 +165,13 @@ export class EventoService {
         }
       }
     });
-  
+
     // 2. Para cada evento, verificar participantes sem viagem
     const resultados = eventos.map(evento => {
       const participantesSemViagem = evento.evento_participantes.filter(
         ep => ep.viagem_participantes.length === 0
       );
-  
+
       return {
         evento_id: evento.id,
         titulo: evento.titulo,
@@ -183,7 +183,7 @@ export class EventoService {
         }))
       };
     });
-  
+
     return resultados;
   };
 
@@ -230,7 +230,7 @@ export class EventoService {
     if (exterior === 'SIM') {
       whereClause.exterior = 'SIM';
       whereClause.pais_id = pais_id;
-      
+
       if (local_exterior) {
         whereClause.local_exterior = local_exterior;
       }
@@ -265,6 +265,60 @@ export class EventoService {
     }
 
     return { duplicado: false };
+  }
+
+  //para o dashboard
+  async getTopEventTypes() {
+    const eventTypes = await this.prisma.evento.groupBy({
+      by: ['tipo_evento_id'],
+      _count: {
+        id: true
+      },
+      orderBy: {
+        _count: {
+          id: 'desc'
+        }
+      },
+      take: 3
+    });
+
+    // Obter os detalhes dos tipos de evento
+    const results = await Promise.all(
+      eventTypes.map(async (type) => {
+        const tipoEvento = await this.prisma.tipo_evento.findUnique({
+          where: { id: type.tipo_evento_id }
+        });
+
+        return {
+          descricao: tipoEvento.descricao,
+          total: type._count.id
+        };
+      })
+    );
+
+    return results;
+  }
+
+
+  async getCidadesMaisSolicitadas() {
+    try {
+      const resultados = await this.prisma.$queryRaw<
+        Array<{ estado: string; uf: string; total: number }>
+      >(Prisma.sql`
+        SELECT 
+          e.descricao as estado, e.uf, COUNT(ev.id) as total
+        FROM evento ev
+        JOIN cidade c ON ev.cidade_id = c.id
+        JOIN estado e ON c.estado_id = e.id
+        WHERE ev.exterior = 'NAO'
+        GROUP BY e.descricao, e.uf
+        ORDER BY total DESC
+        LIMIT ${Prisma.raw("5")} `);
+      return resultados;
+    } catch (error) {
+      console.error('Erro ao obter cidades mais solicitadas:', error);
+      throw error;
+    }
   }
 
 
