@@ -300,30 +300,32 @@ export class EventoService {
   }
 
 
-  async getCidadesMaisSolicitadas() {
+  async getCidadesMaisSolicitadas(limit = 5): Promise<CidadeMaisSolicitada[]> {
+    console.log('Buscando cidades mais solicitadas com limite:', limit);
+  
     try {
-      const resultados = await this.prisma.$queryRaw<
-        Array<{ estado: string; uf: string; total: number }>
-      >(Prisma.sql`
-        SELECT 
-          e.descricao as estado, e.uf, COUNT(ev.id) as total
-        FROM evento ev
-        JOIN cidade c ON ev.cidade_id = c.id
-        JOIN estado e ON c.estado_id = e.id
-        WHERE ev.exterior = 'NAO'
-        GROUP BY e.descricao, e.uf
-        ORDER BY total DESC
-        LIMIT ${Prisma.raw("5")} `);
-      return resultados;
+      const estadosNacionais = await this.prisma.$queryRaw<CidadeMaisSolicitada[]>(
+        Prisma.sql`
+          SELECT 
+            e.descricao as estado, 
+            e.uf, 
+            COUNT(ev.id) as total
+          FROM evento ev
+          JOIN cidade c ON ev.cidade_id = c.id
+          JOIN estado e ON c.estado_id = e.id
+          WHERE ev.exterior = 'NAO'
+          GROUP BY e.descricao, e.uf
+          ORDER BY total DESC
+          LIMIT ${limit}
+        `,
+      );
+  
+      console.log('Cidades mais solicitadas:', estadosNacionais);
+  
+      return estadosNacionais;
     } catch (error) {
-      console.error('Erro no serviço:', error)
-      console.error('Erro no serviço:', {
-        message: error.message,
-        stack: error.stack,
-        code: error.code,
-        raw: error,
-      });
-      throw error;
+      console.error('Erro ao obter cidades mais solicitadas:', error);
+      throw new Error(`Erro ao obter cidades mais solicitadas: ${error.message}`);
     }
   }
 
@@ -340,3 +342,10 @@ export class EventoService {
     await this.prisma.$disconnect();
   }
 } */
+
+
+  export interface CidadeMaisSolicitada {
+    estado: string;
+    uf: string;
+    total: number;
+  }

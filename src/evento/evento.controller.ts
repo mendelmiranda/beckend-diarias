@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Put } from '@nestjs/common';
 import { CreateEventoDto } from './dto/create-evento.dto';
 import { UpdateEventoDto } from './dto/update-evento.dto';
-import { EventoService } from './evento.service';
+import { CidadeMaisSolicitada, EventoService } from './evento.service';
 
 @Controller('evento')
 export class EventoController {
@@ -113,25 +113,23 @@ export class EventoController {
   }
 
   @Get('/dashboard/top/cidades')
-  async getCidadesMaisSolicitadas() {
-    let resultado: any;
-
+  async getCidadesMaisSolicitadas(): Promise<CidadeMaisSolicitada[]> {
+    console.log('Iniciando busca de cidades mais solicitadas no controller...');
     try {
-       resultado = await this.eventoService.getCidadesMaisSolicitadas();
-
-      console.log('Resultado do controller:', resultado);      
-
-      
+      const resultado = await this.eventoService.getCidadesMaisSolicitadas();
+      console.log('Resultado do controller:', resultado);
+      return resultado;
     } catch (error) {
       console.error('Erro no controller:', error);
-      throw new HttpException({
-        statusCode: 500,
-        message: 'Erro ao buscar cidades mais solicitadas',
-        error: error instanceof Error ? error.message : JSON.stringify(error),
-      }, 500);
+      throw new HttpException(
+        {
+          statusCode: 500,
+          message: 'Erro ao buscar cidades mais solicitadas',
+          error: error instanceof Error ? error.message : JSON.stringify(error),
+        },
+        500,
+      );
     }
-
-      return resultado;
   }
 
 
