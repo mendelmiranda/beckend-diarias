@@ -21,25 +21,62 @@ export class ParticipanteService {
   }
 
   async cadastraColaborador(dto: CreateParticipanteDto) {
-
     const remove = 'conta_diaria';
     const prop = 'conta_diaria';
     const contaX: conta_diaria = dto[prop][0];
-
+  
     delete dto[remove];
-
-    const participante = await this.prisma.participante.create({
-      data: dto,
-    });
-    
-    const participanteId = participante.id;
-
+  
+    // Convertendo o campo data_nascimento para um objeto Date
+    if (dto.data_nascimento && typeof dto.data_nascimento === 'string') {
+      dto.data_nascimento = new Date(dto.data_nascimento);
+    }
+  
+    // Verificar se já existe um participante com este CPF
+    let participante;
+    let participanteId;
+  
+    if (dto.cpf) {
+      const participanteExistente = await this.prisma.participante.findFirst({
+        where: {
+          cpf: dto.cpf
+        }
+      });
+  
+      if (participanteExistente) {
+        // Se já existe, use o participante existente
+        participante = participanteExistente;
+        participanteId = participanteExistente.id;
+        
+        // Opcionalmente, você pode atualizar os dados do participante existente
+        // Descomentar se quiser atualizar os dados do participante
+        /* 
+        participante = await this.prisma.participante.update({
+          where: { id: participanteId },
+          data: dto
+        });
+        */
+      } else {
+        // Se não existe, crie um novo participante
+        participante = await this.prisma.participante.create({
+          data: dto,
+        });
+        participanteId = participante.id;
+      }
+    } else {
+      // Se não houver CPF, crie um novo participante
+      participante = await this.prisma.participante.create({
+        data: dto,
+      });
+      participanteId = participante.id;
+    }
+  
     const modeloConta: CreateContaDiariaDto = {
       ...contaX,
       participante_id: participanteId,
-    }
-
-    if(modeloConta.id > 0){
+    };
+  
+    if (modeloConta.id > 0) {
       await this.prisma.conta_diaria.update({
         where: { id: modeloConta.id },
         data: modeloConta,
@@ -49,9 +86,8 @@ export class ParticipanteService {
         data: modeloConta,
       });
     }
-
+  
     return participanteId;
-
   }
 
   findAll() {
@@ -66,6 +102,11 @@ export class ParticipanteService {
       },
       include: {
         cidade: true,
+        conta_diaria: {
+          include: {
+            banco: true,
+          },
+        },
       },
       orderBy: [{ id: 'desc' }],
     });
