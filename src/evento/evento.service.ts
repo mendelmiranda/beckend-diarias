@@ -300,34 +300,35 @@ export class EventoService {
   }
 
 
-  async getCidadesMaisSolicitadas(limit: number = 5): Promise<CidadeMaisSolicitada[]> {
-    console.log('Buscando cidades mais solicitadas com limite:', limit);
+  async getCidadesMaisSolicitadas(limit: number = 3): Promise<CidadeMaisSolicitada[]> {
+  console.log('Buscando cidades mais solicitadas com limite:', limit);
 
-    try {
-      const estadosNacionais = await this.prisma.$queryRaw<CidadeMaisSolicitada[]>(
-        Prisma.sql`
-          SELECT 
-            e.descricao AS estado, 
-            e.uf, 
-            COUNT(ev.id) AS total
-          FROM evento ev
-          JOIN cidade c ON ev.cidade_id = c.id
-          JOIN estado e ON c.estado_id = e.id
-          WHERE ev.exterior = 'NAO'
-          GROUP BY e.descricao, e.uf
-          ORDER BY total DESC
-          LIMIT ${limit}
-        `,
-      );
+  try {
+    const cidadesMaisSolicitadas = await this.prisma.$queryRaw<CidadeMaisSolicitada[]>(
+      Prisma.sql`
+        SELECT 
+          c.descricao AS cidade,
+          e.descricao AS estado, 
+          e.uf, 
+          CAST(COUNT(ev.id) AS INT) AS total
+        FROM evento ev
+        JOIN cidade c ON ev.cidade_id = c.id
+        JOIN estado e ON c.estado_id = e.id
+        WHERE ev.exterior = 'NAO'
+        GROUP BY c.descricao, e.descricao, e.uf
+        ORDER BY total DESC
+        LIMIT ${limit}
+      `,
+    );
 
-      console.log('Cidades mais solicitadas:', estadosNacionais);
+    console.log('Cidades mais solicitadas:', cidadesMaisSolicitadas);
 
-      return estadosNacionais;
-    } catch (error) {
-      console.error('Erro ao obter cidades mais solicitadas:', error);
-      throw new Error(`Erro ao obter cidades mais solicitadas: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
-    }
+    return cidadesMaisSolicitadas;
+  } catch (error) {
+    console.error('Erro ao obter cidades mais solicitadas:', error);
+    throw new Error(`Erro ao obter cidades mais solicitadas: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
   }
+}
 
 
 }
@@ -345,7 +346,11 @@ export class EventoService {
 
 
   export interface CidadeMaisSolicitada {
+    cidade: string;
     estado: string;
     uf: string;
     total: number;
   }
+
+
+
