@@ -1,25 +1,16 @@
+// main.ts - Configuração CORS mais robusta
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ValidationPipe } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const prisma = new PrismaClient();
-  const fs = require('fs');
 
-  /*COLOCAR ESSE COMENTADO EM PRODUÇÃO
- const root = '/home/deployer/sslfiles';
- const httpsOptions = {
-    key: fs.readFileSync(`${root}/tce.ap.gov.br.key`),
-    cert: fs.readFileSync(`${root}/STAR_tce_ap_gov_br.crt`),
-    ca: [fs.readFileSync(`${root}/CER - CRT Files/SectigoRSADomainValidationSecureServerCA.crt`)],
-  };*/
-  
+  const app = await NestFactory.create(AppModule);
 
-  const app = await NestFactory.create(AppModule, {
-//    httpsOptions,
-  });
-
+  // Configuração CORS mais robusta
   app.enableCors({
     origin: [
       'http://localhost:4200',
@@ -35,10 +26,29 @@ async function bootstrap() {
       'http://10.10.3.5:3000',
       'http://10.10.20.59:3000'
     ],
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+      'Origin',
+      'X-Requested-With',
+      'Content-Type',
+      'Accept',
+      'Authorization',
+      'Cache-Control'
+    ],
     credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204
   });
 
+  // REMOVER ValidationPipe por enquanto para evitar erro
+  // Só adicionar depois de instalar class-transformer
+  // app.useGlobalPipes(new ValidationPipe({
+  //   whitelist: true,
+  //   forbidNonWhitelisted: true,
+  //   transform: true,
+  // }));
+
+  // Swagger config
   const config = new DocumentBuilder()
     .setTitle('API de Solicitação de Viagens e Diárias')
     .setDescription('API')
@@ -47,17 +57,10 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-
   SwaggerModule.setup('api', app, document);
 
-  await app
-    .listen(4000)
-    .then(async () => {
-      await prisma.$disconnect();
-    })
-    .catch(async (e) => {
-      console.error(e);
-      await prisma.$disconnect();
-    });
+  await app.listen(4000);
+  console.log('🚀 Server running on http://localhost:4000');
 }
-bootstrap();
+
+bootstrap().catch(console.error);
