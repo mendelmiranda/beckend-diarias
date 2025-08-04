@@ -1,7 +1,6 @@
 // main.ts - Configuração CORS mais robusta
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ValidationPipe } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { AppModule } from './app.module';
 
@@ -13,7 +12,6 @@ async function bootstrap() {
   // Configuração CORS mais robusta
   app.enableCors({
     origin: [
-      'http://localhost:4200',
       'http://localhost:4321',
       'http://localhost:3000',
       'http://localhost:3001',
@@ -23,22 +21,11 @@ async function bootstrap() {
       'http://10.10.0.18:8084',
       'http://192.168.210.71:3000',
       'http://10.10.5.210:3000',
-      'http://10.10.3.5:3000',
-      'http://10.10.20.59:3000'
     ],
-    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-    allowedHeaders: [
-      'Origin',
-      'X-Requested-With',
-      'Content-Type',
-      'Accept',
-      'Authorization',
-      'Cache-Control'
-    ],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
-    preflightContinue: false,
-    optionsSuccessStatus: 204
   });
+
 
   // REMOVER ValidationPipe por enquanto para evitar erro
   // Só adicionar depois de instalar class-transformer
