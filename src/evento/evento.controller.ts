@@ -117,7 +117,7 @@ export class EventoController {
     console.log('Iniciando busca de cidades mais solicitadas no controller...');
     try {
       const resultado = await this.eventoService.getCidadesMaisSolicitadas();
-      console.log('Resultado do controller:', resultado);
+      //console.log('Resultado do controller:', resultado);
       return resultado;
     } catch (error) {
       console.error('Erro no controller:', error);
