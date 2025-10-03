@@ -21,6 +21,7 @@ async function bootstrap() {
       'http://10.10.0.18:8084',
       'http://192.168.210.71:3000',
       'http://10.10.5.210:3000',
+      'http://10.10.3.5:3000',
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
