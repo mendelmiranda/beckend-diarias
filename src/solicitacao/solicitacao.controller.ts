@@ -83,12 +83,38 @@ export class SolicitacaoController {
     return this.solicitacaoService.findOne(+id);
   }
 
-  @Put(':id')
-  update(@Param('id') id: string, @Body() updateSolicitacaoDto: UpdateSolicitacaoDto, @Req() request: Request) {
-    const usuario = JSON.parse(request.headers['dados_client']);
-
+@Put(':id')
+update(
+  @Param('id') id: string, 
+  @Body() updateSolicitacaoDto: any, 
+  @Req() request: Request
+) {
+  console.log('chegouaqui');
+  console.log('Headers recebidos:', request.headers);
+  console.log('dados_client header:', request.headers['dados_client']);
+  
+  try {
+    const dadosClient = request.headers['dados_client'];
+    
+    if (!dadosClient) {
+      throw new Error('Header dados_client não encontrado');
+    }
+    
+    // Se for array (NestJS pode retornar array de headers)
+    const dadosClientStr = Array.isArray(dadosClient) 
+      ? dadosClient[0] 
+      : dadosClient;
+    
+    const usuario = JSON.parse(dadosClientStr);
+    console.log('usuario', usuario);
+    
     return this.solicitacaoService.update(+id, updateSolicitacaoDto, usuario);
+    
+  } catch (error) {
+    console.error('Erro ao processar dados_client:', error);
+    throw new BadRequestException('Header dados_client inválido');
   }
+}
 
   @Delete(':id')
   remove(@Param('id') id: string, @Req() request: Request) {
