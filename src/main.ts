@@ -15,6 +15,7 @@ async function bootstrap() {
       'http://localhost:4321',
       'http://localhost:3000',
       'http://localhost:3001',
+      'http://localhost:3004',
       'http://localhost:5173',
       'https://s3i.tce.ap.gov.br',
       'https://10.10.22.16',

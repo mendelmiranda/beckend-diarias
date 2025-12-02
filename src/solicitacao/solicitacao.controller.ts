@@ -14,14 +14,12 @@ import {
 } from '@nestjs/common';
 import { ConsultaSetoresDto } from './dto/consulta-setores.dto';
 import { CreateSolicitacaoDto } from './dto/create-solicitacao.dto';
-import PesquisaSolicitacaoDTO from './dto/pesquisa-solicitacao.dto';
-import { UpdateSolicitacaoDto } from './dto/update-solicitacao.dto';
-import { Solicitacao } from './entities/solicitacao.entity';
-import { SolicitacaoService } from './solicitacao.service';
 import { PathParamsDto } from './dto/path-params.dto';
+import PesquisaSolicitacaoDTO from './dto/pesquisa-solicitacao.dto';
 import { DiariasResponseDto } from './dto/response.dto';
 import { SolicitacaoIdDto } from './dto/solicitacao-id.dto';
-import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { Solicitacao } from './entities/solicitacao.entity';
+import { SolicitacaoService } from './solicitacao.service';
 
 @Controller('solicitacao')
 export class SolicitacaoController {
