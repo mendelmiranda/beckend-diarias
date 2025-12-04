@@ -1,13 +1,12 @@
 // builders/solicitacao-pdf.builder.ts
 import { Injectable } from '@nestjs/common';
-import { formataDataCurta, Util } from 'src/util/Util';
-import { HeaderBuilder } from './header.builder';
-import { EventosBuilder } from './eventos.builder';
-import { CondutoresBuilder } from './condutores.builder';
-import { PdfContent, PdfDocDefinition } from './pdf-content.model';
 import { AssinaturaBuilder } from './assinatura.builder';
-import { PresidenteAssinaturaBuilder } from './presidente-assinatura.builder';
+import { CondutoresBuilder } from './condutores.builder';
+import { EventosBuilder } from './eventos.builder';
+import { HeaderBuilder } from './header.builder';
 import { ImagemLogo } from './imagem-logo';
+import { PdfContent, PdfDocDefinition } from './pdf-content.model';
+import { PresidenteAssinaturaBuilder } from './presidente-assinatura.builder';
 
 @Injectable()
 export class SolicitacaoPdfBuilder {

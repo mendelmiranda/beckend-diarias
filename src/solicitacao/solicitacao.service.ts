@@ -1381,11 +1381,6 @@ export class SolicitacaoService {
         
         whereConditions.cod_lotacao = params.cod_lotacao;
         
-        // Adicionar outras condições opcionais
-        if (params.status) {
-          whereConditions.status = params.status;
-        }
-  
         // Condição de data (entre dataInicio e dataFim)
         if (params.dataInicio && params.dataFim) {
           whereConditions.datareg = {
@@ -1399,10 +1394,18 @@ export class SolicitacaoService {
         }
       }
 
-      //console.log('whereConditions', JSON.stringify(whereConditions));
+      // Adicionar filtro de status na tabela tramite
+      // Como é relação one-to-many, usa 'some' para buscar em qualquer trâmite
+      if (params.status) {
+        whereConditions.tramite = {
+          some: {
+            status: params.status,
+          },
+        };
+      }
   
       // Executar a consulta com os filtros
-      const resultado =  this.prisma.solicitacao.findMany({
+      const resultado = this.prisma.solicitacao.findMany({
         where: whereConditions,
         include: {
           tramite: {
@@ -1461,8 +1464,6 @@ export class SolicitacaoService {
           },
         },
       });
-
-      //console.log('Total de resultados:', resultado.length);
 
       return resultado;
 

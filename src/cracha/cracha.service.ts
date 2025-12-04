@@ -164,9 +164,10 @@ export class CrachaService {
               <div class="logo-container">
                 <div class="logo-inner">
                   <img
-                    src="https://app.tce.ap.gov.br/storage/geral/Cracha.foto/8/tceLogo.svg"
+                    src="https://www.tce.ap.gov.br/novo/logo-title.png"
                     alt="Logo TCE-AP"
                     class="logo"
+                    style={{ width: '195px', height: '40px' }}
                   />
                 </div>
               </div>

@@ -86,10 +86,10 @@ update(
   @Param('id') id: string, 
   @Body() updateSolicitacaoDto: any, 
   @Req() request: Request
-) {
+) {/* 
   console.log('chegouaqui');
   console.log('Headers recebidos:', request.headers);
-  console.log('dados_client header:', request.headers['dados_client']);
+  console.log('dados_client header:', request.headers['dados_client']); */
   
   try {
     const dadosClient = request.headers['dados_client'];
@@ -200,10 +200,8 @@ update(
 
 
   @Post('/pesquisa/geral/header')
-  async pesquisarSolicitacoes2(@Body() queryParams: PesquisaSolicitacaoDTO) {
-    
-    console.log('Parâmetros recebidos:', queryParams); // Mensagem mais clara
-    
+  async pesquisarSolicitacoes2(@Body() queryParams: PesquisaSolicitacaoDTO) {    
+    console.log('Parâmetros recebidos:', queryParams); // Mensagem mais clara    
 
     // Validar o parâmetro obrigatório
     if (!queryParams.cod_lotacao) {
