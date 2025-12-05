@@ -201,7 +201,7 @@ update(
 
   @Post('/pesquisa/geral/header')
   async pesquisarSolicitacoes2(@Body() queryParams: PesquisaSolicitacaoDTO) {    
-    console.log('Parâmetros recebidos:', queryParams); // Mensagem mais clara    
+    //console.log('Parâmetros recebidos:', queryParams); // Mensagem mais clara    
 
     // Validar o parâmetro obrigatório
     if (!queryParams.cod_lotacao) {

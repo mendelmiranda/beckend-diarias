@@ -1362,119 +1362,119 @@ export class SolicitacaoService {
     };
   }
 
-  pesquisaHeaderDaSolicitacao(params: PesquisaSolicitacaoDTO) {    
-    
-    try {
-      // Construir objeto de condições para a busca
-      const whereConditions: any = {};
-  
-      // Verificar se temos um número específico de solicitação (id)
-      // Se temos, fazemos busca direta por id sem exigir cod_lotacao
-      if (params.numero) {
-        whereConditions.id = params.numero;
-      } 
-      // Caso contrário, cod_lotacao é obrigatório para os outros tipos de pesquisa
-      else {
-        if (!params.cod_lotacao) {
-          throw new Error('O parâmetro cod_lotacao é obrigatório quando não se busca por número de solicitação');
-        }
-        
-        whereConditions.cod_lotacao = params.cod_lotacao;
-        
-        // Condição de data (entre dataInicio e dataFim)
-        if (params.dataInicio && params.dataFim) {
-          whereConditions.datareg = {
-            gte: params.dataInicio,
-            lte: params.dataFim,
-          };
-        }
-  
-        if (params.cpf_responsavel) {
-          whereConditions.cpf_responsavel = params.cpf_responsavel;
-        }
+  pesquisaHeaderDaSolicitacao(params: PesquisaSolicitacaoDTO) {
+  try {
+    const whereConditions: any = {};
+
+    if (params.numero) {
+      whereConditions.id = params.numero;
+    } else {
+      if (!params.cod_lotacao) {
+        throw new Error(
+          'O parâmetro cod_lotacao é obrigatório quando não se busca por número de solicitação',
+        );
       }
 
-      // Adicionar filtro de status na tabela tramite
-      // Como é relação one-to-many, usa 'some' para buscar em qualquer trâmite
-      if (params.status) {
+      whereConditions.cod_lotacao = params.cod_lotacao;
+
+      if (params.dataInicio && params.dataFim) {
+        whereConditions.datareg = {
+          gte: params.dataInicio,
+          lte: params.dataFim,
+        };
+      }
+
+      if (params.cpf_responsavel) {
+        whereConditions.cpf_responsavel = params.cpf_responsavel;
+      }
+    }
+
+    // 🔹 Regra especial para status
+    if (params.status) {
+      if (params.status === 'NAO') {
+        // status vem da tabela solicitacao
+        whereConditions.status = params.status;
+
+        // e NÃO pode existir nenhum registro em tramite
+        whereConditions.tramite = {
+          none: {}, // nenhum tramite relacionado
+        };
+      } else {
+        // Demais status: filtra na tabela tramite
         whereConditions.tramite = {
           some: {
             status: params.status,
           },
         };
       }
-  
-      // Executar a consulta com os filtros
-      const resultado = this.prisma.solicitacao.findMany({
-        where: whereConditions,
-        include: {
-          tramite: {
-            include: {
-              log_tramite: true,
-            },
-          },
-          empenho_daofi: true,
-          correcao_solicitacao: true,
-          eventos: {
-            include: {
-              anexo_evento: true,
-              evento_participantes: {
-                include: {
-                  participante: {
-                    include: {
-                      conta_diaria: {
-                        include: {
-                          banco: true,
-                        },
-                      },
-                    },
-                  },
-                  viagem_participantes: {
-                    include: {
-                      viagem: {
-                        include: {
-                          origem: true,
-                          destino: true,
-                          pais: true,
-                          valor_viagem: true,
-                          cidade_origem: {
-                            include: {
-                              estado: true,
-                            },
-                          },
-                          cidade_destino: {
-                            include: {
-                              estado: true,
-                            },
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-              tipo_evento: true,
-              cidade: {
-                include: {
-                  estado: true,
-                },
-              },
-              pais: true,
-            },
+    }
+
+    const resultado = this.prisma.solicitacao.findMany({
+      where: whereConditions,
+      include: {
+        tramite: {
+          include: {
+            log_tramite: true,
           },
         },
-      });
+        empenho_daofi: true,
+        correcao_solicitacao: true,
+        eventos: {
+          include: {
+            anexo_evento: true,
+            evento_participantes: {
+              include: {
+                participante: {
+                  include: {
+                    conta_diaria: {
+                      include: {
+                        banco: true,
+                      },
+                    },
+                  },
+                },
+                viagem_participantes: {
+                  include: {
+                    viagem: {
+                      include: {
+                        origem: true,
+                        destino: true,
+                        pais: true,
+                        valor_viagem: true,
+                        cidade_origem: {
+                          include: { estado: true },
+                        },
+                        cidade_destino: {
+                          include: { estado: true },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            tipo_evento: true,
+            cidade: {
+              include: {
+                estado: true,
+              },
+            },
+            pais: true,
+          },
+        },
+      },
+    });
 
-      return resultado;
-
-    } catch (e) {
-      this.logger.error(`Erro ao buscar solicitações: ${e.message}`, e.stack);
-      if (e instanceof NotFoundException) {
-        throw e;
-      }
-      throw new InternalServerErrorException('Erro ao buscar solicitações');
+    return resultado;
+  } catch (e) {
+    this.logger.error(`Erro ao buscar solicitações: ${e.message}`, e.stack);
+    if (e instanceof NotFoundException) {
+      throw e;
     }
+    throw new InternalServerErrorException('Erro ao buscar solicitações');
   }
+}
+
 
   async findSolicitacoesComPDFGerado(id?: string) {    
 
