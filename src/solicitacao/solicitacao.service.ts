@@ -717,7 +717,9 @@ export class SolicitacaoService {
           some: {
             log_tramite: {
               some: {
-                status: 'APROVADO'
+                status: {
+                  in: ['APROVADO', 'APROVADO_LOCAL']
+                }
               }
             }
           }
@@ -1363,120 +1365,120 @@ export class SolicitacaoService {
   }
 
   pesquisaHeaderDaSolicitacao(params: PesquisaSolicitacaoDTO) {
-  try {
-    const whereConditions: any = {};
+    try {
+      const whereConditions: any = {};
 
-    if (params.numero) {
-      whereConditions.id = params.numero;
-    } else {
-      if (!params.cod_lotacao) {
-        throw new Error(
-          'O parâmetro cod_lotacao é obrigatório quando não se busca por número de solicitação',
-        );
-      }
-
-      whereConditions.cod_lotacao = params.cod_lotacao;
-
-      if (params.dataInicio && params.dataFim) {
-        whereConditions.datareg = {
-          gte: params.dataInicio,
-          lte: params.dataFim,
-        };
-      }
-
-      if (params.cpf_responsavel) {
-        whereConditions.cpf_responsavel = params.cpf_responsavel;
-      }
-    }
-
-    // 🔹 Regra especial para status
-    if (params.status) {
-      if (params.status === 'NAO') {
-        // status vem da tabela solicitacao
-        whereConditions.status = params.status;
-
-        // e NÃO pode existir nenhum registro em tramite
-        whereConditions.tramite = {
-          none: {}, // nenhum tramite relacionado
-        };
+      if (params.numero) {
+        whereConditions.id = params.numero;
       } else {
-        // Demais status: filtra na tabela tramite
-        whereConditions.tramite = {
-          some: {
-            status: params.status,
-          },
-        };
+        if (!params.cod_lotacao) {
+          throw new Error(
+            'O parâmetro cod_lotacao é obrigatório quando não se busca por número de solicitação',
+          );
+        }
+
+        whereConditions.cod_lotacao = params.cod_lotacao;
+
+        if (params.dataInicio && params.dataFim) {
+          whereConditions.datareg = {
+            gte: params.dataInicio,
+            lte: params.dataFim,
+          };
+        }
+
+        if (params.cpf_responsavel) {
+          whereConditions.cpf_responsavel = params.cpf_responsavel;
+        }
       }
-    }
 
-    const resultado = this.prisma.solicitacao.findMany({
-      where: whereConditions,
-      include: {
-        tramite: {
-          include: {
-            log_tramite: true,
+      // 🔹 Regra especial para status
+      if (params.status) {
+        if (params.status === 'NAO') {
+          // status vem da tabela solicitacao
+          whereConditions.status = params.status;
+
+          // e NÃO pode existir nenhum registro em tramite
+          whereConditions.tramite = {
+            none: {}, // nenhum tramite relacionado
+          };
+        } else {
+          // Demais status: filtra na tabela tramite
+          whereConditions.tramite = {
+            some: {
+              status: params.status,
+            },
+          };
+        }
+      }
+
+      const resultado = this.prisma.solicitacao.findMany({
+        where: whereConditions,
+        include: {
+          tramite: {
+            include: {
+              log_tramite: true,
+            },
           },
-        },
-        empenho_daofi: true,
-        correcao_solicitacao: true,
-        eventos: {
-          include: {
-            anexo_evento: true,
-            evento_participantes: {
-              include: {
-                participante: {
-                  include: {
-                    conta_diaria: {
-                      include: {
-                        banco: true,
+          empenho_daofi: true,
+          correcao_solicitacao: true,
+          eventos: {
+            include: {
+              anexo_evento: true,
+              evento_participantes: {
+                include: {
+                  participante: {
+                    include: {
+                      conta_diaria: {
+                        include: {
+                          banco: true,
+                        },
                       },
                     },
                   },
-                },
-                viagem_participantes: {
-                  include: {
-                    viagem: {
-                      include: {
-                        origem: true,
-                        destino: true,
-                        pais: true,
-                        valor_viagem: true,
-                        cidade_origem: {
-                          include: { estado: true },
-                        },
-                        cidade_destino: {
-                          include: { estado: true },
+                  viagem_participantes: {
+                    include: {
+                      viagem: {
+                        include: {
+                          origem: true,
+                          destino: true,
+                          pais: true,
+                          valor_viagem: true,
+                          cidade_origem: {
+                            include: { estado: true },
+                          },
+                          cidade_destino: {
+                            include: { estado: true },
+                          },
                         },
                       },
                     },
                   },
                 },
               },
-            },
-            tipo_evento: true,
-            cidade: {
-              include: {
-                estado: true,
+              tipo_evento: true,
+              cidade: {
+                include: {
+                  estado: true,
+                },
               },
+              pais: true,
             },
-            pais: true,
           },
         },
-      },
-    });
+      });
 
-    return resultado;
-  } catch (e) {
-    this.logger.error(`Erro ao buscar solicitações: ${e.message}`, e.stack);
-    if (e instanceof NotFoundException) {
-      throw e;
+      return resultado;
+    } catch (e) {
+      this.logger.error(`Erro ao buscar solicitações: ${e.message}`, e.stack);
+      if (e instanceof NotFoundException) {
+        throw e;
+      }
+      throw new InternalServerErrorException('Erro ao buscar solicitações');
     }
-    throw new InternalServerErrorException('Erro ao buscar solicitações');
   }
-}
 
 
-  async findSolicitacoesComPDFGerado(id?: string) {    
+  async findSolicitacoesComPDFGerado(id?: string) {
 
     try {
       if (id) {
@@ -1488,21 +1490,21 @@ export class SolicitacaoService {
         });
         return solicitacao ? [solicitacao] : [];
       }
-  
+
       const solicitacoes = await this.prisma.solicitacao.findMany({
         where: {
           status: 'PDF_GERADO',
         },
         take: 10,
       });
-  
+
       return solicitacoes;
     } catch (error) {
       this.logger.error(`Erro ao buscar solicitações com PDF gerado: ${error.message}`, error.stack);
       throw new InternalServerErrorException('Erro ao buscar solicitações com PDF gerado');
     }
   }
-  
+
 
 
 
