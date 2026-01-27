@@ -3,7 +3,7 @@ import { CreateAnexoSolicitacaoDto } from './dto/create-anexo_solicitacao.dto';
 import { UpdateAnexoSolicitacaoDto } from './dto/update-anexo_solicitacao.dto';
 import { PrismaService } from 'prisma/prisma.service';
 import { HttpService } from '@nestjs/axios';
-import * as FormData from 'form-data';
+import FormData from 'form-data';
 import * as https from 'https';
 import axios from 'axios';
 
