@@ -11,10 +11,14 @@
 } */
 
 export class ImagemLogo {
-    private static imageUrl: string =
-        "https://www.tce.ap.gov.br/novo/logo-title.png";
-
+    // Remova a URL HTTPS daqui - não funciona com pdfmake
     static exibirImagem() {
-        return this.imageUrl;
+        return ImagemLogoLocal.key(); // ✅ Retorna 'logoTce'
+    }
+}
+
+export class ImagemLogoLocal {
+    static key() {
+        return 'logoTce'; // ✅ Chave que corresponde ao docDefinition.images
     }
 }
