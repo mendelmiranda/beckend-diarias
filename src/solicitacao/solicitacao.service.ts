@@ -1496,6 +1496,9 @@ export class SolicitacaoService {
           status: 'PDF_GERADO',
         },
         take: 10,
+        orderBy: {
+          id: 'desc',
+        },
       });
 
       return solicitacoes;

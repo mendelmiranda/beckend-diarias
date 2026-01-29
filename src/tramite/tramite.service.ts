@@ -690,6 +690,18 @@ export class TramiteService {
       await this.assinarDocumento(dto.solicitacao_id);
     }
 
+    if (dto.status === 'PDF_GERADO') {
+      console.log('entrou no pdf');
+
+      await this.prisma.solicitacao.update({
+        where: { id: dto.solicitacao_id },
+        data: {
+          status: 'PDF_GERADO',
+        },
+      });
+      
+    }
+
     return this.prisma.tramite.update({
       where: { id },
       data: dtoSemSolicitacao,
