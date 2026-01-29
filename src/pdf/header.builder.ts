@@ -15,14 +15,27 @@ export class HeaderBuilder {
     // Logo
     content.push({
       image: base64Image,
-      width: 120,
+      width: 210,
+      alignment: 'center',
     });
 
     // Cabeçalho
-    content.push({
+    /* content.push({
       text: "TRIBUNAL DE CONTAS DO ESTADO",
       style: "header",
-    });
+    }); */
+
+    content.push({
+  columns: [
+    {
+      text: Util.formataDataCurtaComHora(new Date()),
+      alignment: 'right',
+      fontSize: 9,
+      margin: [0, 10, 0, 0]
+    }
+  ],
+  columnGap: 10
+});
 
     content.push({
       text: "\n",
