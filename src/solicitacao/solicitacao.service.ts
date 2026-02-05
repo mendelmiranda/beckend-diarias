@@ -1485,7 +1485,7 @@ export class SolicitacaoService {
         const solicitacao = await this.prisma.solicitacao.findFirst({
           where: {
             status: 'PDF_GERADO',
-            id: parseInt(id, 10),
+            id: parseInt(id, 20),
           },
         });
         return solicitacao ? [solicitacao] : [];
@@ -1495,7 +1495,7 @@ export class SolicitacaoService {
         where: {
           status: 'PDF_GERADO',
         },
-        take: 10,
+        take: 20,
         orderBy: {
           id: 'desc',
         },
