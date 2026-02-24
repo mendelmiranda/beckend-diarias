@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
-import { CreateParticipanteDto } from './dto/create-participante.dto';
-import { UpdateParticipanteDto } from './dto/update-participante.dto';
+import { CreateParticipanteDto } from '../participante/dto/create-participante.dto';
+import { UpdateParticipanteDto } from '../participante/dto/update-participante.dto';
 import { conta_diaria } from '@prisma/client';
 import { CreateContaDiariaDto } from 'src/conta_diaria/dto/create-conta_diaria.dto';
 
@@ -271,6 +271,8 @@ export class ParticipanteService {
           destino: vp.viagem.destino_id && vp.viagem.destino ? vp.viagem.destino.cidade : 
                    vp.viagem.cidade_destino_id && vp.viagem.cidade_destino ? vp.viagem.cidade_destino.descricao : 'Não especificado',
           valor_passagem: vp.viagem.valor_passagem,
+          destino_uf: vp.viagem.destino_id && vp.viagem.destino ? vp.viagem.destino.uf : 'Não especificado',
+          origem_uf: vp.viagem.origem_id && vp.viagem.origem ? vp.viagem.origem.uf : 'Não especificado',
         }))
       }));
   
@@ -289,6 +291,8 @@ export class ParticipanteService {
                   viagem.cidade_origem_id && viagem.cidade_origem ? viagem.cidade_origem.descricao : 'Não especificado',
           destino: viagem.destino_id && viagem.destino ? viagem.destino.cidade : 
                    viagem.cidade_destino_id && viagem.cidade_destino ? viagem.cidade_destino.descricao : 'Não especificado',
+          destino_uf: viagem.destino_id && viagem.destino ? viagem.destino.uf : 'Não especificado',                   
+          origem_uf: viagem.origem_id && viagem.origem ? viagem.origem.uf : 'Não especificado',
           valor_passagem: viagem.valor_passagem,
           participantes: viagem.viagem_participantes.map(vp => ({
             id: vp.evento_participantes.participante.id,
