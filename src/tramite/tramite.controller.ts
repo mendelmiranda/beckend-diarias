@@ -32,7 +32,7 @@ export class TramiteController {
     private readonly tramiteService: TramiteService,
     private readonly viagemService: ViagemService,
     private readonly eParticipanteService: EventoParticipantesService, // ⚠ TODO: consider renaming
-  ) {}
+  ) { }
 
   /**
    * POST /tramite/:id/:nome
@@ -44,36 +44,46 @@ export class TramiteController {
     @Param('id', ParseIntPipe) id: number,
     @Param('nome') nome: string,
     @Body() dto: CreateTramiteDto,
-  ): Promise<{ success: boolean }> {
+  ): Promise<{ success: boolean; calculou: boolean; total?: number }> {
     try {
       if (id > 0) {
         await this.tramiteService.update(id, dto, nome);
-        return { success: true };
+        return { success: true, calculou: false };
       }
 
       const created = await this.tramiteService.create(dto, nome);
 
       const possuiColaborador = await this.hasColaborador(created.solicitacao_id);
+      const deveCalcular =
+        !possuiColaborador && dto.status === TramiteStatus.SOLICITADO;
 
-      if (!possuiColaborador && dto.status === TramiteStatus.SOLICITADO) {
-        const viagens = await this.viagemService.calculaDiasParaDiaria(
-          created.solicitacao_id,
-        );
-
-        await Promise.all(
-          viagens.map((v) =>
-            this.viagemService.calculaDiaria(
-              v.viagem,
-              v.participante.id,
-              v.evento.id,
-              v.totalDias,
-              created.solicitacao_id,
-            ),
-          ),
-        );
+      if (!deveCalcular) {
+        return { success: true, calculou: false };
       }
 
-      return { success: true };
+      const viagens = await this.viagemService.calculaDiasParaDiaria(
+        created.solicitacao_id,
+      );
+
+      const resultados = await Promise.all(
+        viagens.map((v) =>
+          this.viagemService.calculaDiaria(
+            v.viagem,
+            v.participante.id,
+            v.evento.id,
+            v.totalDias,
+            created.solicitacao_id,
+          ),
+        ),
+      );
+
+      const salvas = resultados.filter((r) => r != null).length;
+
+      return {
+        success: salvas > 0,
+        calculou: salvas > 0,
+        total: salvas,
+      };
     } catch (error: any) {
       throw new InternalServerErrorException(error?.message ?? error);
     }

@@ -86,27 +86,55 @@ export class ViagemService {
 }
 
 
-async calculaDiaria(idViagem: number, participanteId: number, eventoId: number, total: number, solicitacaoId: number) {
-    
-  const pesquisaValores = await this.solicitacaoService.getEventosParticipante(solicitacaoId, participanteId);
+async calculaDiaria(
+  idViagem: number,
+  participanteId: number,
+  eventoId: number,
+  total: number,
+  solicitacaoId: number,
+) {
+  const pesquisaValores = await this.solicitacaoService.getEventosParticipante(
+    solicitacaoId,
+    participanteId,
+  );
 
-  const eventoExterior = pesquisaValores.analise.eventos.find(evento => evento.exterior === "SIM");  
-  
+  if (!pesquisaValores?.analise?.eventos) {
+    return null;
+  }
+
+  const eventoExterior = pesquisaValores.analise.eventos.find(
+    (evento) => evento.exterior === 'SIM',
+  );
+
   if (eventoExterior) {
-    return this.calculaInternacional(idViagem, participanteId, eventoId, total);
+    const resultado = await this.calculaInternacional(
+      idViagem,
+      participanteId,
+      eventoId,
+      total,
+    );
+
+    // calculaInternacional pode retornar 0/null quando nenhum dos
+    // destino* bateu nas condições — nesse caso, nada foi salvo.
+    return resultado ? resultado : null;
   }
 
   const valorDiaria = pesquisaValores.valor_diaria;
+
+  if (valorDiaria == null || valorDiaria <= 0) {
+    return null;
+  }
 
   const valorViagem: CreateValorViagemDto = {
     viagem_id: idViagem,
     tipo: 'DIARIA',
     destino: 'NACIONAL',
     valor_individual: valorDiaria,
-    participante_id: participanteId ?? 0
+    participante_id: participanteId ?? 0,
   };
 
-  return this.valorViagemService.create(valorViagem);
+  const salvo = await this.valorViagemService.create(valorViagem);
+  return salvo ?? null;
 }
   
 
@@ -162,7 +190,7 @@ async calculaDiaria(idViagem: number, participanteId: number, eventoId: number, 
 
       return this.valorViagemService.create(valorViagem);
     }
-    return 0;
+    return null;
   }
 
   async destinoNacional(parametros: any) {
@@ -186,7 +214,7 @@ async calculaDiaria(idViagem: number, participanteId: number, eventoId: number, 
 
       return this.valorViagemService.create(valorViagem);
     }
-    return 0;
+    return null;
   }
 
   async destinoInternacional(parametros: any) {
@@ -210,7 +238,7 @@ async calculaDiaria(idViagem: number, participanteId: number, eventoId: number, 
 
       return resultadoCalculoInternacional;
     }
-    return 0;
+    return null;
   }
 
   async salvaDiariaInternacional(parametros: any, resultadoCalculoInternacional: number) {
@@ -230,7 +258,7 @@ async calculaDiaria(idViagem: number, participanteId: number, eventoId: number, 
       destino: 'NACIONAL',
       valor_individual: inteira,
     };
-    this.valorViagemService.create(valorViagem);
+    await this.valorViagemService.create(valorViagem);
   }
 
   async destinoMacapa(parametros: any) {
