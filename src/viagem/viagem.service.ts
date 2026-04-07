@@ -220,7 +220,7 @@ async calculaDiaria(idViagem: number, participanteId: number, eventoId: number, 
       destino: 'INTERNACIONAL',
       valor_individual: resultadoCalculoInternacional,
     };
-    this.valorViagemService.create(valorViagemInternacional);
+    await this.valorViagemService.create(valorViagemInternacional);
   }
 
   async salvaDiariaInteira(parametros: any, inteira: number) {
