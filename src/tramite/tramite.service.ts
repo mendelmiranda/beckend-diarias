@@ -56,6 +56,10 @@ export class TramiteService {
       this.enviaDARAD(status, solicitacaoId, 'Solicitação aprovada pela Presidência.');
     }
 
+    if (status === 'APROVADO_INFO') {
+      this.enviaDA(status, solicitacaoId, 'Solicitação aprovada pela Presidência - Favor informar o condutor/veículo.');
+    }
+
     if (status === 'VALORES_ESCOLA') {
       this.enviaDARAD(status, solicitacaoId, 'Valores informados pela Escola de Contas.');
     }
@@ -96,6 +100,10 @@ export class TramiteService {
     /* this.emailService.enviarEmail(solicitacaoId, status, 'betania.silva', mensagem);
     this.emailService.enviarEmail(solicitacaoId, status, 'clarisse.dias'), mensagem;
     this.emailService.enviarEmail(solicitacaoId, status, 'joanne.dias', mensagem); */
+  }
+
+  async enviaDA(status: string, solicitacaoId: number, mensagem?: string) {
+    this.emailService.enviarEmail(solicitacaoId, status, 'pilar.furtado', mensagem)
   }
 
   async enviaDAOF(status: string, solicitacaoId: number, mensagem?: string) {
