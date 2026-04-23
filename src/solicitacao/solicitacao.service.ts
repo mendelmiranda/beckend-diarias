@@ -582,6 +582,24 @@ export class SolicitacaoService {
       });
     }
 
+    //verificar se existe no tramite/log_tramite e remover de todos se arquivar for igual a false
+    if (updateSolicitacaoDto.arquivar === true) {
+
+      const tramites = await this.prisma.tramite.findFirst({
+        where: { solicitacao_id: id },
+      });
+
+      if (tramites) {
+        await this.prisma.log_tramite.deleteMany({
+          where: { tramite_id: tramites.id },
+        });
+        await this.prisma.tramite.delete({
+          where: { id: tramites.id },
+        });
+      }
+    }
+
+
     return this.prisma.solicitacao.update({
       where: { id },
       data: {
@@ -589,6 +607,7 @@ export class SolicitacaoService {
         arquivar: updateSolicitacaoDto.arquivar
       },
     });
+
   }
 
   async remove(id: number, usuario: InfoUsuario) {

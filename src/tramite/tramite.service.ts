@@ -21,19 +21,26 @@ export class TramiteService {
   ) { }
 
   async create(dto: CreateTramiteDto, nome: string) {
-    const { solicitacao, log_tramite, ...dtoSemSolicitacao } = dto;
+  const { solicitacao, log_tramite, ...dtoSemSolicitacao } = dto;
 
-    const resultado = await this.prisma.tramite.create({
-      data: dtoSemSolicitacao,
+  const tramiteCriado = await this.prisma.tramite.create({
+    data: dtoSemSolicitacao,
+  });
+
+  if (dto.status === 'SOLICITADO') {
+    await this.prisma.solicitacao.update({
+      where: { id: dto.solicitacao_id },
+      data: { arquivar: false },
     });
-
-    const id = (await resultado).id;
-    await this.salvarLogTramite(dto, nome, id);
-
-    await this.enviarNotificacaoDoStatus(dto.status, dto.solicitacao_id, dto.cod_lotacao_destino);
-
-    return resultado;
   }
+
+  await Promise.all([
+    this.salvarLogTramite(dto, nome, tramiteCriado.id),
+    this.enviarNotificacaoDoStatus(dto.status, dto.solicitacao_id, dto.cod_lotacao_destino),
+  ]);
+
+  return tramiteCriado;
+}
 
   async enviarNotificacaoDoStatus(status: string, solicitacaoId: number, destino?: number) {
     if (process.env['ENV'] === 'DEV') return;
@@ -706,8 +713,7 @@ export class TramiteService {
         data: {
           status: 'PDF_GERADO',
         },
-      });
-      
+      });      
     }
 
     return this.prisma.tramite.update({
