@@ -90,6 +90,9 @@ update(
   console.log('chegouaqui');
   console.log('Headers recebidos:', request.headers);
   console.log('dados_client header:', request.headers['dados_client']); */
+
+  console.log(updateSolicitacaoDto.arquivar);
+  
   
   try {
     const dadosClient = request.headers['dados_client'];

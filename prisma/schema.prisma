@@ -109,6 +109,7 @@ model solicitacao {
   encaminhar_solicitacao     encaminhar_solicitacao[]
   aprovacao_definitiva_darad aprovacao_definitiva_daof[]
   viagem_evento              viagem_evento[]
+  arquivar                   Boolean? @default(false)
 
   @@id([id])
 }

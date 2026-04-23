@@ -8,4 +8,5 @@ export class CreateSolicitacaoDto {
   lotacao?: string;
   login?: string;
   protocolo?: string;
+  arquivar?: boolean;
 }

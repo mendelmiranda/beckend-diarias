@@ -586,6 +586,7 @@ export class SolicitacaoService {
       where: { id },
       data: {
         justificativa: updateSolicitacaoDto.justificativa,
+        arquivar: updateSolicitacaoDto.arquivar
       },
     });
   }
