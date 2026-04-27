@@ -278,80 +278,95 @@ async calculaDiaria(
   }
 
 
-  calculaDiasParaDiaria(solicitacao_id: number): Promise<ParticipanteTotalDias[]> {
-    ""
-    return this.prisma.evento
-      .findMany({
-        where: {
-          solicitacao_id: solicitacao_id,
-        },
+  async calculaDiasParaDiaria(solicitacaoId: number): Promise<ParticipanteTotalDias[]> {
+  const eventos = await this.prisma.evento.findMany({
+    where: { solicitacao_id: solicitacaoId },
+    orderBy: { inicio: 'asc' },
+    include: {
+      evento_participantes: {
         include: {
-          evento_participantes: {
-            include: {
-              viagem_participantes: {
-                include: {
-                  viagem: true
-                }
-              },
-              participante: true,
-
-            },
-          },
+          participante: true,
+          viagem_participantes: { include: { viagem: true } },
         },
-      })
-      .then((result) => {
-        const participantes: ParticipanteTotalDias[] = [];
-        let somaDias = 0;
+      },
+    },
+  });
 
-        const eventosSort = result.sort((a, b) => a.inicio.getTime() - b.inicio.getTime());
+  // Reorganiza por participante: { cpf -> [{evento, viagens}] }
+  type Bucket = { evento: typeof eventos[number]; viagens: Date[]; epId: number; viagemId: number };
+  const porParticipante = new Map<string, { participante: participante; buckets: Bucket[] }>();
 
-        eventosSort.forEach((eventos) => {
-          eventos.evento_participantes
-            .filter((ep) => eventos.id === ep.evento_id)
-            .forEach((p) => {
-              const participante = participantes.find((next) => next.participante.cpf === p.participante.cpf);
+  for (const evento of eventos) {
+    for (const ep of evento.evento_participantes) {
+      const viagens = ep.viagem_participantes
+        .map((vp) => vp.viagem?.data_ida)
+        .filter((d): d is Date => d instanceof Date);
 
-              const viagem = p.viagem_participantes.find((next) => next.evento_participantes_id === p.id);
+      // Sem viagem: participante não gera diária de viagem. Pula silenciosamente
+      // (ou inclua com totalDias = 0 se você quer listá-lo mesmo assim).
+      if (viagens.length === 0) continue;
 
-              const viagens = p.viagem_participantes;
-              const menorData: Date = new Date(Math.min(...viagens.map(data => data.viagem.data_ida.getTime())));
-
-              const diferenca = Util.totalDeDias(menorData, eventos.inicio) -1;
-              let diasMaiorQuePermitido = 0;
-
-              /*SE HOUVER DIFERENÇA ENTRE AS DATAS, DEVE SUBTRAIR PARA FICAR EXATAMENTE IGUAL A (menorData, eventos.fim)*/
-              if(diferenca > 1) {
-                const novoValor = diferenca-1;
-                diasMaiorQuePermitido = -novoValor;
-              }
-
-              //SÓ DEVE CALCULAR DIÁRIAS SE TIVER VIAGEM
-              if (participante === undefined) {
-
-                const diferencaEntreEventos = this.calcularDiferencaEntreEventos(eventosSort);
-                //console.log("Diferença em dias entre os eventos:", diferencaEntreEventos);
-
-                if(diferencaEntreEventos.length > 0){
-                  somaDias = diferencaEntreEventos[0];
-                } 
-                
-                const total = somaDias-1;                
-
-                participantes.push({
-                  participante: p.participante,
-                  totalDias: Util.totalDeDias(menorData, eventos.fim)+total+diasMaiorQuePermitido,
-                  evento: eventos,
-                  viagem: viagem.viagem_id === undefined ? 0 : viagem.viagem_id,
-                });
-              } else {
-                participante.totalDias += Util.totalDeDias(menorData, eventos.fim);
-              }
-            });
-        });
-
-        return participantes;
+      const chave = ep.participante.cpf;
+      if (!porParticipante.has(chave)) {
+        porParticipante.set(chave, { participante: ep.participante, buckets: [] });
+      }
+      porParticipante.get(chave)!.buckets.push({
+        evento,
+        viagens,
+        epId: ep.id,
+        viagemId: ep.viagem_participantes[0]?.viagem_id ?? 0,
       });
+    }
   }
+
+  const resultado: ParticipanteTotalDias[] = [];
+
+  for (const { participante, buckets } of porParticipante.values()) {
+    // Ordena eventos do participante por início
+    buckets.sort((a, b) => a.evento.inicio.getTime() - b.evento.inicio.getTime());
+
+    let totalDias = 0;
+    let grupoInicio: Date | null = null;
+    let grupoFim: Date | null = null;
+
+    for (const b of buckets) {
+      const menorIda = new Date(Math.min(...b.viagens.map((d) => d.getTime())));
+      const fimEvento = b.evento.fim;
+
+      if (grupoInicio === null) {
+        // Primeiro evento: começa no min(data_ida, inicio_evento)
+        grupoInicio = menorIda < b.evento.inicio ? menorIda : b.evento.inicio;
+        grupoFim = fimEvento;
+      } else {
+        // Se esse evento começa ANTES ou NO MESMO DIA que terminou o anterior → continua o grupo
+        const gap = Util.totalDeDias(grupoFim!, b.evento.inicio);
+        if (gap <= 1) {
+          // evento contínuo — só estende o fim
+          if (fimEvento > grupoFim!) grupoFim = fimEvento;
+        } else {
+          // fecha o grupo anterior e abre novo
+          totalDias += Util.totalDeDias(grupoInicio!, grupoFim!);
+          grupoInicio = menorIda < b.evento.inicio ? menorIda : b.evento.inicio;
+          grupoFim = fimEvento;
+        }
+      }
+    }
+
+    // fecha o último grupo
+    if (grupoInicio && grupoFim) {
+      totalDias += Util.totalDeDias(grupoInicio, grupoFim);
+    }
+
+    resultado.push({
+      participante,
+      totalDias,
+      evento: buckets[0].evento,
+      viagem: buckets[0].viagemId,
+    });
+  }
+
+  return resultado;
+}
 
   calcularDiferencaEntreEventos(eventos: { inicio: Date, fim: Date }[]): number[] {
     const diferencas: number[] = [];
