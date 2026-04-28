@@ -15,6 +15,7 @@ import { EventosBuilder } from './eventos.builder';
 import { CondutoresBuilder } from './condutores.builder';
 import { AssinaturaBuilder } from './assinatura.builder';
 import { AprovacaoDefinitivaService } from 'src/aprovacao_definitiva/aprovacao_definitiva.service';
+import { ContaDiariaService } from 'src/conta_diaria/conta_diaria.service';
 import { PresidenteAssinaturaBuilder } from './presidente-assinatura.builder';
 
 @Module({
@@ -26,6 +27,7 @@ import { PresidenteAssinaturaBuilder } from './presidente-assinatura.builder';
     AssinaturaBuilder,
     PresidenteAssinaturaBuilder,
     AprovacaoDefinitivaService,
+    ContaDiariaService,
     PdfService, SolicitacaoService, PrismaService, LogSistemaService, SolicitacaoCondutoresService, AprovacaoDefinitivaDaofService]
 })
 export class PdfModule {}

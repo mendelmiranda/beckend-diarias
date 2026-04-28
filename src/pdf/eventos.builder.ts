@@ -170,8 +170,10 @@ export class EventosBuilder {
 
     // Preenchemos ambas as tabelas com os dados dos participantes
     participantes.forEach(ep => {
-      // Busca a conta ativa ou a primeira conta
-      const conta = ep.participante.conta_diaria?.find((a) => a.ativa === true) || ep.participante.conta_diaria?.[0];
+      const conta = this.getContaBancariaParticipante(ep);
+      const banco = this.getNomeBanco(conta, ep?.participante);
+      const agencia = this.getAgenciaConta(conta, ep?.participante);
+      const numeroConta = this.getNumeroConta(conta, ep?.participante);
 
       // Calcula valor total de diárias para o participante
       let valorDiaria = 0;
@@ -208,9 +210,9 @@ export class EventosBuilder {
       tableBodyFinanceiro.push([
         ep.participante.nome || "", // Repetimos o nome para identificação
         diariasDesc || "Sem diárias",
-        conta?.banco?.banco || "",
-        conta?.agencia || "",
-        conta?.conta || ""
+        banco || "Não informado",
+        agencia || "Não informado",
+        numeroConta || "Não informado"
       ]);
     });
 
@@ -431,5 +433,60 @@ export class EventosBuilder {
     });
 
     return Array.from(viagensMap.values());
+  }
+
+  private getContaBancariaParticipante(ep: any): any {
+    const participante = ep?.participante;
+    const contasRaw =
+      participante?.conta_diaria ??
+      ep?.conta_diaria ??
+      participante?.contaDiariaModel ??
+      null;
+
+    const contas = Array.isArray(contasRaw)
+      ? contasRaw
+      : contasRaw
+        ? [contasRaw]
+        : [];
+
+    if (contas.length === 0) {
+      return null;
+    }
+
+    const cpfParticipante = this.normalizeCpf(participante?.cpf);
+    const contasDoParticipante = cpfParticipante
+      ? contas.filter((conta) => this.normalizeCpf(conta?.cpf) === cpfParticipante)
+      : [];
+
+    const origemBusca = contasDoParticipante.length > 0 ? contasDoParticipante : contas;
+    const contaAtiva =
+      origemBusca.find((c) => c?.ativa === true) ??
+      origemBusca.find((c) => c?.active === true) ??
+      origemBusca.find((c) => c?.status === "ATIVA");
+
+    return contaAtiva ?? origemBusca[0];
+  }
+
+  private getNomeBanco(conta: any, participante: any): string {
+    return (
+      conta?.banco?.banco ??
+      conta?.banco?.nome ??
+      conta?.banco ??
+      participante?.banco ??
+      ""
+    );
+  }
+
+  private getAgenciaConta(conta: any, participante: any): string {
+    return conta?.agencia ?? participante?.agencia ?? "";
+  }
+
+  private getNumeroConta(conta: any, participante: any): string {
+    return conta?.conta ?? participante?.conta ?? "";
+  }
+
+  private normalizeCpf(value: any): string {
+    if (value == null) return "";
+    return String(value).replace(/\D/g, "");
   }
 }

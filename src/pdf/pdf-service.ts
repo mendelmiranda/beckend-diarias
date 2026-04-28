@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { PDFDocument } from 'pdf-lib';
 import { AprovacaoDefinitivaService } from 'src/aprovacao_definitiva/aprovacao_definitiva.service';
 import { AprovacaoDefinitivaDaofService } from 'src/aprovacao_definitiva_daof/aprovacao_definitiva_daof.service';
+import { ContaDiariaService } from 'src/conta_diaria/conta_diaria.service';
 import { SolicitacaoService } from 'src/solicitacao/solicitacao.service';
 import { SolicitacaoCondutoresService } from 'src/solicitacao_condutores/solicitacao_condutores.service';
 import { PdfGenerator } from './pdf-generator.service';
@@ -19,6 +20,7 @@ export class PdfService {
     private solicitacaoCondutoresService: SolicitacaoCondutoresService,
     private aprovacaoDefinitivaDaofiService: AprovacaoDefinitivaDaofService,
     private aprovacaoDefinitivaService: AprovacaoDefinitivaService,
+    private contaDiariaService: ContaDiariaService,
     private pdfGenerator: PdfGenerator,
     private solicitacaoPdfBuilder: SolicitacaoPdfBuilder,
   ) { }
@@ -49,6 +51,7 @@ export class PdfService {
   async generateSolicitacaoPdf(id: number, comAnexo: boolean): Promise<Buffer> {
   const solicitacao = await this.pesquisaSolicitacaoPorId(id);
   if (!solicitacao) throw new Error(`Solicitação com ID ${id} não encontrada`);
+  await this.enriquecerContasBancariasPorCpf(solicitacao);
 
   const condutores = await this.getCondutoresDaSolicitacao(id);
   const assinatura = await this.getAssinaturaDoDocumentoDAOF(id);
@@ -132,5 +135,29 @@ export class PdfService {
   // ajuste o mime se trocar o formato
   return `data:image/png;base64,${buffer.toString('base64')}`;
 }
+
+  private async enriquecerContasBancariasPorCpf(solicitacao: any): Promise<void> {
+    const eventos = solicitacao?.eventos;
+    if (!Array.isArray(eventos) || eventos.length === 0) return;
+
+    const participantes = eventos.flatMap((evento: any) => evento?.evento_participantes ?? []);
+    await Promise.all(
+      participantes.map(async (ep: any) => {
+        const cpf = this.normalizeCpf(ep?.participante?.cpf);
+        if (!cpf) return;
+
+        const conta = await this.contaDiariaService.pesquisaContaDoParticipanteGeralPorCpf(cpf);
+        if (!conta) return;
+
+        if (!ep.participante) ep.participante = {};
+        ep.participante.conta_diaria = [conta];
+      }),
+    );
+  }
+
+  private normalizeCpf(value: any): string {
+    if (value == null) return '';
+    return String(value).replace(/\D/g, '');
+  }
 
 }
