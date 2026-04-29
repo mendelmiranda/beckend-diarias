@@ -187,6 +187,7 @@ export class EventoParticipantesService {
           valor_evento: true,
           valor_total_inscricao: true,
           observacao_valor: true,
+          tem_passagem: true,
           evento_participantes: {
             include: {
               participante: {
@@ -216,6 +217,7 @@ export class EventoParticipantesService {
           valor_evento: evento.valor_evento,
           valor_total_inscricao: evento.valor_total_inscricao,
           observacao: evento.observacao_valor,
+          tem_passagem: evento.tem_passagem,
           participantes: evento.evento_participantes.map((ep) => {
             const valorDiaria = ep.participante.valor_viagem?.[0]?.valor_individual || "";
             const tipoDiaria = ep.participante.valor_viagem?.[0]?.tipo || "";
