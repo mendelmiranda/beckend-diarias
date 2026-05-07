@@ -190,6 +190,8 @@ export class EventoParticipantesService {
           tem_passagem: true,
           evento_participantes: {
             include: {
+              viagem_participantes: true,
+
               participante: {
                 select: {
                   id: true,
@@ -235,6 +237,7 @@ export class EventoParticipantesService {
               tipo_diaria: tipoDiaria,
               destino: destino,
               valor_viagem_id: valorViagemId,
+              viagem_participantes: ep.viagem_participantes,
               source: "valor_diarias",
             };
           }),
