@@ -41,9 +41,21 @@ import { PdfModule } from './pdf/pdf.module';
 import { ViagemEventoModule } from './viagem_evento/viagem_evento.module';
 import { CrachaModule } from './cracha/cracha.module';
 
+import { ConfigModule } from '@nestjs/config';
+import etceConfig from './etce/etce.config';
+import { ProtocolosModule } from './etce/protocolos.module';
+
+
 
 @Module({
   imports: [
+
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [etceConfig],
+    }),
+
+    ProtocolosModule,
     BancosModule,
     PaisModule,
     TipoEventoModule,
@@ -79,7 +91,7 @@ import { CrachaModule } from './cracha/cracha.module';
           },
         },
         defaults: {
-          from:'"nest-modules" <contato@tce.ap.gov.br>',
+          from: '"nest-modules" <contato@tce.ap.gov.br>',
         },
         template: {
           dir: process.cwd() + '/templates/',
@@ -118,10 +130,10 @@ import { CrachaModule } from './cracha/cracha.module';
     CrachaModule,
   ],
   controllers: [AppController],
-  providers: [AppService, EmailService, 
-  {
-    provide: 'APP_FILTER',
-    useClass: PrismaExceptionFilter,
-  }],
+  providers: [AppService, EmailService,
+    {
+      provide: 'APP_FILTER',
+      useClass: PrismaExceptionFilter,
+    }],
 })
-export class AppModule {}
+export class AppModule { }
