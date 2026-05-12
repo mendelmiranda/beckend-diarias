@@ -1,14 +1,19 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ETceProtocoloClient } from '../etce/etce-protocolo.client';
-import { ProtocolarPdfDto } from './protocolar-pdf.dto';
 import { GerarProtocoloRequest } from './gerar-protocolo.dto';
+import { ProtocolarPdfDto } from './protocolar-pdf.dto';
 
-
-const MAX_PDF_BYTES = 10 * 1024 * 1024; // 10 MB — limite do e-TCE
+const MAX_PDF_BYTES = 10 * 1024 * 1024;
 
 @Injectable()
 export class ProtocolosService {
+  private readonly logger = new Logger(ProtocolosService.name);
+
   constructor(
     private readonly config: ConfigService,
     private readonly etceClient: ETceProtocoloClient,
@@ -62,18 +67,32 @@ export class ProtocolosService {
       ],
     };
 
+    this.logger.log(
+      `Protocolando: numOficio=${dto.numOficio} cpf=${dto.interessado.cpf} tamanhoPdf=${this.tamanhoEmBytes(dto.pdfBase64)}`,
+    );
+
+    // Se o e-TCE der erro, o client já lança a exception correta —
+    // não precisa try/catch aqui, deixa propagar.
     const { Cod_TCE } = await this.etceClient.gerarProtocolo(payload);
+
+    this.logger.log(
+      `Protocolado com sucesso: codTce=${Cod_TCE} numOficio=${dto.numOficio}`,
+    );
+
     return Cod_TCE;
   }
 
   private validarTamanhoPdf(pdfBase64: string): void {
-    const padding = (pdfBase64.match(/=+$/) || [''])[0].length;
-    const bytes = Math.floor((pdfBase64.length * 3) / 4) - padding;
-
+    const bytes = this.tamanhoEmBytes(pdfBase64);
     if (bytes > MAX_PDF_BYTES) {
       throw new BadRequestException(
         `PDF excede 10 MB (${bytes} bytes)`,
       );
     }
+  }
+
+  private tamanhoEmBytes(pdfBase64: string): number {
+    const padding = (pdfBase64.match(/=+$/) || [''])[0].length;
+    return Math.floor((pdfBase64.length * 3) / 4) - padding;
   }
 }
