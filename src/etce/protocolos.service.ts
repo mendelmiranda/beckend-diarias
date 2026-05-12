@@ -1,7 +1,9 @@
 import {
   BadRequestException,
   ConflictException,
+  HttpException,
   Injectable,
+  InternalServerErrorException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
@@ -30,7 +32,131 @@ export class ProtocolosService {
     private readonly etceClient: ETceProtocoloClient,
   ) {}
 
-  async protocolar(
+  async protocolar( solicitacaoId: number, dto: ProtocolarPdfDto,): Promise<ProtocoloResultado> {
+  this.logger.log(`🚀 Iniciando protocolar - solicitaçãoId: ${solicitacaoId}`);
+
+  try {
+    // 1. Verifica se a solicitação existe
+    const solicitacao = await this.prisma.solicitacao.findUnique({
+      where: { id: solicitacaoId },
+      select: { id: true, protocolo: true },
+    });
+
+    if (!solicitacao) {
+      throw new NotFoundException(`Solicitação ${solicitacaoId} não encontrada.`);
+    }
+
+    // 2. Idempotência
+    if (solicitacao.protocolo) {
+      this.logger.log(
+        `Solicitação ${solicitacaoId} já protocolada: ${solicitacao.protocolo}`,
+      );
+      return { codTce: solicitacao.protocolo, jaProtocolada: true };
+    }
+
+    // 3. Validações locais
+    this.validarTamanhoPdf(dto.pdfBase64);
+
+    const payload = this.montarPayload(dto);
+
+    this.logger.log(
+      `Protocolando solicitação ${solicitacaoId}: cpf=${dto.interessado.cpf} tamanhoPdf=${this.tamanhoEmBytes(dto.pdfBase64)}`,
+    );
+
+    // 4. Chamada ao e-TCE
+    const etceResponse = await this.etceClient.gerarProtocolo(payload);
+
+    if (!etceResponse?.Cod_TCE) {
+      throw new Error('Resposta do e-TCE não contém o campo Cod_TCE');
+    }
+
+    const Cod_TCE = etceResponse.Cod_TCE;
+
+    this.logger.log(
+      `e-TCE retornou codTce=${Cod_TCE} para solicitação=${solicitacaoId} — gravando no banco`,
+    );
+
+    // 5. Verifica conflito de protocolo
+    const conflito = await this.prisma.solicitacao.findFirst({
+      where: {
+        protocolo: Cod_TCE,
+        NOT: { id: solicitacaoId },
+      },
+      select: { id: true },
+    });
+
+    if (conflito) {
+      this.logger.error(
+        `Cod_TCE ${Cod_TCE} já vinculado à solicitação ${conflito.id}`,
+      );
+      throw new ConflictException(
+        `O protocolo ${Cod_TCE} já está vinculado a outra solicitação (${conflito.id}).`,
+      );
+    }
+
+    // 6. Update condicional (proteção race condition)
+    const { count } = await this.prisma.solicitacao.updateMany({
+      where: { id: solicitacaoId, protocolo: null },
+      data: { protocolo: Cod_TCE },
+    });
+
+    if (count === 0) {
+      const atual = await this.prisma.solicitacao.findUnique({
+        where: { id: solicitacaoId },
+        select: { protocolo: true },
+      });
+
+      this.logger.warn(
+        `Race condition detectada na solicitação ${solicitacaoId}. ` +
+          `Cod_TCE órfão: ${Cod_TCE} | Vencedor: ${atual?.protocolo}`,
+      );
+
+      throw new ConflictException(
+        `Solicitação protocolada simultaneamente por outra operação. ` +
+          `Protocolo vencedor: ${atual?.protocolo}`,
+      );
+    }
+
+    this.logger.log(
+      `✅ Solicitação ${solicitacaoId} protocolada com sucesso: ${Cod_TCE}`,
+    );
+
+    return { codTce: Cod_TCE, jaProtocolada: false };
+  } catch (error: any) {
+    // =============================================
+    // 🔥 CAPTURA GLOBAL DE ERROS - ESSA É A PARTE NOVA
+    // =============================================
+    const errorInfo = {
+      message: error.message || 'Erro desconhecido',
+      stack: error.stack,
+      name: error.name,
+      solicitacaoId,
+      cpf: dto?.interessado?.cpf,
+      payloadSize: dto?.pdfBase64
+        ? this.tamanhoEmBytes(dto.pdfBase64)
+        : undefined,
+    };
+
+    this.logger.error(
+      `❌ ERRO CRÍTICO ao protocolar solicitação ${solicitacaoId}`,
+      errorInfo,
+    );
+
+    // Se já for uma exceção HTTP do NestJS (NotFound, Conflict, BadGateway, etc.)
+    // devolve exatamente a mesma exceção (mantém o status correto)
+    if (error instanceof HttpException) {
+      throw error;
+    }
+
+    // Qualquer outro erro vira 500 + mensagem amigável
+    throw new InternalServerErrorException(
+      `Erro interno ao gerar protocolo da solicitação ${solicitacaoId}. ` +
+        `O erro foi registrado nos logs do servidor.`,
+    );
+  }
+}
+
+  /* async protocolar(
     solicitacaoId: number,
     dto: ProtocolarPdfDto,
   ): Promise<ProtocoloResultado> {
@@ -124,7 +250,7 @@ export class ProtocolosService {
     );
 
     return { codTce: Cod_TCE, jaProtocolada: false };
-  }
+  } */
 
   private montarPayload(dto: ProtocolarPdfDto): GerarProtocoloRequest {
     const cfg = this.config.get('etce.diaria')!;

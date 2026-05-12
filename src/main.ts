@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { PrismaClient } from '@prisma/client';
 import { AppModule } from './app.module';
+import { json, urlencoded } from 'express';
 
 async function bootstrap() {
   const prisma = new PrismaClient();
@@ -19,8 +20,11 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule, {
     //httpsOptions,
+    bodyParser: false,
   });
 
+  app.use(json({ limit: '50mb' }));
+  app.use(urlencoded({ extended: true, limit: '50mb' }));
 
   // Configuração CORS mais robusta
   app.enableCors({

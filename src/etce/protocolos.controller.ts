@@ -7,8 +7,15 @@ import { ProtocolarPdfDto } from './protocolar-pdf.dto';
 export class ProtocolosController {
   constructor(private readonly service: ProtocolosService) {}
 
-  @Post('solicitacao/:id')
+  @Post('/solicitacao/:id')
   async protocolarSolicitacao( @Param('id', ParseIntPipe) id: number, @Body() dto: ProtocolarPdfDto,): Promise<ProtocoloResultado> {
+
+    console.log('id', id);
+
+    console.log('dto', dto);
+    
+    
+
     return this.service.protocolar(id, dto);
   }
 
