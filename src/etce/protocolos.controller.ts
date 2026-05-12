@@ -1,5 +1,5 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { ProtocolosService } from './protocolos.service';
+import { Body, Controller, Param, ParseIntPipe, Post } from '@nestjs/common';
+import { ProtocoloResultado, ProtocolosService } from './protocolos.service';
 import { ProtocolarPdfDto } from './protocolar-pdf.dto';
 
 
@@ -7,9 +7,10 @@ import { ProtocolarPdfDto } from './protocolar-pdf.dto';
 export class ProtocolosController {
   constructor(private readonly service: ProtocolosService) {}
 
-  @Post()
-  async protocolar(@Body() dto: ProtocolarPdfDto): Promise<{ codTce: string }> {
-    const codTce = await this.service.protocolar(dto);
-    return { codTce };
+  @Post('solicitacao/:id')
+  async protocolarSolicitacao( @Param('id', ParseIntPipe) id: number, @Body() dto: ProtocolarPdfDto,): Promise<ProtocoloResultado> {
+    return this.service.protocolar(id, dto);
   }
+
+  
 }
