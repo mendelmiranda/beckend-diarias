@@ -12,7 +12,22 @@ import { ConfigService } from '@nestjs/config';
 import { ETceProtocoloClient } from '../etce/etce-protocolo.client';
 import { PrismaService } from 'prisma/prisma.service';
 import { ProtocolarPdfDto } from './protocolar-pdf.dto';
-import { GerarProtocoloRequest } from './gerar-protocolo.dto';
+import type { ArquivoProtocolo, GerarProtocoloRequest } from './gerar-protocolo.dto';
+import { CiMemoriaPdfBuilder } from './ci-memoria-pdf.builder';
+import type {
+  CiMemoriaEventoBloco,
+  CiMemoriaParticipanteDetalhe,
+  CiMemoriaPdfDados,
+} from './ci-memoria-pdf.types';
+import { moedaPorExtensoPtBr } from './moeda-extenso-pt';
+import {
+  enumerarDiasPeriodoPt,
+  fmtBrl,
+  formatarDiariasContadas,
+  formatarPeriodoEventoPt,
+  minMaxDatas,
+  normalizarCpf,
+} from './ci-memoria-helpers';
 
 
 const MAX_PDF_BYTES = 10 * 1024 * 1024;
@@ -30,6 +45,7 @@ export class ProtocolosService {
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
     private readonly etceClient: ETceProtocoloClient,
+    private readonly ciMemoriaPdfBuilder: CiMemoriaPdfBuilder,
   ) {}
 
   async protocolar( solicitacaoId: number, dto: ProtocolarPdfDto,): Promise<ProtocoloResultado> {
@@ -58,24 +74,74 @@ export class ProtocolosService {
     this.validarTamanhoPdf(dto.pdfBase64);
     this.validarCodUgEtce();
 
-    const payload = this.montarPayload(dto);
-
-    this.logger.log(
-      `Protocolando solicitação ${solicitacaoId}: cpf=${dto.interessado.cpf} tamanhoPdf=${this.tamanhoEmBytes(dto.pdfBase64)}`,
+    const doisPdfsSoNoGerar = this.config.get<boolean>(
+      'etce.protocoloGerarComDoisPdfsNumOficioNoCi',
     );
 
-    // 4. Chamada ao e-TCE
-    const etceResponse = await this.etceClient.gerarProtocolo(payload);
+    let Cod_TCE: string;
 
-    if (!etceResponse?.Cod_TCE) {
-      throw new Error('Resposta do e-TCE não contém o campo Cod_TCE');
+    if (doisPdfsSoNoGerar) {
+      this.logger.log(
+        `Protocolando solicitação ${solicitacaoId} (2 PDFs no POST /gerar; C.I. com nº do ofício): cpf=${dto.interessado.cpf}`,
+      );
+      const dadosCi = await this.montarCiMemoriaDadosCompleto(
+        solicitacaoId,
+        dto,
+        dto.numOficio.trim(),
+      );
+      const memorandoPdfBase64 = await this.ciMemoriaPdfBuilder.buildBase64(
+        dadosCi,
+      );
+      this.validarTamanhoPdf(memorandoPdfBase64);
+
+      const payloadCompleto = this.montarPayload(dto, memorandoPdfBase64);
+      this.logger.log(
+        `e-TCE /gerar com ${payloadCompleto.Arquivos.length} arquivo(s): ` +
+          `tamanhoSolic=${this.tamanhoEmBytes(dto.pdfBase64)} tamanhoMemo=${this.tamanhoEmBytes(memorandoPdfBase64)}`,
+      );
+
+      const etceResponse = await this.etceClient.gerarProtocolo(payloadCompleto);
+      if (!etceResponse?.Cod_TCE) {
+        throw new Error('Resposta do e-TCE não contém o campo Cod_TCE');
+      }
+      Cod_TCE = etceResponse.Cod_TCE;
+      this.logger.log(
+        `e-TCE retornou codTce=${Cod_TCE} (geração única com solicitação + memorando).`,
+      );
+    } else {
+      const payloadPrincipal = this.montarPayload(dto, null);
+      this.logger.log(
+        `Protocolando solicitação ${solicitacaoId} (PDF principal no /gerar; memorando no anexar): cpf=${dto.interessado.cpf} tamanhoPdf=${this.tamanhoEmBytes(dto.pdfBase64)}`,
+      );
+
+      const etceResponse = await this.etceClient.gerarProtocolo(payloadPrincipal);
+
+      if (!etceResponse?.Cod_TCE) {
+        throw new Error('Resposta do e-TCE não contém o campo Cod_TCE');
+      }
+
+      Cod_TCE = etceResponse.Cod_TCE;
+
+      this.logger.log(
+        `e-TCE retornou codTce=${Cod_TCE} para solicitação=${solicitacaoId} — gerando memorando e anexando`,
+      );
+
+      const dadosCi = await this.montarCiMemoriaDadosCompleto(
+        solicitacaoId,
+        dto,
+        Cod_TCE,
+      );
+      const memorandoPdfBase64 = await this.ciMemoriaPdfBuilder.buildBase64(
+        dadosCi,
+      );
+      this.validarTamanhoPdf(memorandoPdfBase64);
+
+      await this.anexarDocumentosAoProtocoloEtce(Cod_TCE, dto, memorandoPdfBase64);
+
+      this.logger.log(
+        `Documentos (solicitação + memorando) enviados ao e-TCE no protocolo ${Cod_TCE} — gravando no banco`,
+      );
     }
-
-    const Cod_TCE = etceResponse.Cod_TCE;
-
-    this.logger.log(
-      `e-TCE retornou codTce=${Cod_TCE} para solicitação=${solicitacaoId} — gravando no banco`,
-    );
 
     // 5. Verifica conflito de protocolo
     const conflito = await this.prisma.solicitacao.findFirst({
@@ -253,25 +319,400 @@ export class ProtocolosService {
     return { codTce: Cod_TCE, jaProtocolada: false };
   } */
 
-  private montarPayload(dto: ProtocolarPdfDto): GerarProtocoloRequest {
+  /**
+   * Reenvia solicitação + memorando no `anexarArquivos` (corpo em camelCase no client).
+   * Algumas instalações substituem a lista de anexos; outras acrescentam — enviamos os 2 juntos.
+   */
+  private async anexarDocumentosAoProtocoloEtce(
+    codTce: string,
+    dto: ProtocolarPdfDto,
+    memorandoPdfBase64: string,
+  ): Promise<void> {
+    const cfg = this.config.get('etce.diaria')!;
+    const principal = this.arquivoPdfSolicitacaoPrincipal(dto);
+    const baseNome = principal.NomeArquivo.replace(/\.pdf$/i, '');
+    const memorando: ArquivoProtocolo = {
+      Arquivo: this.normalizarBase64PdfEtce(memorandoPdfBase64),
+      NomeArquivo: `${baseNome}-memorando-ci.pdf`,
+      NomeTipoDocumento: 'MEMORANDO C.I.',
+      CodTipoDocumento: cfg.codTipoDocumentoMemorando,
+    };
+
+    const arquivos = [principal, memorando];
+    this.logger.log(
+      `e-TCE anexar: codTce=${codTce} quantidadeArquivos=${arquivos.length} ` +
+        `tipos=${arquivos.map((a) => a.CodTipoDocumento).join(',')}`,
+    );
+
+    await this.etceClient.anexarArquivosProtocolo({
+      Cod_TCE: codTce,
+      Arquivos: arquivos,
+    });
+    this.logger.log(
+      `Solicitação + memorando registrados no protocolo e-TCE ${codTce} (2 arquivos).`,
+    );
+  }
+
+  /** Remove prefixo data URL e espaços — evita rejeição silenciosa do 2º PDF no e-TCE. */
+  private normalizarBase64PdfEtce(b64: string): string {
+    const t = b64.trim();
+    const m = /^data:[^;]+;base64,(.+)$/i.exec(t);
+    return (m ? m[1] : t).replace(/\s/g, '');
+  }
+
+  private arquivoPdfSolicitacaoPrincipal(dto: ProtocolarPdfDto): ArquivoProtocolo {
     const cfg = this.config.get('etce.diaria')!;
     const nomeArquivo = dto.nomeArquivo.toLowerCase().endsWith('.pdf')
       ? dto.nomeArquivo
       : `${dto.nomeArquivo}.pdf`;
+    return {
+      Arquivo: this.normalizarBase64PdfEtce(dto.pdfBase64),
+      NomeArquivo: nomeArquivo,
+      NomeTipoDocumento: 'SOLICITAÇÃO DE DIÁRIA',
+      CodTipoDocumento: cfg.codTipoDocumentoSolicitacao,
+    };
+  }
+
+  private vvPertenceParticipante(
+    vv: { participante_id: number | null },
+    participanteId: number,
+  ): boolean {
+    return (
+      vv.participante_id == null || vv.participante_id === participanteId
+    );
+  }
+
+  private extrairDetalheParticipanteNoEvento(
+    ep: {
+      participante: {
+        id: number;
+        nome: string;
+        cpf: string;
+        matricula: number | null;
+        cargo: string | null;
+        funcao: string | null;
+        classe: string | null;
+        conta_diaria: Array<{
+          cpf: string;
+          agencia: string;
+          conta: string;
+          banco_id: number;
+          banco: { banco: string | null } | null;
+        }>;
+      };
+      viagem_participantes: Array<{
+        viagem: {
+          data_ida: Date;
+          data_volta: Date | null;
+          valor_passagem: number | null;
+          valor_viagem: Array<{
+            tipo: string | null;
+            valor_individual: number | null;
+            participante_id: number | null;
+          }>;
+        };
+      }>;
+    },
+    evento: { inicio: Date; fim: Date },
+  ): CiMemoriaParticipanteDetalhe {
+    const part = ep.participante;
+    const cpfLimpo = normalizarCpf(part.cpf);
+    const contas = part.conta_diaria ?? [];
+    const conta =
+      contas.find((c) => normalizarCpf(c.cpf) === cpfLimpo) ?? contas[0];
+    const bancoNome =
+      conta?.banco?.banco != null && String(conta.banco.banco).trim()
+        ? `${conta.banco_id} - ${conta.banco.banco}`
+        : conta?.banco_id != null
+          ? `Código banco ${conta.banco_id}`
+          : '—';
+
+    const datasViagem: Date[] = [];
+    const vvsDiaria: number[] = [];
+    const vvsPassagem: number[] = [];
+    let somaPassagemViagem = 0;
+
+    for (const vp of ep.viagem_participantes ?? []) {
+      const vg = vp.viagem;
+      if (vg?.data_ida) datasViagem.push(new Date(vg.data_ida));
+      if (vg?.data_volta) datasViagem.push(new Date(vg.data_volta));
+      if (vg?.valor_passagem != null && vg.valor_passagem > 0) {
+        somaPassagemViagem += vg.valor_passagem;
+      }
+      for (const vv of vg?.valor_viagem ?? []) {
+        if (!this.vvPertenceParticipante(vv, part.id)) continue;
+        const tipo = (vv.tipo ?? '').toUpperCase();
+        const val = vv.valor_individual ?? 0;
+        if (tipo === 'DIARIA' && val > 0) vvsDiaria.push(val);
+        if (tipo === 'PASSAGEM' && val > 0) vvsPassagem.push(val);
+      }
+    }
+
+    const somaDiarias = vvsDiaria.reduce((a, b) => a + b, 0);
+    let somaPassagens = vvsPassagem.reduce((a, b) => a + b, 0);
+    if (somaPassagens === 0 && somaPassagemViagem > 0) {
+      somaPassagens = somaPassagemViagem;
+    }
+
+    const unitDisplay =
+      vvsDiaria.length > 0
+        ? (() => {
+            const map = new Map<number, number>();
+            for (const v of vvsDiaria) map.set(v, (map.get(v) ?? 0) + 1);
+            let best = vvsDiaria[0];
+            let bestc = 0;
+            for (const [v, c] of map) {
+              if (c > bestc) {
+                best = v;
+                bestc = c;
+              }
+            }
+            return best;
+          })()
+        : 0;
+
+    const { min: dMin, max: dMax } = minMaxDatas(datasViagem);
+    const periodoViagemEnumerado =
+      dMin && dMax
+        ? enumerarDiasPeriodoPt(dMin, dMax)
+        : enumerarDiasPeriodoPt(new Date(evento.inicio), new Date(evento.fim));
 
     return {
-      Arquivos: [
-        {
-          Arquivo: dto.pdfBase64,
-          NomeArquivo: nomeArquivo,
-          NomeTipoDocumento: 'SOLICITAÇÃO DE DIÁRIA',
-          CodTipoDocumento: cfg.codTipoDocumento,
+      nome: part.nome.trim(),
+      matricula: part.matricula != null ? String(part.matricula) : '—',
+      cargoFuncao:
+        [part.cargo, part.funcao].filter(Boolean).join(' — ') ||
+        part.cargo ||
+        part.funcao ||
+        '—',
+      classeReferencia: part.classe?.trim() || '—',
+      periodoViagemEnumerado,
+      diariasContadasTexto: formatarDiariasContadas(somaDiarias, unitDisplay),
+      valorDiariaFmt: unitDisplay > 0 ? fmtBrl(unitDisplay) : '—',
+      valorTotalDiariasFmt: fmtBrl(somaDiarias),
+      bancoLinha: bancoNome,
+      agenciaLinha: conta?.agencia ? `AGÊNCIA: ${conta.agencia}` : 'AGÊNCIA: —',
+      contaLinha: conta?.conta
+        ? `CONTA CORRENTE: ${conta.conta}`
+        : 'CONTA CORRENTE: —',
+    };
+  }
+
+  private textoLocalEvento(evento: {
+    exterior: string;
+    local_exterior: string | null;
+    pais: { nome_pt: string | null } | null;
+    cidade: { descricao: string; estado: { uf: string } } | null;
+  }): string {
+    if (evento.exterior === 'SIM') {
+      return (
+        `${evento.pais?.nome_pt ?? ''}${evento.local_exterior ? ` — ${evento.local_exterior}` : ''}`.trim() ||
+        'exterior'
+      );
+    }
+    const c = evento.cidade?.descricao ?? '';
+    const u = evento.cidade?.estado?.uf ?? '';
+    return `${c}/${u}`.replace(/^\/|\/$/g, '') || '—';
+  }
+
+  private async montarCiMemoriaDadosCompleto(
+    solicitacaoId: number,
+    dto: ProtocolarPdfDto,
+    codTce: string,
+  ): Promise<CiMemoriaPdfDados> {
+    const solicitacao = await this.prisma.solicitacao.findUnique({
+      where: { id: solicitacaoId },
+      include: {
+        eventos: {
+          orderBy: { inicio: 'asc' },
+          include: {
+            cidade: { include: { estado: true } },
+            pais: true,
+            evento_participantes: {
+              include: {
+                participante: {
+                  include: {
+                    conta_diaria: { include: { banco: true } },
+                  },
+                },
+                viagem_participantes: {
+                  include: {
+                    viagem: {
+                      include: {
+                        valor_viagem: true,
+                        cidade_destino: { include: { estado: true } },
+                        destino: true,
+                        cidade_origem: { include: { estado: true } },
+                        origem: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
-      ],
+      },
+    });
+
+    if (!solicitacao?.eventos?.length) {
+      throw new BadRequestException('Solicitação sem eventos para montar o memorando.');
+    }
+
+    const eventosBlocos: CiMemoriaEventoBloco[] = [];
+
+    for (const evento of solicitacao.eventos) {
+      const participantes: CiMemoriaParticipanteDetalhe[] = [];
+      for (const ep of evento.evento_participantes) {
+        participantes.push(
+          this.extrairDetalheParticipanteNoEvento(ep, evento),
+        );
+      }
+      eventosBlocos.push({
+        titulo: evento.titulo,
+        localTexto: this.textoLocalEvento(evento),
+        periodoEventoTexto: formatarPeriodoEventoPt(
+          new Date(evento.inicio),
+          new Date(evento.fim),
+        ),
+        participantes,
+      });
+    }
+
+    let totalDiarias = 0;
+    let totalPassagens = 0;
+
+    for (const ev of solicitacao.eventos) {
+      for (const ep of ev.evento_participantes) {
+        for (const vp of ep.viagem_participantes ?? []) {
+          const vg = vp.viagem;
+          if (!vg) continue;
+          for (const vv of vg.valor_viagem ?? []) {
+            if (!this.vvPertenceParticipante(vv, ep.participante.id)) continue;
+            const tipo = (vv.tipo ?? '').toUpperCase();
+            const val = vv.valor_individual ?? 0;
+            if (tipo === 'DIARIA') totalDiarias += val;
+            if (tipo === 'PASSAGEM' && val > 0) totalPassagens += val;
+          }
+        }
+      }
+    }
+
+    if (totalPassagens === 0) {
+      const viagensComPassagemSomada = new Set<number>();
+      for (const ev of solicitacao.eventos) {
+        for (const ep of ev.evento_participantes) {
+          for (const vp of ep.viagem_participantes ?? []) {
+            const vg = vp.viagem;
+            if (
+              !vg?.id ||
+              vg.valor_passagem == null ||
+              vg.valor_passagem <= 0 ||
+              viagensComPassagemSomada.has(vg.id)
+            ) {
+              continue;
+            }
+            viagensComPassagemSomada.add(vg.id);
+            totalPassagens += vg.valor_passagem;
+          }
+        }
+      }
+    }
+
+    const primeiroNacional = solicitacao.eventos.find((e) => e.exterior === 'NAO');
+    const sufixoLocalCustos =
+      primeiroNacional?.cidade?.descricao &&
+      primeiroNacional?.cidade?.estado?.uf
+        ? ` à cidade de ${primeiroNacional.cidade.descricao}/${primeiroNacional.cidade.estado.uf}`
+        : solicitacao.eventos[0]?.exterior === 'SIM'
+          ? ` (${this.textoLocalEvento(solicitacao.eventos[0])})`
+          : '';
+
+    const nomesTodos = solicitacao.eventos
+      .flatMap((e) => e.evento_participantes.map((x) => x.participante.nome.trim()))
+      .filter((n, i, a) => a.indexOf(n) === i);
+
+    const resumoEventos = solicitacao.eventos
+      .map(
+        (e) =>
+          `"${e.titulo}" (${this.textoLocalEvento(e)}; ${formatarPeriodoEventoPt(new Date(e.inicio), new Date(e.fim))})`,
+      )
+      .join('; ');
+
+    const textoCorpo1 =
+      `Cumprimentando Vossa Excelência, encaminho a solicitação de diárias e respectiva apuração, abrangendo o(s) evento(s): ${resumoEventos}. ` +
+      `Participantes: ${nomesTodos.join(', ')}.`;
+
+    const textoCorpo2 =
+      `Os valores por participante e por evento discriminam-se nas tabelas a seguir, em linha com o conteúdo da solicitação. ` +
+      `Segue documentação em anexo (solicitação completa). ` +
+      `Solicita-se a anuência para expedição da portaria e pagamento das despesas.`;
+
+    const cpfAss = normalizarCpf(dto.interessado.cpf);
+    let cargoAssinatura = '—';
+    for (const ev of solicitacao.eventos) {
+      for (const ep of ev.evento_participantes) {
+        if (normalizarCpf(ep.participante.cpf) === cpfAss) {
+          cargoAssinatura =
+            [ep.participante.cargo, ep.participante.funcao]
+              .filter(Boolean)
+              .join(' — ') ||
+            ep.participante.cargo ||
+            ep.participante.funcao ||
+            '—';
+          break;
+        }
+      }
+    }
+
+    const valorTotalCustos = totalDiarias + totalPassagens;
+
+    return {
+      numeroProtocoloTce: codTce,
+      dataDocumento: new Date(),
+      para: 'PRESIDÊNCIA',
+      assunto: dto.assunto,
+      textoCorpo1,
+      textoCorpo2,
+      eventos: eventosBlocos,
+      valorTotalDiarias: totalDiarias,
+      valorTotalPassagens: totalPassagens,
+      valorTotalCustos,
+      valorTotalDiariasFmt: fmtBrl(totalDiarias),
+      extensoDiarias: moedaPorExtensoPtBr(totalDiarias),
+      extensoPassagens: moedaPorExtensoPtBr(totalPassagens),
+      extensoCustos: moedaPorExtensoPtBr(valorTotalCustos),
+      sufixoLocalCustos,
+      observacoesExtras: dto.observacoes,
+      nomeAssinatura: dto.interessado.nome.trim(),
+      cargoAssinatura,
+    };
+  }
+
+  private montarPayload(
+    dto: ProtocolarPdfDto,
+    memorandoPdfBase64: string | null,
+  ): GerarProtocoloRequest {
+    const cfg = this.config.get('etce.diaria')!;
+    const principal = this.arquivoPdfSolicitacaoPrincipal(dto);
+    const arquivos: ArquivoProtocolo[] = [principal];
+
+    if (memorandoPdfBase64) {
+      const baseNome = principal.NomeArquivo.replace(/\.pdf$/i, '');
+      arquivos.push({
+        Arquivo: this.normalizarBase64PdfEtce(memorandoPdfBase64),
+        NomeArquivo: `${baseNome}-memorando-ci.pdf`,
+        NomeTipoDocumento: 'MEMORANDO C.I.',
+        CodTipoDocumento: cfg.codTipoDocumentoMemorando,
+      });
+    }
+
+    return {
+      Arquivos: arquivos,
       AnoPR: new Date().getFullYear(),
       CodArea: cfg.codArea,
       CodTipoProcesso: cfg.codTipoProcesso,
-      CodTipoDocumento: cfg.codTipoDocumento,
+      CodTipoDocumento: cfg.codTipoDocumentoSolicitacao,
       CodTipoGrupoProtocolo: cfg.codTipoGrupoProtocolo,
       Protocolo: {
         cod_tipo_entrada: cfg.codTipoEntrada,

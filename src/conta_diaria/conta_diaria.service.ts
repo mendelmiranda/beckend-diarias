@@ -90,18 +90,42 @@ export class ContaDiariaService {
     });
   }
 
-  pesquisaContaDoParticipanteGeralPorCpf(cpf: string) {
-    return this.prisma.conta_diaria.findFirst({
-      where: {
-        cpf: cpf,
-      },
-      include: {
-        banco: true,
-      },
-      orderBy: [
-        { id: "desc" }
-      ]
-    });
+  /**
+   * Conta para exibição (PDF etc.): tenta CPF só dígitos, CPF mascarado e, por fim, `participante_id`.
+   */
+  async pesquisaContaDoParticipanteGeralPorCpf(
+    cpf: string,
+    participanteId?: number,
+  ) {
+    const digits = (cpf ?? '').replace(/\D/g, '');
+    const cpfVariants =
+      digits.length === 11
+        ? [
+            digits,
+            `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`,
+          ]
+        : cpf?.trim()
+          ? [cpf.trim()]
+          : [];
+
+    if (cpfVariants.length > 0) {
+      const porCpf = await this.prisma.conta_diaria.findFirst({
+        where: { cpf: { in: cpfVariants } },
+        include: { banco: true },
+        orderBy: { id: 'desc' },
+      });
+      if (porCpf) return porCpf;
+    }
+
+    if (participanteId != null && participanteId > 0) {
+      return this.prisma.conta_diaria.findFirst({
+        where: { participante_id: participanteId },
+        include: { banco: true },
+        orderBy: { id: 'desc' },
+      });
+    }
+
+    return null;
   }
 
   findOne(id: number) {

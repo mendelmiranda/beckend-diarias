@@ -5,6 +5,7 @@ import { ETceProtocoloClient } from './etce-protocolo.client';
 
 @Module({
   imports: [
+    ConfigModule,
     HttpModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

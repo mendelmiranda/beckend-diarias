@@ -20,6 +20,7 @@ import { PresidenteAssinaturaBuilder } from './presidente-assinatura.builder';
 
 @Module({
   controllers: [PdfController],
+  exports: [PdfGenerator],
   providers: [PdfGenerator, SolicitacaoPdfBuilder, 
     HeaderBuilder,
     EventosBuilder,

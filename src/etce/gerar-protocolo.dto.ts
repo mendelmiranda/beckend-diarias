@@ -43,3 +43,9 @@ export interface GerarProtocoloRequest {
 export interface GerarProtocoloResponse {
   Cod_TCE: string;
 }
+
+/** Corpo para anexar documentos a protocolo já gerado no e-TCE (pós-`gerar`). */
+export interface AnexarArquivosProtocoloRequest {
+  Cod_TCE: string;
+  Arquivos: ArquivoProtocolo[];
+}

@@ -146,7 +146,11 @@ export class PdfService {
         const cpf = this.normalizeCpf(ep?.participante?.cpf);
         if (!cpf) return;
 
-        const conta = await this.contaDiariaService.pesquisaContaDoParticipanteGeralPorCpf(cpf);
+        const conta =
+          await this.contaDiariaService.pesquisaContaDoParticipanteGeralPorCpf(
+            cpf,
+            ep?.participante?.id,
+          );
         if (!conta) return;
 
         if (!ep.participante) ep.participante = {};

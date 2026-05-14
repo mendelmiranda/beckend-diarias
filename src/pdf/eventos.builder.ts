@@ -453,12 +453,24 @@ export class EventosBuilder {
       return null;
     }
 
+    const pid = participante?.id;
+    const porParticipanteId = contas.filter(
+      (c) =>
+        pid != null &&
+        c?.participante_id != null &&
+        Number(c.participante_id) === Number(pid),
+    );
+    const pool = porParticipanteId.length > 0 ? porParticipanteId : contas;
+
     const cpfParticipante = this.normalizeCpf(participante?.cpf);
     const contasDoParticipante = cpfParticipante
-      ? contas.filter((conta) => this.normalizeCpf(conta?.cpf) === cpfParticipante)
+      ? pool.filter(
+          (conta) => this.normalizeCpf(conta?.cpf) === cpfParticipante,
+        )
       : [];
 
-    const origemBusca = contasDoParticipante.length > 0 ? contasDoParticipante : contas;
+    const origemBusca =
+      contasDoParticipante.length > 0 ? contasDoParticipante : pool;
     const contaAtiva =
       origemBusca.find((c) => c?.ativa === true) ??
       origemBusca.find((c) => c?.active === true) ??
@@ -468,13 +480,17 @@ export class EventosBuilder {
   }
 
   private getNomeBanco(conta: any, participante: any): string {
-    return (
+    const nome =
       conta?.banco?.banco ??
       conta?.banco?.nome ??
-      conta?.banco ??
+      (typeof conta?.banco === 'string' ? conta.banco : null) ??
       participante?.banco ??
-      ""
-    );
+      '';
+    if (nome && String(nome).trim()) return String(nome).trim();
+    if (conta?.banco_id != null && conta.banco_id > 0) {
+      return `Código banco ${conta.banco_id}`;
+    }
+    return '';
   }
 
   private getAgenciaConta(conta: any, participante: any): string {

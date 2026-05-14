@@ -4,13 +4,16 @@ import {
   HttpException,
   Injectable,
   Logger,
+  NotFoundException,
   ServiceUnavailableException,
   UnprocessableEntityException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { AxiosError } from 'axios';
 import { catchError, firstValueFrom, throwError } from 'rxjs';
 import {
+  AnexarArquivosProtocoloRequest,
   GerarProtocoloRequest,
   GerarProtocoloResponse,
 } from './gerar-protocolo.dto';
@@ -19,14 +22,25 @@ import {
 export class ETceProtocoloClient {
   private readonly logger = new Logger(ETceProtocoloClient.name);
 
-  constructor(private readonly http: HttpService) {}
+  constructor(
+    private readonly http: HttpService,
+    private readonly config: ConfigService,
+  ) {}
 
   async gerarProtocolo(
     payload: GerarProtocoloRequest,
   ): Promise<GerarProtocoloResponse> {
+    const camelGerarExplicit =
+      this.config.get<boolean>('etce.httpJsonCamelGerar') === true;
+    const useCamelGerar =
+      camelGerarExplicit || payload.Arquivos.length > 1;
+    const body = useCamelGerar
+      ? this.corpoGerarProtocoloCamelCase(payload)
+      : payload;
+
     const { data } = await firstValueFrom(
       this.http
-        .post<GerarProtocoloResponse>('/api/protocolo/gerar', payload)
+        .post<GerarProtocoloResponse>('/api/protocolo/gerar', body)
         .pipe(
           catchError((err: AxiosError) =>
             throwError(() => this.mapearErroETce(err)),
@@ -42,6 +56,106 @@ export class ETceProtocoloClient {
     }
 
     return data;
+  }
+
+  private corpoGerarProtocoloCamelCase(
+    payload: GerarProtocoloRequest,
+  ): Record<string, unknown> {
+    return {
+      arquivos: payload.Arquivos.map((a) => ({
+        arquivo: a.Arquivo,
+        nomeArquivo: a.NomeArquivo,
+        nomeTipoDocumento: a.NomeTipoDocumento,
+        codTipoDocumento: a.CodTipoDocumento,
+      })),
+      anoPR: payload.AnoPR,
+      codArea: payload.CodArea,
+      codTipoProcesso: payload.CodTipoProcesso,
+      codTipoDocumento: payload.CodTipoDocumento,
+      codTipoGrupoProtocolo: payload.CodTipoGrupoProtocolo,
+      protocolo: payload.Protocolo,
+      interessados: payload.Interessados,
+    };
+  }
+
+  private static readonly ROTAS_ANEXAR_FALLBACK = [
+    '/api/protocolo/anexarArquivos',
+    '/api/Protocolo/AnexarArquivos',
+    '/api/protocolo/AnexarArquivos',
+    '/api/Protocolo/AdicionarArquivosProtocolo',
+    '/api/protocolo/adicionarArquivosProtocolo',
+  ];
+
+  /**
+   * Anexa PDF(s) a um protocolo já criado (memorando com número do Cod_TCE).
+   * Tenta a rota configurada e fallbacks comuns em ASP.NET (404 em uma tenta a próxima).
+   */
+  async anexarArquivosProtocolo(
+    body: AnexarArquivosProtocoloRequest,
+  ): Promise<void> {
+    const configured =
+      this.config.get<string>('etce.anexarArquivosPath')?.trim() ||
+      ETceProtocoloClient.ROTAS_ANEXAR_FALLBACK[0];
+    const extras =
+      this.config.get<string[]>('etce.anexarArquivosPathCandidatesList') ?? [];
+    const ordered = [
+      ...new Set([
+        configured,
+        ...extras,
+        ...ETceProtocoloClient.ROTAS_ANEXAR_FALLBACK,
+      ]),
+    ];
+
+    const useCamel =
+      this.config.get<boolean>('etce.httpJsonCamelAnexar') !== false;
+    const payload = useCamel
+      ? this.corpoAnexarArquivosCamelCase(body)
+      : body;
+
+    let last404 = false;
+    for (const path of ordered) {
+      try {
+        await firstValueFrom(
+          this.http.post(path, payload).pipe(
+            catchError((err: AxiosError) => throwError(() => err)),
+          ),
+        );
+        this.logger.log(`e-TCE anexar arquivos OK: POST ${path}`);
+        return;
+      } catch (e: unknown) {
+        const err = e as AxiosError;
+        const st = err.response?.status;
+        if (st === 404) {
+          last404 = true;
+          this.logger.warn(`e-TCE anexar 404 em ${path}, tentando outra rota…`);
+          continue;
+        }
+        throw this.mapearErroETce(err);
+      }
+    }
+
+    if (last404) {
+      throw new NotFoundException(
+        `e-TCE: nenhuma rota de anexo respondeu (404). Tentadas: ${ordered.join(' | ')}. ` +
+          `Ajuste ETCE_PROTOCOLO_ANEXAR_PATH (ou ETCE_PROTOCOLO_ANEXAR_PATH_CANDIDATES) conforme o integrador, ` +
+          `ou use o envio dos 2 PDFs só no POST /gerar (padrão: não defina ETCE_PROTOCOLO_GERAR_COM_DOIS_PDFS_CI_NUM_OFICIO=false).`,
+      );
+    }
+  }
+
+  /** Corpo JSON em camelCase para binding ASP.NET Core (lista `arquivos`, `cod_TCE`, …). */
+  private corpoAnexarArquivosCamelCase(
+    body: AnexarArquivosProtocoloRequest,
+  ): Record<string, unknown> {
+    return {
+      cod_TCE: body.Cod_TCE,
+      arquivos: body.Arquivos.map((a) => ({
+        arquivo: a.Arquivo,
+        nomeArquivo: a.NomeArquivo,
+        nomeTipoDocumento: a.NomeTipoDocumento,
+        codTipoDocumento: a.CodTipoDocumento,
+      })),
+    };
   }
 
   private mapearErroETce(err: AxiosError): HttpException {
@@ -76,8 +190,19 @@ export class ETceProtocoloClient {
     // 4xx do e-TCE = problema com o que enviamos. Repassa como 422 pro front
     // entender que não adianta tentar de novo sem mudar a entrada.
     if (status >= 400 && status < 500) {
+      let msg = mensagemETce;
+      if (
+        status === 404 &&
+        typeof body === 'string' &&
+        body.includes('<!DOCTYPE')
+      ) {
+        const m = body.match(/Requested URL:\s*<\/b>([^<]+)/i);
+        msg = m
+          ? `rota não encontrada (404): ${m[1].trim()}`
+          : 'rota não encontrada (404) — resposta HTML do servidor ASP.NET';
+      }
       return new UnprocessableEntityException(
-        `O e-TCE rejeitou a solicitação: ${mensagemETce}`,
+        `O e-TCE rejeitou a solicitação: ${msg}`,
       );
     }
 
