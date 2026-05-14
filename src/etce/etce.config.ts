@@ -3,6 +3,8 @@ import { registerAs } from '@nestjs/config';
 export default registerAs('etce', () => ({
   baseUrl: process.env.ETCE_BASE_URL,
   timeoutMs: parseInt(process.env.ETCE_TIMEOUT_MS ?? '30000', 10),
+  /** JWT ou valor já com prefixo `Bearer ` — enviado em todas as chamadas ao e-TCE */
+  bearerToken: process.env.ETCE_BEARER_TOKEN?.trim() ?? '',
   diaria: {
     codTipoProcesso: parseInt(process.env.ETCE_DIARIA_COD_TIPO_PROCESSO ?? '0', 10),
     codTipoDocumento: parseInt(process.env.ETCE_DIARIA_COD_TIPO_DOCUMENTO ?? '0', 10),

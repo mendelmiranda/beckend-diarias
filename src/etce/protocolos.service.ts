@@ -56,6 +56,7 @@ export class ProtocolosService {
 
     // 3. Validações locais
     this.validarTamanhoPdf(dto.pdfBase64);
+    this.validarCodUgEtce();
 
     const payload = this.montarPayload(dto);
 
@@ -297,6 +298,20 @@ export class ProtocolosService {
         },
       ],
     };
+  }
+
+  /**
+   * O e-TCE exige `Protocolo.cod_ug` (Unidade Gestora). O default em `etce.config`
+   * é 0, que a API rejeita com "CÓDIGO UG OBRIGATÓRIO".
+   */
+  private validarCodUgEtce(): void {
+    const cfg = this.config.get<{ codUgTceAp: number }>('etce.diaria');
+    const ug = cfg?.codUgTceAp;
+    if (ug == null || Number.isNaN(ug) || ug <= 0) {
+      throw new InternalServerErrorException(
+        'Configure ETCE_DIARIA_COD_UG_TCE_AP no ambiente com o código UG válido do e-TCE (inteiro > 0).',
+      );
+    }
   }
 
   private validarTamanhoPdf(pdfBase64: string): void {

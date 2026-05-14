@@ -95,7 +95,30 @@ export class ETceProtocoloClient {
       if (typeof b.Exception === 'string') return b.Exception;
       if (typeof b.Mensagem === 'string') return b.Mensagem;
       if (typeof b.message === 'string') return b.message;
+      // ASP.NET Web API 400: { Message, ModelState }
+      if (typeof b.Message === 'string' && b.ModelState && typeof b.ModelState === 'object') {
+        const msgs = this.flattenModelState(b.ModelState as Record<string, unknown>);
+        if (msgs.length > 0) {
+          return `${b.Message}: ${msgs.join(' | ')}`;
+        }
+        return b.Message;
+      }
+      if (typeof b.Message === 'string') return b.Message;
     }
     return 'erro não detalhado';
+  }
+
+  private flattenModelState(modelState: Record<string, unknown>): string[] {
+    const out: string[] = [];
+    for (const value of Object.values(modelState)) {
+      if (Array.isArray(value)) {
+        for (const item of value) {
+          if (typeof item === 'string' && item.trim()) out.push(item.trim());
+        }
+      } else if (typeof value === 'string' && value.trim()) {
+        out.push(value.trim());
+      }
+    }
+    return out;
   }
 }
