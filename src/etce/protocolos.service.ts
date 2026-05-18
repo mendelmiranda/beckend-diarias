@@ -87,7 +87,6 @@ export class ProtocolosService {
       const dadosCi = await this.montarCiMemoriaDadosCompleto(
         solicitacaoId,
         dto,
-        dto.numOficio.trim(),
       );
       const memorandoPdfBase64 = await this.ciMemoriaPdfBuilder.buildBase64(
         dadosCi,
@@ -129,7 +128,6 @@ export class ProtocolosService {
       const dadosCi = await this.montarCiMemoriaDadosCompleto(
         solicitacaoId,
         dto,
-        Cod_TCE,
       );
       const memorandoPdfBase64 = await this.ciMemoriaPdfBuilder.buildBase64(
         dadosCi,
@@ -518,7 +516,6 @@ export class ProtocolosService {
   private async montarCiMemoriaDadosCompleto(
     solicitacaoId: number,
     dto: ProtocolarPdfDto,
-    codTce: string,
   ): Promise<CiMemoriaPdfDados> {
     const solicitacao = await this.prisma.solicitacao.findUnique({
       where: { id: solicitacaoId },
@@ -668,7 +665,6 @@ export class ProtocolosService {
     const valorTotalCustos = totalDiarias + totalPassagens;
 
     return {
-      numeroProtocoloTce: codTce,
       dataDocumento: new Date(),
       para: 'PRESIDÊNCIA',
       assunto: dto.assunto,

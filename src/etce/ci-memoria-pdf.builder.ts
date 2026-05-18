@@ -122,11 +122,8 @@ export class CiMemoriaPdfBuilder {
         widths: ['*', '*'],
         body: [
           [
-            {
-              text: [{ text: 'DOCUMENTO: ', bold: true }, `C.I. n. ${dados.numeroProtocoloTce}`],
-              style: 'cell',
-            },
-            { text: [{ text: 'DATA: ', bold: true }, dataDoc], style: 'cell' },
+            { text: [{ text: 'DATA: ', bold: true }, dataDoc], style: 'cell', colSpan: 2 },
+            {},
           ],
           [
             { text: [{ text: 'PARA: ', bold: true }, dados.para], colSpan: 2, style: 'cell' },

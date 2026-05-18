@@ -20,10 +20,8 @@ export interface CiMemoriaEventoBloco {
   participantes: CiMemoriaParticipanteDetalhe[];
 }
 
-/** Dados para o PDF do memorando (C.I.) — protocolo e-TCE + visão da solicitação */
+/** Dados para o PDF do memorando — protocolo e-TCE + visão da solicitação */
 export interface CiMemoriaPdfDados {
-  /** Número exibido em "C.I. n." = Cod_TCE retornado pelo e-TCE */
-  numeroProtocoloTce: string;
   dataDocumento: Date;
   para: string;
   assunto: string;
