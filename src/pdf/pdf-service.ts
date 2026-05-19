@@ -8,6 +8,7 @@ import { SolicitacaoService } from 'src/solicitacao/solicitacao.service';
 import { SolicitacaoCondutoresService } from 'src/solicitacao_condutores/solicitacao_condutores.service';
 import { PdfGenerator } from './pdf-generator.service';
 import { SolicitacaoPdfBuilder } from './solicitacao-pdf.builder';
+import { AssinaturaDaofService } from 'src/assinatura_daof/assinatura_daof.service';
 
 import { readFile } from 'fs/promises';
 import { join } from 'path';
@@ -23,6 +24,7 @@ export class PdfService {
     private contaDiariaService: ContaDiariaService,
     private pdfGenerator: PdfGenerator,
     private solicitacaoPdfBuilder: SolicitacaoPdfBuilder,
+    private readonly assinaturaDaofService: AssinaturaDaofService,
   ) { }
 
   /* async generateSolicitacaoPdf(id: number): Promise<Buffer> {
@@ -54,7 +56,11 @@ export class PdfService {
   await this.enriquecerContasBancariasPorCpf(solicitacao);
 
   const condutores = await this.getCondutoresDaSolicitacao(id);
-  const assinatura = await this.getAssinaturaDoDocumentoDAOF(id);
+  const [assinatura, diretoresRows] = await Promise.all([
+    this.getAssinaturaDoDocumentoDAOF(id),
+    this.assinaturaDaofService.findDiretoresAtivosOrderDesc(),
+  ]);
+  const diretoresDaofiAtivos = diretoresRows.map((r) => r.diretor);
   const assinaturaPresidente = await this.getAssinaturaDefinitivaPresidencia(id);
 
   // ✅ LOGO LOCAL (sem TLS, sem fetch)
@@ -65,6 +71,7 @@ export class PdfService {
     condutores,
     assinatura,
     assinaturaPresidente,
+    diretoresDaofiAtivos,
   });
 
   (docDefinition as any).images = {

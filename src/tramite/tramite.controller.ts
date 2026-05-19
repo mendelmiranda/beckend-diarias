@@ -10,7 +10,6 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { EventoParticipantesService } from 'src/evento_participantes/evento_participantes.service';
 import { CreateLogTramiteDto } from 'src/log_tramite/dto/create-log_tramite.dto';
 import { ViagemService } from 'src/viagem/viagem.service';
 import { CreateTramiteDto } from './dto/create-tramite.dto';
@@ -31,7 +30,6 @@ export class TramiteController {
   constructor(
     private readonly tramiteService: TramiteService,
     private readonly viagemService: ViagemService,
-    private readonly eParticipanteService: EventoParticipantesService, // ⚠ TODO: consider renaming
   ) { }
 
   /**
@@ -53,9 +51,8 @@ export class TramiteController {
 
       const created = await this.tramiteService.create(dto, nome);
 
-      const possuiColaborador = await this.hasColaborador(created.solicitacao_id);
-      const deveCalcular =
-        !possuiColaborador && dto.status === TramiteStatus.SOLICITADO;
+      // Inclui colaboradores (tipo C ou T): o cálculo segue o mesmo fluxo dos demais participantes.
+      const deveCalcular = dto.status === TramiteStatus.SOLICITADO;
 
       if (!deveCalcular) {
         return { success: true, calculou: false };
@@ -213,24 +210,6 @@ export class TramiteController {
       logTramiteId,
       solicitacaoId,
       dto,
-    );
-  }
-
-  /* ---------------------------------------------------------------------------
-   * PRIVATE HELPERS (controller scope)
-   * Consider moving them to a Domain Service if reused elsewhere.
-   * -------------------------------------------------------------------------*/
-
-  private async hasColaborador(solicitacaoId: number): Promise<boolean> {
-    const eventos =
-      await this.tramiteService.findOneSolicitacaoColaborador(solicitacaoId);
-
-    return eventos.some((e) =>
-      e.eventos.some((ep) =>
-        ep.evento_participantes.some((p) =>
-          ['C', 'T'].includes(p.participante.tipo),
-        ),
-      ),
     );
   }
 }

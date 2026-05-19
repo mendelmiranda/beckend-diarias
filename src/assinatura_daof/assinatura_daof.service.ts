@@ -24,6 +24,15 @@ export class AssinaturaDaofService {
     });
   }
 
+  /** Diretores com cadastro ativo, mais recentes primeiro (id desc). */
+  findDiretoresAtivosOrderDesc() {
+    return this.prisma.assinatura_daof.findMany({
+      where: { ativo: 'SIM' },
+      orderBy: { id: 'desc' },
+      select: { diretor: true },
+    });
+  }
+
   findOne(id: number) {
     return this.prisma.assinatura_daof.findUnique({
       where: { id: id },

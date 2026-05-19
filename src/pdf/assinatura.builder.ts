@@ -5,18 +5,38 @@ import { Util } from 'src/util/Util';
 interface AssinaturaBuilderData {
   solicitacao: any;
   assinatura: any;
+  diretoresDaofiAtivos?: string[];
 }
 
 @Injectable()
 export class AssinaturaBuilder {
   build(data: AssinaturaBuilderData): any[] {
-    const { solicitacao, assinatura } = data;
+    const { solicitacao, assinatura, diretoresDaofiAtivos } = data;
     const content = [];
 
     content.push({ text: "\n" });
 
     // Formatação da assinatura
     const assinaturaTexto = this.formatarAssinatura(assinatura);
+    const linhaAssinaturaDaof: any[][] =
+      assinaturaTexto.trim().length > 0 ? [[`${assinaturaTexto}`]] : [];
+
+    const linhaDiretoresAtivos =
+      diretoresDaofiAtivos?.filter((n) => String(n).trim().length > 0) ?? [];
+    const linhasDiretoresRodape: any[][] =
+      linhaDiretoresAtivos.length > 0
+        ? [
+            [
+              {
+                text: [
+                  { text: 'Assinado por: ', bold: true },
+                  linhaDiretoresAtivos.join(' | '),
+                ],
+                margin: [0, 8, 0, 0],
+              },
+            ],
+          ]
+        : [];
 
     try {
       content.push(
@@ -44,7 +64,8 @@ export class AssinaturaBuilder {
                   ];
                 })
               ],
-              ['' + assinaturaTexto]
+              ...linhasDiretoresRodape,
+              ...linhaAssinaturaDaof,
             ]
           }
         }
@@ -58,7 +79,7 @@ export class AssinaturaBuilder {
 
   private formatarAssinatura(assinatura: any): string {
     if (!assinatura?.assinatura_daof) {
-      return 'Aguardando assinatura do documento.';
+      return '';
     }
     
     return 'Assinado por: ' + 

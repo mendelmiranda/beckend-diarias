@@ -13,6 +13,7 @@ import { ETceProtocoloClient } from '../etce/etce-protocolo.client';
 import { PrismaService } from 'prisma/prisma.service';
 import { ProtocolarPdfDto } from './protocolar-pdf.dto';
 import type { ArquivoProtocolo, GerarProtocoloRequest } from './gerar-protocolo.dto';
+import { PdfService } from 'src/pdf/pdf-service';
 import { CiMemoriaPdfBuilder } from './ci-memoria-pdf.builder';
 import type {
   CiMemoriaEventoBloco,
@@ -46,11 +47,13 @@ export class ProtocolosService {
     private readonly config: ConfigService,
     private readonly etceClient: ETceProtocoloClient,
     private readonly ciMemoriaPdfBuilder: CiMemoriaPdfBuilder,
+    private readonly pdfService: PdfService,
   ) {}
 
   async protocolar( solicitacaoId: number, dto: ProtocolarPdfDto,): Promise<ProtocoloResultado> {
   this.logger.log(`🚀 Iniciando protocolar - solicitaçãoId: ${solicitacaoId}`);
 
+  let dtoProtocolo: ProtocolarPdfDto | undefined;
   try {
     // 1. Verifica se a solicitação existe
     const solicitacao = await this.prisma.solicitacao.findUnique({
@@ -70,8 +73,22 @@ export class ProtocolosService {
       return { codTce: solicitacao.protocolo, jaProtocolada: true };
     }
 
-    // 3. Validações locais
-    this.validarTamanhoPdf(dto.pdfBase64);
+    // 3. PDF da solicitação gerado no servidor (contas bancárias via ContaDiaria + detalhesDaSolicitacao)
+    const pdfBuffer = await this.pdfService.generateSolicitacaoPdf(
+      solicitacaoId,
+      false,
+    );
+    dtoProtocolo = {
+      ...dto,
+      pdfBase64: pdfBuffer.toString('base64'),
+    };
+    this.logger.log(
+      `PDF solicitação gerado no servidor para protocolo ${solicitacaoId}: ` +
+        `${this.tamanhoEmBytes(dtoProtocolo.pdfBase64!)} bytes`,
+    );
+
+    // 4. Validações locais
+    this.validarTamanhoPdf(dtoProtocolo.pdfBase64!);
     this.validarCodUgEtce();
 
     const doisPdfsSoNoGerar = this.config.get<boolean>(
@@ -86,17 +103,17 @@ export class ProtocolosService {
       );
       const dadosCi = await this.montarCiMemoriaDadosCompleto(
         solicitacaoId,
-        dto,
+        dtoProtocolo,
       );
       const memorandoPdfBase64 = await this.ciMemoriaPdfBuilder.buildBase64(
         dadosCi,
       );
       this.validarTamanhoPdf(memorandoPdfBase64);
 
-      const payloadCompleto = this.montarPayload(dto, memorandoPdfBase64);
+      const payloadCompleto = this.montarPayload(dtoProtocolo, memorandoPdfBase64);
       this.logger.log(
         `e-TCE /gerar com ${payloadCompleto.Arquivos.length} arquivo(s): ` +
-          `tamanhoSolic=${this.tamanhoEmBytes(dto.pdfBase64)} tamanhoMemo=${this.tamanhoEmBytes(memorandoPdfBase64)}`,
+          `tamanhoSolic=${this.tamanhoEmBytes(dtoProtocolo.pdfBase64!)} tamanhoMemo=${this.tamanhoEmBytes(memorandoPdfBase64)}`,
       );
 
       const etceResponse = await this.etceClient.gerarProtocolo(payloadCompleto);
@@ -108,9 +125,9 @@ export class ProtocolosService {
         `e-TCE retornou codTce=${Cod_TCE} (geração única com solicitação + memorando).`,
       );
     } else {
-      const payloadPrincipal = this.montarPayload(dto, null);
+      const payloadPrincipal = this.montarPayload(dtoProtocolo, null);
       this.logger.log(
-        `Protocolando solicitação ${solicitacaoId} (PDF principal no /gerar; memorando no anexar): cpf=${dto.interessado.cpf} tamanhoPdf=${this.tamanhoEmBytes(dto.pdfBase64)}`,
+        `Protocolando solicitação ${solicitacaoId} (PDF principal no /gerar; memorando no anexar): cpf=${dto.interessado.cpf} tamanhoPdf=${this.tamanhoEmBytes(dtoProtocolo.pdfBase64!)}`,
       );
 
       const etceResponse = await this.etceClient.gerarProtocolo(payloadPrincipal);
@@ -127,14 +144,18 @@ export class ProtocolosService {
 
       const dadosCi = await this.montarCiMemoriaDadosCompleto(
         solicitacaoId,
-        dto,
+        dtoProtocolo,
       );
       const memorandoPdfBase64 = await this.ciMemoriaPdfBuilder.buildBase64(
         dadosCi,
       );
       this.validarTamanhoPdf(memorandoPdfBase64);
 
-      await this.anexarDocumentosAoProtocoloEtce(Cod_TCE, dto, memorandoPdfBase64);
+      await this.anexarDocumentosAoProtocoloEtce(
+        Cod_TCE,
+        dtoProtocolo,
+        memorandoPdfBase64,
+      );
 
       this.logger.log(
         `Documentos (solicitação + memorando) enviados ao e-TCE no protocolo ${Cod_TCE} — gravando no banco`,
@@ -197,9 +218,11 @@ export class ProtocolosService {
       name: error.name,
       solicitacaoId,
       cpf: dto?.interessado?.cpf,
-      payloadSize: dto?.pdfBase64
-        ? this.tamanhoEmBytes(dto.pdfBase64)
-        : undefined,
+      payloadSize: dtoProtocolo?.pdfBase64
+        ? this.tamanhoEmBytes(dtoProtocolo.pdfBase64)
+        : dto?.pdfBase64
+          ? this.tamanhoEmBytes(dto.pdfBase64)
+          : undefined,
     };
 
     this.logger.error(
@@ -364,7 +387,7 @@ export class ProtocolosService {
       ? dto.nomeArquivo
       : `${dto.nomeArquivo}.pdf`;
     return {
-      Arquivo: this.normalizarBase64PdfEtce(dto.pdfBase64),
+      Arquivo: this.normalizarBase64PdfEtce(dto.pdfBase64 ?? ''),
       NomeArquivo: nomeArquivo,
       NomeTipoDocumento: 'SOLICITAÇÃO DE DIÁRIA',
       CodTipoDocumento: cfg.codTipoDocumentoSolicitacao,

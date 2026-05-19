@@ -4,6 +4,8 @@ export interface PdfContent {
   condutores: any[];
   assinatura: any;
   assinaturaPresidente?: any; // Adicionando assinatura do presidente
+  /** Nomes de diretores DAOFI com ativo = SIM (id desc), para o rodapé da seção DISPONIBILIDADE */
+  diretoresDaofiAtivos?: string[];
 }
 
 export interface PdfDocDefinition {

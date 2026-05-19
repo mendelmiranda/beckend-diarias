@@ -17,10 +17,11 @@ import { AssinaturaBuilder } from './assinatura.builder';
 import { AprovacaoDefinitivaService } from 'src/aprovacao_definitiva/aprovacao_definitiva.service';
 import { ContaDiariaService } from 'src/conta_diaria/conta_diaria.service';
 import { PresidenteAssinaturaBuilder } from './presidente-assinatura.builder';
+import { AssinaturaDaofService } from 'src/assinatura_daof/assinatura_daof.service';
 
 @Module({
   controllers: [PdfController],
-  exports: [PdfGenerator],
+  exports: [PdfGenerator, PdfService],
   providers: [PdfGenerator, SolicitacaoPdfBuilder, 
     HeaderBuilder,
     EventosBuilder,
@@ -29,6 +30,7 @@ import { PresidenteAssinaturaBuilder } from './presidente-assinatura.builder';
     PresidenteAssinaturaBuilder,
     AprovacaoDefinitivaService,
     ContaDiariaService,
-    PdfService, SolicitacaoService, PrismaService, LogSistemaService, SolicitacaoCondutoresService, AprovacaoDefinitivaDaofService]
+    PdfService, SolicitacaoService, PrismaService, LogSistemaService, SolicitacaoCondutoresService, AprovacaoDefinitivaDaofService,
+    AssinaturaDaofService]
 })
 export class PdfModule {}

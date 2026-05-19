@@ -22,9 +22,10 @@ export class InteressadoDto {
 }
 
 export class ProtocolarPdfDto {
+  /** Opcional: o servidor passa a gerar o PDF com dados completos (ex.: contas bancárias). */
+  @IsOptional()
   @IsBase64()
-  @IsNotEmpty()
-  pdfBase64: string;
+  pdfBase64?: string;
 
   @IsString()
   @IsNotEmpty()

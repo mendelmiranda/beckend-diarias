@@ -25,10 +25,11 @@ export class AprovacaoDefinitivaDaofService {
         AND: {
           solicitacao_id: solicitacaoId,
           assinatura_daof: {
-            ativo: 'SIM'
-          }
-        }        
+            ativo: 'SIM',
+          },
+        },
       },
+      orderBy: { id: 'desc' },
       include: {
         assinatura_daof: true,
       },

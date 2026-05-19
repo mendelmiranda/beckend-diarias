@@ -22,7 +22,13 @@ export class SolicitacaoPdfBuilder {
   private base64Image: string = ImagemLogo.exibirImagem(); // Substitua pela sua imagem base64
 
     build(data: PdfContent): PdfDocDefinition {
-      const { solicitacao, condutores, assinatura, assinaturaPresidente } = data;
+      const {
+        solicitacao,
+        condutores,
+        assinatura,
+        assinaturaPresidente,
+        diretoresDaofiAtivos,
+      } = data;
       
       let content: any[] = [];
       
@@ -47,10 +53,13 @@ export class SolicitacaoPdfBuilder {
       }
   
       // Adiciona assinatura DAOFI e empenhos
-      content = content.concat(this.assinaturaBuilder.build({
-        solicitacao,
-        assinatura,
-      }));
+      content = content.concat(
+        this.assinaturaBuilder.build({
+          solicitacao,
+          assinatura,
+          diretoresDaofiAtivos,
+        }),
+      );
       
       // Adiciona assinatura do presidente (se existir)
       if (assinaturaPresidente) {
