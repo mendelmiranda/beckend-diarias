@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, ParseIntPipe } from '@nestjs/common';
 import { ValorViagemService } from './valor_viagem.service';
 import { CreateValorViagemDto } from './dto/create-valor_viagem.dto';
 import { UpdateValorViagemDto } from './dto/update-valor_viagem.dto';
 
+//valor-viagem/solicitacao/:id/participantes-diarias
 @Controller('valor-viagem')
 export class ValorViagemController {
   constructor(private readonly valorViagemService: ValorViagemService) { }
@@ -66,5 +67,10 @@ export class ValorViagemController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.valorViagemService.remove(+id);
+  }
+
+  @Get('/solicitacao/:id/participantes-diarias')
+  async listar(@Param('id', ParseIntPipe) id: number) {
+    return this.valorViagemService.listarPorSolicitacao(id);
   }
 }
