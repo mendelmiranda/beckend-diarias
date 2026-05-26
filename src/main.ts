@@ -43,6 +43,16 @@ async function bootstrap() {
       'http://10.10.0.18:3004',
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Accept',
+      'X-Requested-With',
+      'Dados_client',
+      'Cache-Control',
+      'Pragma',
+    ],
+
     credentials: true,
   });
 
