@@ -1,93 +1,142 @@
 import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import { conta_diaria } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
+import { ContaDiariaService } from 'src/conta_diaria/conta_diaria.service';
+import {
+  ContaDiariaInput,
+  variantesCpf,
+} from 'src/conta_diaria/conta-diaria.helpers';
 import { CreateParticipanteDto } from '../participante/dto/create-participante.dto';
 import { UpdateParticipanteDto } from '../participante/dto/update-participante.dto';
-import { conta_diaria } from '@prisma/client';
-import { CreateContaDiariaDto } from 'src/conta_diaria/dto/create-conta_diaria.dto';
 
 @Injectable()
 export class ParticipanteService {
-  constructor(private prisma: PrismaService) { }
+  constructor(
+    private prisma: PrismaService,
+    private readonly contaDiariaService: ContaDiariaService,
+  ) { }
 
-  async create(dto: CreateParticipanteDto) {   
+  /**
+   * Persiste participante e conta bancária (`conta_diaria[]` ou `contaDiariaModel`).
+   * Retorna sempre o id do participante.
+   */
+  async create(dto: CreateParticipanteDto): Promise<number> {
+    const contaPayload = this.extrairContaDoDto(dto);
+    const data = { ...dto };
+    this.limparCamposContaDoDto(data as unknown as Record<string, unknown>);
 
-    if (dto.tipo === "C" || dto.tipo === "T") {
-      return this.cadastraColaborador(dto);
+    if (data.data_nascimento && typeof data.data_nascimento === 'string') {
+      data.data_nascimento = new Date(data.data_nascimento);
     }
 
-    return this.prisma.participante.create({
-      data: dto,
-    });
-  }
+    let participanteId: number;
 
-  async cadastraColaborador(dto: CreateParticipanteDto) {
-    const remove = 'conta_diaria';
-    const prop = 'conta_diaria';
-    const contaX: conta_diaria = dto[prop][0];
-  
-    delete dto[remove];
-  
-    // Convertendo o campo data_nascimento para um objeto Date
-    if (dto.data_nascimento && typeof dto.data_nascimento === 'string') {
-      dto.data_nascimento = new Date(dto.data_nascimento);
-    }
-  
-    // Verificar se já existe um participante com este CPF
-    let participante;
-    let participanteId;
-  
-    if (dto.cpf) {
-      const participanteExistente = await this.prisma.participante.findFirst({
-        where: {
-          cpf: dto.cpf
-        }
-      });
-  
-      if (participanteExistente) {
-        // Se já existe, use o participante existente
-        participante = participanteExistente;
-        participanteId = participanteExistente.id;
-        
-        // Opcionalmente, você pode atualizar os dados do participante existente
-        // Descomentar se quiser atualizar os dados do participante
-        /* 
-        participante = await this.prisma.participante.update({
-          where: { id: participanteId },
-          data: dto
-        });
-        */
-      } else {
-        // Se não existe, crie um novo participante
-        participante = await this.prisma.participante.create({
-          data: dto,
-        });
-        participanteId = participante.id;
-      }
+    if (data.tipo === 'C' || data.tipo === 'T') {
+      participanteId = await this.persistirParticipanteColaborador(data);
     } else {
-      // Se não houver CPF, crie um novo participante
-      participante = await this.prisma.participante.create({
-        data: dto,
+      const participante = await this.prisma.participante.create({
+        data: this.toParticipanteCreateData(data),
       });
       participanteId = participante.id;
     }
-  
-    const modeloConta: CreateContaDiariaDto = {
-      ...contaX,
-      participante_id: participanteId,
-    };
-  
-    if (modeloConta.id > 0) {
-      await this.prisma.conta_diaria.update({
-        where: { id: modeloConta.id },
-        data: modeloConta,
-      });
-    } else {
-      await this.prisma.conta_diaria.create({
-        data: modeloConta,
-      });
+
+    if (contaPayload) {
+      await this.contaDiariaService.upsertForParticipante(
+        participanteId,
+        contaPayload,
+        { nome: data.nome, cpf: data.cpf, tipo: data.tipo },
+      );
     }
-  
+
     return participanteId;
+  }
+
+  /** @deprecated Use create() — mantido para compatibilidade. */
+  async cadastraColaborador(dto: CreateParticipanteDto): Promise<number> {
+    return this.create(dto);
+  }
+
+  private async persistirParticipanteColaborador(
+    dto: CreateParticipanteDto,
+  ): Promise<number> {
+    if (!dto.cpf) {
+      const participante = await this.prisma.participante.create({
+        data: this.toParticipanteCreateData(dto),
+      });
+      return participante.id;
+    }
+
+    const cpfVariants = variantesCpf(dto.cpf);
+    const participanteExistente = await this.prisma.participante.findFirst({
+      where:
+        cpfVariants.length > 0
+          ? { cpf: { in: cpfVariants } }
+          : { cpf: dto.cpf },
+      orderBy: { id: 'desc' },
+    });
+
+    if (participanteExistente) {
+      await this.prisma.participante.update({
+        where: { id: participanteExistente.id },
+        data: this.toParticipanteCreateData(
+          dto,
+        ) as Prisma.participanteUpdateInput,
+      });
+      return participanteExistente.id;
+    }
+
+    const participante = await this.prisma.participante.create({
+      data: this.toParticipanteCreateData(dto),
+    });
+    return participante.id;
+  }
+
+  extrairContaDoDto(dto: {
+    contaDiariaModel?: conta_diaria;
+    conta_diaria?: conta_diaria[];
+  }): ContaDiariaInput | undefined {
+    if (dto.contaDiariaModel) {
+      return dto.contaDiariaModel;
+    }
+    if (Array.isArray(dto.conta_diaria) && dto.conta_diaria.length > 0) {
+      return dto.conta_diaria[0];
+    }
+    return undefined;
+  }
+
+  limparCamposContaDoDto(dto: Record<string, unknown>): void {
+    delete dto.contaDiariaModel;
+    delete dto.conta_diaria;
+  }
+
+  async salvarOuAtualizarContaDiaria(
+    participanteId: number,
+    conta: ContaDiariaInput,
+    defaults?: { nome?: string; cpf?: string; tipo?: string },
+  ) {
+    return this.contaDiariaService.upsertForParticipante(
+      participanteId,
+      conta,
+      defaults,
+    );
+  }
+
+  private toParticipanteCreateData(
+    dto: CreateParticipanteDto,
+  ): Prisma.participanteCreateInput {
+    const copy = { ...dto } as Record<string, unknown>;
+    this.limparCamposContaDoDto(copy);
+    return copy as Prisma.participanteCreateInput;
+  }
+
+  private toParticipanteUpdateData(
+    dto: UpdateParticipanteDto,
+  ): Prisma.participanteUpdateInput {
+    const { id: _id, ...rest } = dto;
+    const copy = { ...rest } as Record<string, unknown>;
+    this.limparCamposContaDoDto(copy);
+    return copy as Prisma.participanteUpdateInput;
   }
 
   findAll() {
@@ -147,11 +196,36 @@ export class ParticipanteService {
     })
   }
 
-  update(id: number, updateParticipanteDto: UpdateParticipanteDto) {
-    return this.prisma.participante.update({
+  async update(id: number, updateParticipanteDto: UpdateParticipanteDto) {
+    const contaPayload = this.extrairContaDoDto(updateParticipanteDto);
+    const data = { ...updateParticipanteDto };
+    this.limparCamposContaDoDto(data as unknown as Record<string, unknown>);
+
+    if (
+      data.data_nascimento &&
+      typeof data.data_nascimento === 'string'
+    ) {
+      data.data_nascimento = new Date(data.data_nascimento);
+    }
+
+    const participante = await this.prisma.participante.update({
       where: { id },
-      data: updateParticipanteDto,
+      data: this.toParticipanteUpdateData(data),
     });
+
+    if (contaPayload) {
+      await this.contaDiariaService.upsertForParticipante(
+        id,
+        contaPayload,
+        {
+          nome: data.nome ?? participante.nome,
+          cpf: data.cpf ?? participante.cpf,
+          tipo: data.tipo ?? participante.tipo,
+        },
+      );
+    }
+
+    return participante;
   }
 
   remove(id: number) {
@@ -173,7 +247,7 @@ export class ParticipanteService {
         return existeParticipante.id; // Retorna apenas o ID
       } else {
         const participante = await this.prisma.participante.create({
-          data: dto,
+          data: this.toParticipanteCreateData(dto),
           select: {
             id: true, // Seleciona apenas o ID
           }

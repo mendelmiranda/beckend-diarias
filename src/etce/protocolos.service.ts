@@ -601,19 +601,30 @@ export class ProtocolosService {
 
     let totalDiarias = 0;
     let totalPassagens = 0;
+    const passagensCompartilhadasContadas = new Set<string>();
 
     for (const ev of solicitacao.eventos) {
       for (const ep of ev.evento_participantes) {
         for (const vp of ep.viagem_participantes ?? []) {
           const vg = vp.viagem;
           if (!vg) continue;
-          for (const vv of vg.valor_viagem ?? []) {
-            if (!this.vvPertenceParticipante(vv, ep.participante.id)) continue;
+          (vg.valor_viagem ?? []).forEach((vv, idx) => {
+            if (!this.vvPertenceParticipante(vv, ep.participante.id)) return;
             const tipo = (vv.tipo ?? '').toUpperCase();
             const val = vv.valor_individual ?? 0;
             if (tipo === 'DIARIA') totalDiarias += val;
-            if (tipo === 'PASSAGEM' && val > 0) totalPassagens += val;
-          }
+            if (tipo === 'PASSAGEM' && val > 0) {
+              if (vv.participante_id === null) {
+                const chave = `${vg.id}-${idx}`;
+                if (!passagensCompartilhadasContadas.has(chave)) {
+                  passagensCompartilhadasContadas.add(chave);
+                  totalPassagens += val;
+                }
+              } else {
+                totalPassagens += val;
+              }
+            }
+          });
         }
       }
     }

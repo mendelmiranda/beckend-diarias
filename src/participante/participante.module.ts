@@ -12,7 +12,7 @@ import { ParticipanteConsultasController } from './participante-consultas.contro
 @Module({
   controllers: [ParticipanteController, ParticipanteConsultasController],
   providers: [ParticipanteService],
+  exports: [ParticipanteService],
   imports: [PrismaModule, ContaDiariaModule, EventoParticipantesModule, EventoModule, ViagemModule, AnexoSolicitacaoModule],
-  
 })
 export class ParticipanteModule {}

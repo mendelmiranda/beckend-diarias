@@ -19,4 +19,5 @@ export class UpdateParticipanteDto extends PartialType(CreateParticipanteDto) {
   profissao?: string;
   local_trabalho?: string;
   contaDiariaModel?: conta_diaria;
+  conta_diaria?: conta_diaria[];
 }

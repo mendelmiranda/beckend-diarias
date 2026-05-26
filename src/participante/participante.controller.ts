@@ -8,12 +8,8 @@ import {
   Post,
   Put
 } from '@nestjs/common';
-import { conta_diaria } from '@prisma/client';
 import { AnexoSolicitacaoService } from 'src/anexo_solicitacao/anexo_solicitacao.service';
-import { UpdateContaDiariaDto } from 'src/conta_diaria/dto/update-conta_diaria.dto';
 import { Util } from 'src/util/Util';
-import { ContaDiariaService } from '../conta_diaria/conta_diaria.service';
-import { CreateContaDiariaDto } from '../conta_diaria/dto/create-conta_diaria.dto';
 import { CreateEventoParticipanteDto } from '../evento_participantes/dto/create-evento_participante.dto';
 import { EventoParticipantesService } from '../evento_participantes/evento_participantes.service';
 import { CreateParticipanteDto } from './dto/create-participante.dto';
@@ -24,7 +20,6 @@ import { ParticipanteService } from './participante.service';
 export class ParticipanteController {
   constructor(
     private readonly participanteService: ParticipanteService,
-    private readonly contaDiariaService: ContaDiariaService,
     private readonly eventoParticipanteService: EventoParticipantesService,
     private readonly anexoSolicitacao: AnexoSolicitacaoService,
   ) { }
@@ -34,70 +29,24 @@ export class ParticipanteController {
     @Param('id') idEvento: number,
     @Body() createParticipanteDto: CreateParticipanteDto,
   ) {
-
     const dateString = createParticipanteDto.data_nascimento as any;
 
-    let resultado;
+    const data: CreateParticipanteDto = {
+      ...createParticipanteDto,
+      data_nascimento:
+        createParticipanteDto.tipo === 'S'
+          ? new Date(dateString)
+          : Util.convertToDate(dateString),
+    };
 
-    if (createParticipanteDto.tipo !== 'S') {
+    const participanteId = await this.participanteService.create(data);
 
-      try {
+    await this.eventoParticipanteService.create({
+      evento_id: parseInt(String(idEvento), 10),
+      participante_id: participanteId,
+    });
 
-        const contaDto = createParticipanteDto.contaDiariaModel;
-
-        if (contaDto !== undefined) {
-          const conta: CreateContaDiariaDto = {
-            nome: contaDto.nome,
-            cpf: contaDto.cpf,
-            tipo: contaDto.tipo,
-            tipo_conta: contaDto.tipo_conta,
-            agencia: contaDto.agencia,
-            conta: contaDto.conta,
-            banco_id: contaDto.banco_id,
-            participante_id: contaDto.participante_id,
-          };
-          this.contaDiariaService.create(conta);
-        }
-
-        const prop = 'contaDiariaModel';
-        delete createParticipanteDto[prop];
-
-        const data: CreateParticipanteDto = {
-          ...createParticipanteDto,
-          //data_nascimento: Util.convertToDate(dateString),
-        };        
-
-        resultado = (await this.participanteService.create(data));        
-
-        const eventoPaticipanteDto: CreateEventoParticipanteDto = {
-          evento_id: parseInt(idEvento + ''),
-          participante_id: resultado,
-        };
-
-        this.eventoParticipanteService.create(eventoPaticipanteDto);
-
-      } catch (e) {
-        console.log('erro', e);
-      }
-
-    } else {
-
-      const data: CreateParticipanteDto = {
-        ...createParticipanteDto,
-        data_nascimento: new Date(dateString),
-      };
-
-      const result = await this.participanteService.create(data);
-      const id = typeof result === 'number' ? result : result.id;
-
-      const eventoPaticipanteDto: CreateEventoParticipanteDto = {
-        evento_id: parseInt(idEvento + ''),
-        participante_id: parseInt(id + ''),
-      };
-
-      this.eventoParticipanteService.create(eventoPaticipanteDto);
-    }
-    return resultado;
+    return participanteId;
   }
 
   @Get()
@@ -127,77 +76,20 @@ export class ParticipanteController {
     @Body() updateParticipanteDto: UpdateParticipanteDto,
   ) {
     const dateString = updateParticipanteDto.data_nascimento as any;
-    let resultado;
 
-    if (updateParticipanteDto.tipo !== 'S' && id > 0) {
-      const contaDto = updateParticipanteDto.contaDiariaModel;
+    const data: UpdateParticipanteDto = {
+      ...updateParticipanteDto,
+      data_nascimento: Util.convertToDate(dateString),
+    };
 
-      if (contaDto !== undefined) {
-        const conta: UpdateContaDiariaDto = {
-          id: contaDto.id,
-          nome: contaDto.nome,
-          cpf: contaDto.cpf,
-          tipo: contaDto.tipo,
-          tipo_conta: contaDto.tipo_conta,
-          agencia: contaDto.agencia,
-          conta: contaDto.conta,
-          banco_id: contaDto.banco_id,
-          participante_id: contaDto.participante_id,
-        };
+    await this.participanteService.update(+id, data);
 
-        if (contaDto.id > 0 || contaDto.id === undefined) {
-          await this.contaDiariaService.create(conta);
-        } else {
-          await this.contaDiariaService.update(contaDto.id, conta);
-        }
-      } /**/
+    await this.eventoParticipanteService.create({
+      evento_id: parseInt(String(idEvento), 10),
+      participante_id: +id,
+    });
 
-      const prop = 'contaDiariaModel';
-      delete updateParticipanteDto[prop];
-
-      const data: UpdateParticipanteDto = {
-        ...updateParticipanteDto,
-        data_nascimento: Util.convertToDate(dateString),
-      };
-
-      //REFATORAR ESSE CÓDIGO - UPDATE
-      if (updateParticipanteDto.tipo === 'C' || updateParticipanteDto.tipo === 'T' && id > 0) {
-        const remove = 'conta_diaria';
-        delete data[remove];
-        await this.participanteService.update(+id, data);
-
-        const prop = 'conta_diaria';
-        const contaX: conta_diaria = updateParticipanteDto[prop][0];
-
-        const modeloConta: UpdateContaDiariaDto = {
-          ...contaX,
-          participante_id: id,
-        };
-
-        const del = 'id';
-        delete modeloConta[del];
-        delete modeloConta['participante_id'];
-
-        const idConta = contaX.id;
-
-        if (idConta > 0 && idConta !== undefined) {
-          await this.contaDiariaService.update(contaX.id, modeloConta);
-        } else {
-          await this.contaDiariaService.create(contaX);
-        }
-      }
-
-      resultado = (await this.participanteService.update(+id, data)).id;
-
-      const eventoPaticipanteDto: CreateEventoParticipanteDto = {
-        evento_id: parseInt(idEvento + ''),
-        participante_id: resultado,
-      };
-
-      await this.eventoParticipanteService.create(eventoPaticipanteDto);
-    }
-
-    return resultado;
+    return +id;
   }
 
 

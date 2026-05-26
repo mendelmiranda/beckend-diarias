@@ -57,10 +57,11 @@ export class AssinaturaBuilder {
                     'Saldo Inicial: ' + Util.formataValorDiaria(a.saldo_inicial, 'NACIONAL') +
                     '\nValor Reservado: ' + Util.formataValorDiaria(a.valor_reservado, 'NACIONAL') + 
                     '\nValor Pós Reserva: ' + Util.formataValorDiaria(a.valor_pos_reserva ?? 0, 'NACIONAL') + '\n',
-                    a.acao === '2072' ? 'AÇÂO 2072 - Planejamento Estratégico 2024 a 2028\n\n' : '' +
+                    a.acao === '2072' ? 'AÇÂO 2072 - Planejamento Estratégico 2024 a 2028' : '' +
                     a.acao === '2446' ? 'AÇÃO 2446 - MANUTENÇÃO E FUNCIONAMENTO DO TCE/AP E DO PRÉDIO ANEXO\n\n' : '' +
-                    a.acao === '2445' ? 'AÇÃO 2445 - TREINAMENTO E CAPACITAÇÃO DE RECURSOS HUMANOS\n\n' : '' +
-                    '\nObservação: ' + a.observacao
+                    a.acao === '2445' ? 'AÇÃO 2445 - TREINAMENTO E CAPACITAÇÃO DE RECURSOS HUMANOS' : '',
+                    'Observação: ' + a.observacao + '\n\n'
+                    
                   ];
                 })
               ],

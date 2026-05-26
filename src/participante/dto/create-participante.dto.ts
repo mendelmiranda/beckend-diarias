@@ -16,6 +16,8 @@ export class CreateParticipanteDto {
   profissao?: string;
   local_trabalho?: string;
   contaDiariaModel?: conta_diaria;
+  /** Formato enviado pelo frontend (ex.: tipo S) */
+  conta_diaria?: conta_diaria[];
   funcao?: string;
   efetivo?: string;
   unificado?: string;
