@@ -104,7 +104,6 @@ update(
       : dadosClient;
     
     const usuario = JSON.parse(dadosClientStr);
-    console.log('usuario', usuario);
     
     return this.solicitacaoService.update(+id, updateSolicitacaoDto, usuario);
     
