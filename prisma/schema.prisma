@@ -30,6 +30,8 @@ model anexo_evento {
   filename     String
   evento       evento   @relation(fields: [evento_id], references: [id], onDelete: Cascade)
   evento_id    Int
+
+  @@index([evento_id])
 }
 
 model conta_diaria {
@@ -46,6 +48,9 @@ model conta_diaria {
 
   banco_id Int
   banco    bancos @relation(fields: [banco_id], references: [cod])
+
+  @@index([participante_id])
+  @@index([banco_id])
 }
 
 model pais {
@@ -111,6 +116,11 @@ model solicitacao {
   viagem_evento              viagem_evento[]
   arquivar                   Boolean? @default(false)
 
+  @@index([status])
+  @@index([login])
+  @@index([protocolo])
+  @@index([cod_lotacao])
+
   @@id([id])
 }
 
@@ -144,6 +154,8 @@ model tramite {
   log_tramite         log_tramite[]
 
   flag_daof String? @db.Char(3)
+
+  @@index([cod_lotacao_destino, status]) 
 
   @@id([id, solicitacao_id])
 }
@@ -211,6 +223,11 @@ model evento {
   eventos_juntos       eventos_juntos[]
   viagem_evento        viagem_evento[]
 
+  @@index([solicitacao_id])
+  @@index([tipo_evento_id])
+  @@index([cidade_id])
+  @@index([pais_id])
+  @@index([inicio, fim]) // faixas de data
   @@id([id])
 }
 
@@ -322,6 +339,13 @@ model viagem {
   viagem_participantes viagem_participantes[]
   valor_viagem         valor_viagem[]
   viagem_evento        viagem_evento[]
+
+  @@index([solicitacao_id])
+  @@index([origem_id])
+  @@index([destino_id])
+  @@index([cidade_origem_id])
+  @@index([cidade_destino_id])
+  @@index([pais_id])
 }
 
 model viagem_evento {
@@ -354,6 +378,9 @@ model valor_viagem {
 
   participante_id Int? // Novo campo para vincular diretamente ao participante
   participante    participante? @relation(fields: [participante_id], references: [id], onDelete: Cascade)
+
+  @@index([viagem_id])
+  @@index([participante_id])
 }
 
 model viagem_participantes {
