@@ -127,7 +127,10 @@ export class EventosBuilder {
           pageBreak: 'before' // Inicia em uma nova página para melhor visualização
         });
 
-        const tabelasViagens = this.buildParticipantesViagensTable(evento.evento_participantes);
+        const tabelasViagens = this.buildParticipantesViagensTable(
+          evento.evento_participantes,
+          evento,
+        );
         if (Array.isArray(tabelasViagens)) {
           tabelasViagens.forEach(item => content.push(item));
         } else {
@@ -251,13 +254,13 @@ export class EventosBuilder {
   }
 
   // NOVA FUNÇÃO: Criar tabela apenas com participantes e informações de viagens
-  private buildParticipantesViagensTable(participantes: any[]): any {
+  private buildParticipantesViagensTable(participantes: any[], evento?: any): any {
     if (!participantes || participantes.length === 0) {
       return { text: "Nenhum participante encontrado", style: "textoNormal" };
     }
 
     // Agrupamos as viagens semelhantes
-    const viagensAgrupadas = this.agruparViagens(participantes);
+    const viagensAgrupadas = this.agruparViagens(participantes, evento);
 
     if (viagensAgrupadas.length === 0) {
       return { text: "Nenhuma viagem encontrada", style: "textoNormal" };
@@ -270,17 +273,8 @@ export class EventosBuilder {
       const viagem = agrupamento.viagem;
       const participantesViagem = agrupamento.participantes;
 
-      // Formata destino e origem
-      const local = viagem.cidade_destino?.descricao + " - " + viagem.cidade_destino?.estado?.uf;
-      const cidadeDestino = viagem?.destino?.cidade === undefined ? local :
-        viagem?.destino?.cidade + " - " + viagem?.destino?.uf;
-
-      let origem = "";
-      if (viagem.evento?.tem_passagem === "NAO") {
-        origem = viagem.cidade_origem?.descricao + " - " + viagem.cidade_origem?.estado?.uf;
-      } else {
-        origem = viagem.origem?.cidade + " - " + viagem.origem?.uf;
-      }
+      const cidadeDestino = this.formatDestinoViagem(viagem, evento);
+      const origem = this.formatOrigemViagem(viagem, evento);
 
       // Título e detalhes da viagem em um bloco mais compacto
       content.push({
@@ -376,14 +370,67 @@ export class EventosBuilder {
     return content;
   }
 
-  private getChaveViagem(viagem: any): ViagemKey {
-    const origem = viagem.cidade_origem ?
-      `${viagem.cidade_origem.descricao} - ${viagem.cidade_origem.estado?.uf}` :
-      (viagem.origem ? `${viagem.origem.cidade} - ${viagem.origem.uf}` : '');
+  private isViagemExterior(viagem: any, evento?: any): boolean {
+    return evento?.exterior === 'SIM' || viagem?.exterior === 'SIM';
+  }
 
-    const cidadeDestino = viagem.cidade_destino?.descricao + " - " + viagem.cidade_destino?.estado?.uf;
-    const destino = viagem?.destino?.cidade === undefined ? cidadeDestino :
-      viagem?.destino?.cidade + " - " + viagem?.destino?.uf;
+  private formatDestinoViagem(viagem: any, evento?: any): string {
+    if (this.isViagemExterior(viagem, evento)) {
+      const paisNome = evento?.pais?.nome_pt ?? viagem?.pais?.nome_pt ?? '';
+      const localExterior = evento?.local_exterior ?? viagem?.local_exterior ?? '';
+      if (paisNome && localExterior) {
+        return `${paisNome} - ${localExterior}`;
+      }
+      return paisNome || localExterior || 'Exterior';
+    }
+
+    if (viagem?.destino?.cidade) {
+      const uf = viagem.destino.uf ?? '';
+      return uf ? `${viagem.destino.cidade} - ${uf}` : viagem.destino.cidade;
+    }
+    if (viagem?.cidade_destino?.descricao) {
+      const uf = viagem.cidade_destino?.estado?.uf ?? '';
+      return uf
+        ? `${viagem.cidade_destino.descricao} - ${uf}`
+        : viagem.cidade_destino.descricao;
+    }
+    return 'Não especificado';
+  }
+
+  private formatOrigemViagem(viagem: any, evento?: any): string {
+    if (this.isViagemExterior(viagem, evento)) {
+      if (viagem.cidade_origem?.descricao) {
+        const uf = viagem.cidade_origem?.estado?.uf ?? '';
+        return uf
+          ? `${viagem.cidade_origem.descricao} - ${uf}`
+          : viagem.cidade_origem.descricao;
+      }
+      return 'Brasil';
+    }
+
+    const temPassagem = evento?.tem_passagem ?? 'SIM';
+    if (temPassagem === 'NAO' && viagem.cidade_origem?.descricao) {
+      const uf = viagem.cidade_origem?.estado?.uf ?? '';
+      return uf
+        ? `${viagem.cidade_origem.descricao} - ${uf}`
+        : viagem.cidade_origem.descricao;
+    }
+    if (viagem.origem?.cidade) {
+      const uf = viagem.origem.uf ?? '';
+      return uf ? `${viagem.origem.cidade} - ${uf}` : viagem.origem.cidade;
+    }
+    if (viagem.cidade_origem?.descricao) {
+      const uf = viagem.cidade_origem?.estado?.uf ?? '';
+      return uf
+        ? `${viagem.cidade_origem.descricao} - ${uf}`
+        : viagem.cidade_origem.descricao;
+    }
+    return 'Não especificado';
+  }
+
+  private getChaveViagem(viagem: any, evento?: any): ViagemKey {
+    const origem = this.formatOrigemViagem(viagem, evento);
+    const destino = this.formatDestinoViagem(viagem, evento);
 
     const dataIda = viagem.data_ida ? formataDataCurta(viagem.data_ida as Date) : '';
     const dataVolta = viagem.data_volta ? formataDataCurta(viagem.data_volta as Date) : '';
@@ -405,14 +452,14 @@ export class EventosBuilder {
     return chave;
   }
 
-  private agruparViagens(participantes: any[]): AgrupamentoViagem[] {
+  private agruparViagens(participantes: any[], evento?: any): AgrupamentoViagem[] {
     const viagensMap = new Map<string, AgrupamentoViagem>();
 
     // Coletamos todas as viagens de todos os participantes
     participantes.forEach(ep => {
       if (ep.viagem_participantes && ep.viagem_participantes.length > 0) {
         ep.viagem_participantes.forEach(vp => {
-          const chaveViagem = this.getChaveViagem(vp.viagem);
+          const chaveViagem = this.getChaveViagem(vp.viagem, evento);
           const chaveString = JSON.stringify(chaveViagem);
 
           if (!viagensMap.has(chaveString)) {
