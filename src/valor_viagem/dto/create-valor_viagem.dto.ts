@@ -4,7 +4,7 @@ export class CreateValorViagemDto {
   destino?: string;
   valor_individual?: number;
   valor_grupo?: number;
-
+  cotacao_dolar?: number;
+  justificativa?: string;
   participante_id?: number;
-
 }

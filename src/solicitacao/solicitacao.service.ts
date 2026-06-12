@@ -1275,14 +1275,12 @@ export class SolicitacaoService {
     let valorDiariaPorDia: number;
 
     // Determinar qual valor de diária aplicar por dia
-    if (temPassagem === 'SIM') {
-      // Se tiver viagem, usar o valor "fora"
-      valorDiariaPorDia = valoresDiarias.fora;
-      this.logger.log('Aplicando valor de diária FORA (com viagem)');
-    } else if (exterior === 'SIM') {
-      // Se for no exterior, usar o valor "internacional"
+    if (exterior === 'SIM') {
       valorDiariaPorDia = valoresDiarias.internacional;
       this.logger.log('Aplicando valor de diária INTERNACIONAL');
+    } else if (temPassagem === 'SIM') {
+      valorDiariaPorDia = valoresDiarias.fora;
+      this.logger.log('Aplicando valor de diária FORA (com viagem)');
     } else {
       // Caso contrário, usar o valor "dentro"
       valorDiariaPorDia = valoresDiarias.dentro;
@@ -1305,10 +1303,10 @@ export class SolicitacaoService {
     // Mesma lógica do método melhorado, para manter consistência
     let valorDiariaPorDia: number;
 
-    if (temPassagem === 'SIM') {
-      valorDiariaPorDia = valoresDiarias.fora;
-    } else if (exterior === 'SIM') {
+    if (exterior === 'SIM') {
       valorDiariaPorDia = valoresDiarias.internacional;
+    } else if (temPassagem === 'SIM') {
+      valorDiariaPorDia = valoresDiarias.fora;
     } else {
       valorDiariaPorDia = valoresDiarias.dentro;
     }

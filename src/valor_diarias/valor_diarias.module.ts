@@ -8,7 +8,7 @@ import { ValorDiariasService } from './valor_diarias.service';
 @Module({
   imports: [HttpModule, LogSistemaModule],
   controllers: [ValorDiariasController],  
-  providers: [ValorDiariasService, PrismaService]
-  
+  providers: [ValorDiariasService, PrismaService],
+  exports: [ValorDiariasService],
 })
 export class ValorDiariasModule {}

@@ -64,10 +64,43 @@ export class ValorDiariasService {
     });
   }
 
-  consultarCotacao() { 
-    return this.httpService.axiosRef.get("https://economia.awesomeapi.com.br/json/last/USD")
-    .then((result) => result.data)
-    .then(data => data.USDBRL);
+  consultarCotacao() {
+    return this.httpService.axiosRef
+      .get('https://economia.awesomeapi.com.br/json/last/USD')
+      .then((result) => result.data)
+      .then((data) => data.USDBRL);
+  }
+
+  /** Cotação PTAX (BC) com fallback para AwesomeAPI. */
+  async obterCotacaoDolarVigente(): Promise<number> {
+    try {
+      const bc = await this.consultarCotacaoBancoCentral();
+      const cotacao = Number(bc?.cotacaoVenda ?? bc?.cotacaoCompra);
+      if (!Number.isNaN(cotacao) && cotacao > 0) {
+        return cotacao;
+      }
+    } catch {
+      // fallback abaixo
+    }
+
+    try {
+      const api = await this.consultarCotacao();
+      const cotacao = Number(api?.bid ?? api?.ask);
+      if (!Number.isNaN(cotacao) && cotacao > 0) {
+        return cotacao;
+      }
+    } catch {
+      // lança abaixo
+    }
+
+    throw new HttpException(
+      'Cotação do dólar indisponível',
+      HttpStatus.SERVICE_UNAVAILABLE,
+    );
+  }
+
+  converterUsdParaBrl(valorUsd: number, cotacao: number): number {
+    return Math.round(valorUsd * cotacao * 100) / 100;
   }
 
   consultarCotacaoBancoCentral() {

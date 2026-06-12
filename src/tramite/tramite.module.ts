@@ -5,23 +5,14 @@ import { TramiteService } from './tramite.service';
 import { LogTramiteService } from 'src/log_tramite/log_tramite.service';
 import { EmailModule } from 'src/email/email.module';
 import { EmailService } from 'src/email/email.service';
-import { ViagemService } from 'src/viagem/viagem.service';
-import { CidadeService } from 'src/cidade/cidade.service';
-import { AeroportoService } from 'src/aeroporto/aeroporto.service';
-import { EventoParticipantesService } from 'src/evento_participantes/evento_participantes.service';
-import { CargoDiariasService } from 'src/cargo_diarias/cargo_diarias.service';
-import { ValorViagemService } from 'src/valor_viagem/valor_viagem.service';
-import { EventoService } from 'src/evento/evento.service';
-import { HttpModule, HttpService } from '@nestjs/axios';
-import { LogSistemaService } from 'src/log_sistema/log_sistema.service';
+import { HttpModule } from '@nestjs/axios';
 import { TramiteContadorController } from './tramite.contator.controller';
 import { SolicitacaoModule } from 'src/solicitacao/solicitacao.module';
-
+import { ViagemModule } from 'src/viagem/viagem.module';
 
 @Module({
   controllers: [TramiteController, TramiteContadorController],
-  providers: [TramiteService, PrismaService, LogTramiteService, EmailService, ViagemService, CidadeService, AeroportoService, EventoParticipantesService, CargoDiariasService, ValorViagemService,
-  EventoService, LogSistemaService, ViagemService],
-  imports: [EmailModule, HttpModule, SolicitacaoModule]
+  providers: [TramiteService, PrismaService, LogTramiteService, EmailService],
+  imports: [EmailModule, HttpModule, SolicitacaoModule, ViagemModule],
 })
 export class TramiteModule {}

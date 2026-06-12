@@ -10,10 +10,11 @@ import { CargoDiariasService } from '../cargo_diarias/cargo_diarias.service';
 import { ValorViagemService } from 'src/valor_viagem/valor_viagem.service';
 import { EventoService } from 'src/evento/evento.service';
 import { LogSistemaService } from 'src/log_sistema/log_sistema.service';
-import { SolicitacaoModule } from 'src/solicitacao/solicitacao.module'; // Importe o módulo
+import { SolicitacaoModule } from 'src/solicitacao/solicitacao.module';
+import { ValorDiariasModule } from 'src/valor_diarias/valor_diarias.module';
 
 @Module({
-  imports: [SolicitacaoModule], // Adicione aqui
+  imports: [SolicitacaoModule, ValorDiariasModule],
   controllers: [ViagemController],
   providers: [
     ViagemService,

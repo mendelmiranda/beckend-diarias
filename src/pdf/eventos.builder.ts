@@ -191,11 +191,14 @@ export class EventosBuilder {
               .forEach(diaria => {
                 valorDiaria += diaria.valor_individual ?? 0;
 
-                if (diaria.justificativa !== undefined && diaria.justificativa?.length > 0) {
-                  diariasDesc += Util.formataValorDiaria(diaria.valor_individual ?? 0, "NACIONAL") +
-                    " (Justificativa: " + diaria.justificativa + ")\n";
+                const valorFmt = Util.formataValorDiaria(
+                  diaria.valor_individual ?? 0,
+                  'NACIONAL',
+                );
+                if (diaria.justificativa?.length > 0) {
+                  diariasDesc += `${valorFmt} (${diaria.justificativa})\n`;
                 } else {
-                  diariasDesc += Util.formataValorDiaria(diaria.valor_individual ?? 0, "NACIONAL") + "\n";
+                  diariasDesc += `${valorFmt}\n`;
                 }
               });
           }
