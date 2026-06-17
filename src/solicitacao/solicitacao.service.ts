@@ -24,7 +24,10 @@ export class SolicitacaoService {
     this.logSistemaService.createLog(dto, usuario, Operacao.INSERT);
 
     return this.prisma.solicitacao.create({
-      data: dto,
+      data: {
+        ...dto,
+        datareg: new Date(),
+      },
     });
   }
 
