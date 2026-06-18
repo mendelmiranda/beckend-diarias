@@ -29,11 +29,7 @@ async function bootstrap() {
   // Configuração CORS mais robusta
   app.enableCors({
     origin: [
-      'http://localhost:4321',
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://localhost:3004',
-      'http://localhost:5173',
+      'https://servicos.tce.ap.gov.br',
       'https://s3i.tce.ap.gov.br',
       'https://10.10.22.16',
       'http://10.10.0.18:8084',
@@ -41,6 +37,11 @@ async function bootstrap() {
       'http://10.10.5.210:3000',
       'http://10.10.3.5:3000',
       'http://10.10.0.18:3004',
+      'http://localhost:4321',
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://localhost:3004',
+      'http://localhost:5173',
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: [
@@ -49,11 +50,10 @@ async function bootstrap() {
       'Accept',
       'X-Requested-With',
       'Dados_client',
-      'Cache-Control',
-      'Pragma',
+      'Cache-Control', 
     ],
-
     credentials: true,
+    maxAge: 86400,
   });
 
 
