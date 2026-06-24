@@ -172,7 +172,8 @@ export class EventoParticipantesService {
   }
 
 
-  async findValoresDiarias(solicitacaoId: number) {
+  // Função antiga - estava funcionando só com o sistema novo
+ /*  async findValoresDiarias(solicitacaoId: number) {
     try {
       // Buscar eventos da solicitação
       const eventos = await this.prisma.evento.findMany({
@@ -252,7 +253,128 @@ export class EventoParticipantesService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-  }
+  } */
+
+    async findValoresDiarias(solicitacaoId: number) {
+      try {
+        const eventos = await this.prisma.evento.findMany({
+          where: { solicitacao_id: +solicitacaoId },
+          select: {
+            id: true,
+            titulo: true,
+            inicio: true,
+            fim: true,
+            valor_evento: true,
+            valor_total_inscricao: true,
+            observacao_valor: true,
+            tem_passagem: true,
+            evento_participantes: {
+              include: {
+                viagem_participantes: true,
+                participante: {
+                  select: {
+                    id: true,
+                    nome: true,
+                    tipo: true,
+                    cpf: true,
+                    cargo: true,
+                    matricula: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+    
+        // Coletar todos os participante_ids e viagem_ids envolvidos na solicitação
+        const participanteIds = new Set<number>();
+        const viagemIds = new Set<number>();
+    
+        for (const evento of eventos) {
+          for (const ep of evento.evento_participantes) {
+            if (ep.participante?.id) participanteIds.add(ep.participante.id);
+            for (const vp of ep.viagem_participantes ?? []) {
+              if (vp.viagem_id != null) viagemIds.add(vp.viagem_id);
+            }
+          }
+        }
+    
+        // Buscar os valores de DIÁRIA: tipo = 'DIARIA' e (participante OU viagem)
+        const valoresDiaria = await this.prisma.valor_viagem.findMany({
+          where: {
+            tipo: 'DIARIA',
+            OR: [
+              { participante_id: { in: [...participanteIds] } },
+              { viagem_id: { in: [...viagemIds] } },
+            ],
+          },
+          orderBy: { id: 'desc' }, // mais recente primeiro
+        });
+    
+        // Indexar para lookup O(1) (mantém o primeiro = mais recente por causa do orderBy)
+        const porParticipante = new Map<number, (typeof valoresDiaria)[number]>();
+        const porViagem = new Map<number, (typeof valoresDiaria)[number]>();
+        for (const v of valoresDiaria) {
+          if (v.participante_id != null && !porParticipante.has(v.participante_id)) {
+            porParticipante.set(v.participante_id, v);
+          }
+          if (v.viagem_id != null && !porViagem.has(v.viagem_id)) {
+            porViagem.set(v.viagem_id, v);
+          }
+        }
+    
+        const resultado = eventos.map((evento) => {
+          const totalDias =
+            differenceInDays(new Date(evento.fim), new Date(evento.inicio)) + 1;
+    
+          return {
+            titulo: `${evento.titulo} DE ${this.formatDate(evento.inicio)} ATÉ ${this.formatDate(evento.fim)}`,
+            totalDias,
+            valor_evento: evento.valor_evento,
+            valor_total_inscricao: evento.valor_total_inscricao,
+            observacao: evento.observacao_valor,
+            tem_passagem: evento.tem_passagem,
+            participantes: evento.evento_participantes.map((ep) => {
+              // Resolve a diária: primeiro pelo participante, senão pela viagem
+              const viagemId = ep.viagem_participantes?.[0]?.viagem_id;
+              const valorViagem =
+                porParticipante.get(ep.participante.id) ??
+                (viagemId != null ? porViagem.get(viagemId) : undefined);
+    
+              const valorDiaria = valorViagem?.valor_individual ?? "";
+              const tipoDiaria = valorViagem?.tipo ?? "";
+              const destino = valorViagem?.destino ?? "";
+              const valorViagemId = valorViagem?.id ?? 0;
+    
+              return {
+                id: ep.participante.id,
+                nome: ep.participante.nome,
+                tipo: ep.participante.tipo,
+                cpf: Util.formataMascaraCpf(ep.participante.cpf),
+                cargo: ep.participante.cargo,
+                matricula: ep.participante.matricula,
+                valorDiaria: valorDiaria
+                  ? `DIÁRIA R$ ${valorDiaria.toFixed(2).replace(".", ",")}`
+                  : "",
+                tipo_diaria: tipoDiaria,
+                destino,
+                valor_viagem_id: valorViagemId,
+                viagem_participantes: ep.viagem_participantes,
+                source: "valor_diarias",
+              };
+            }),
+          };
+        });
+    
+        return resultado;
+      } catch (error) {
+        console.error('Erro ao buscar valores das diárias:', error);
+        throw new HttpException(
+          'Erro ao processar a solicitação de valores das diárias.',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    }
 
 
   // Função auxiliar para formatar datas
