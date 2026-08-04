@@ -87,7 +87,7 @@ import { ProtocolosModule } from './etce/protocolos.module';
           secure: false, // upgrade later with STARTTLS
           auth: {
             user: "contato@tce.ap.gov.br",
-            pass: "JE%!RE?9g*&fF[$sus>",
+            pass: "W^657263549893uc",
           },
         },
         defaults: {
