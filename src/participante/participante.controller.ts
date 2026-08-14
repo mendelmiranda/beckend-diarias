@@ -1,16 +1,15 @@
 import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseIntPipe,
-  Post,
-  Put
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    ParseIntPipe,
+    Post,
+    Put
 } from '@nestjs/common';
 import { AnexoSolicitacaoService } from 'src/anexo_solicitacao/anexo_solicitacao.service';
 import { Util } from 'src/util/Util';
-import { CreateEventoParticipanteDto } from '../evento_participantes/dto/create-evento_participante.dto';
 import { EventoParticipantesService } from '../evento_participantes/evento_participantes.service';
 import { CreateParticipanteDto } from './dto/create-participante.dto';
 import { UpdateParticipanteDto } from './dto/update-participante.dto';
@@ -130,6 +129,12 @@ export class ParticipanteController {
   @Get('agrupar/daofi/solicitacao/:solicitacaoId')
   async agruparParticipantes(@Param('solicitacaoId', ParseIntPipe) solicitacaoId: number) {
     return this.participanteService.listarEventosComTodasViagens(solicitacaoId);
+  }
+
+
+  @Get('listar/participantes/solicitacoes/finalizadas')
+  async findAllParticipantesDeSolicitacoesFinalizadas() {
+    return this.participanteService.findAllParticipantesDeSolicitacoesFinalizadas();
   }
 
 

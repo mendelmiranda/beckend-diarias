@@ -16,6 +16,7 @@ import { ConsultaSetoresDto } from './dto/consulta-setores.dto';
 import { CreateSolicitacaoDto } from './dto/create-solicitacao.dto';
 import { PathParamsDto } from './dto/path-params.dto';
 import PesquisaSolicitacaoDTO from './dto/pesquisa-solicitacao.dto';
+import PesquisaSolicitacoesFinalizadasDto from './dto/pesquisa-solicitacoes-finalizadas.dto';
 import { DiariasResponseDto } from './dto/response.dto';
 import { SolicitacaoIdDto } from './dto/solicitacao-id.dto';
 import { Solicitacao } from './entities/solicitacao.entity';
@@ -238,9 +239,21 @@ update(
 
   @Get('/consulta/pdf-gerado')
   async getSolicitacoesComPDFGerado(@Query('id') id?: string) {
-    
+
     const resultado = await this.solicitacaoService.findSolicitacoesComPDFGerado(id);
     return { data: resultado };
+  }
+
+
+  /**
+   * Pesquisa das solicitações finalizadas (PDF gerado) com os filtros da tela:
+   * data de registro, período do evento, solicitante e participante.
+   */
+  @Post('/consulta/finalizadas/pesquisar')
+  async pesquisarSolicitacoesFinalizadas(
+    @Body() dto: PesquisaSolicitacoesFinalizadasDto,
+  ) {
+    return this.solicitacaoService.pesquisarSolicitacoesFinalizadas(dto ?? {});
   }
 
 

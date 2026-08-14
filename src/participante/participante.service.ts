@@ -1,5 +1,5 @@
-import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { HttpException, HttpStatus, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { prisma, Prisma } from '@prisma/client';
 import { conta_diaria } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
 import { ContaDiariaService } from 'src/conta_diaria/conta_diaria.service';
@@ -10,8 +10,17 @@ import {
 import { CreateParticipanteDto } from '../participante/dto/create-participante.dto';
 import { UpdateParticipanteDto } from '../participante/dto/update-participante.dto';
 
+export interface ParticipanteResumo {
+  id: number;
+  nome: string;
+  cpf: string;
+}
+
 @Injectable()
 export class ParticipanteService {
+
+   private readonly logger = new Logger(ParticipanteService.name);
+
   constructor(
     private prisma: PrismaService,
     private readonly contaDiariaService: ContaDiariaService,
@@ -141,6 +150,35 @@ export class ParticipanteService {
 
   findAll() {
     return `This action returns all participante`;
+  }
+
+  async findAllParticipantesDeSolicitacoesFinalizadas(
+    status = 'PDF_GERADO',
+  ): Promise<ParticipanteResumo[]> {
+    try {
+      const participantes = await this.prisma.$queryRaw<ParticipanteResumo[]>`
+        SELECT DISTINCT ON (p.nome)
+               p.id,
+               p.nome,
+               p.cpf
+        FROM participante p
+        JOIN evento_participantes ep ON ep.participante_id = p.id
+        JOIN evento e                ON e.id = ep.evento_id
+        JOIN solicitacao s           ON s.id = e.solicitacao_id
+        WHERE s.status = ${status}
+        ORDER BY p.nome, p.id;
+      `;
+
+      return participantes;
+    } catch (error) {
+      this.logger.error(
+        `Erro ao listar participantes de solicitações com status ${status}`,
+        error instanceof Error ? error.stack : String(error),
+      );
+      throw new InternalServerErrorException(
+        'Não foi possível listar os participantes.',
+      );
+    }
   }
 
   async pesquisarParticipantePorCpf(cpf: string) {    

@@ -1,9 +1,10 @@
-import { Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { Operacao } from 'src/log_sistema/log_enum';
 import { InfoUsuario, LogSistemaService } from 'src/log_sistema/log_sistema.service';
 import { CreateSolicitacaoDto } from './dto/create-solicitacao.dto';
 import PesquisaSolicitacaoDTO from './dto/pesquisa-solicitacao.dto';
+import PesquisaSolicitacoesFinalizadasDto from './dto/pesquisa-solicitacoes-finalizadas.dto';
 import { UpdateSolicitacaoDto } from './dto/update-solicitacao.dto';
 import { ConsultaSetoresDto } from './dto/consulta-setores.dto';
 import { Solicitacao } from './entities/solicitacao.entity';
@@ -1530,6 +1531,163 @@ export class SolicitacaoService {
   }
 
 
+  /**
+   * Converte `yyyy-MM-dd` (ou ISO completo) para o limite do dia em UTC.
+   * `fimDoDia = true` retorna 23:59:59.999 — usado nos filtros "até".
+   */
+  private limiteDoDiaUTC(valor?: string, fimDoDia = false): Date | null {
+    if (valor === undefined || valor === null) return null;
+
+    const texto = String(valor).trim();
+    if (!texto) return null;
+
+    const somenteData = /^\d{4}-\d{2}-\d{2}$/.test(texto);
+    const data = new Date(somenteData ? `${texto}T00:00:00.000Z` : texto);
+    if (Number.isNaN(data.getTime())) return null;
+
+    return new Date(
+      Date.UTC(
+        data.getUTCFullYear(),
+        data.getUTCMonth(),
+        data.getUTCDate(),
+        fimDoDia ? 23 : 0,
+        fimDoDia ? 59 : 0,
+        fimDoDia ? 59 : 0,
+        fimDoDia ? 999 : 0,
+      ),
+    );
+  }
+
+  /**
+   * Pesquisa as solicitações finalizadas (status PDF_GERADO) aplicando os filtros
+   * da tela da presidência: data de registro, período do evento, solicitante e
+   * participante. Todos os filtros são opcionais e combinados com AND.
+   */
+  async pesquisarSolicitacoesFinalizadas(dto: PesquisaSolicitacoesFinalizadasDto) {
+    const status = dto?.status?.trim() || 'PDF_GERADO';
+
+    const dataregDe = this.limiteDoDiaUTC(dto?.dataregInicio);
+    const dataregAte = this.limiteDoDiaUTC(dto?.dataregFim, true);
+    const eventoDe = this.limiteDoDiaUTC(dto?.eventoInicio);
+    const eventoAte = this.limiteDoDiaUTC(dto?.eventoFim, true);
+
+    // HttpException com mensagem em string: o PrismaExceptionFilter global faz
+    // `getResponse() + ""`, e um payload em objeto viraria "[object Object]".
+    if (dataregDe && dataregAte && dataregDe > dataregAte) {
+      throw new HttpException(
+        'A data inicial de registro não pode ser posterior à data final.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (eventoDe && eventoAte && eventoDe > eventoAte) {
+      throw new HttpException(
+        'A data inicial do evento não pode ser posterior à data final.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const solicitante = dto?.solicitante?.trim();
+    const participante = dto?.participante?.trim();
+
+    const condicoes: any[] = [{ status }];
+
+    if (dataregDe || dataregAte) {
+      condicoes.push({
+        datareg: {
+          ...(dataregDe ? { gte: dataregDe } : {}),
+          ...(dataregAte ? { lte: dataregAte } : {}),
+        },
+      });
+    }
+
+    // Evento que intersecte o período informado (inicio <= filtroFim e fim >= filtroInicio).
+    if (eventoDe || eventoAte) {
+      condicoes.push({
+        eventos: {
+          some: {
+            ...(eventoAte ? { inicio: { lte: eventoAte } } : {}),
+            ...(eventoDe ? { fim: { gte: eventoDe } } : {}),
+          },
+        },
+      });
+    }
+
+    if (solicitante) {
+      condicoes.push({
+        nome_responsavel: { contains: solicitante, mode: 'insensitive' },
+      });
+    }
+
+    // Participante em qualquer evento da solicitação (não necessariamente o mesmo
+    // evento que atendeu ao filtro de período).
+    if (participante) {
+      condicoes.push({
+        eventos: {
+          some: {
+            evento_participantes: {
+              some: {
+                participante: {
+                  nome: { contains: participante, mode: 'insensitive' },
+                },
+              },
+            },
+          },
+        },
+      });
+    }
+
+    const pagina = Math.max(1, Number(dto?.pagina) || 1);
+    const limite = Math.min(100, Math.max(1, Number(dto?.limite) || 20));
+    const where = { AND: condicoes };
+
+    try {
+      const [data, total] = await this.prisma.$transaction([
+        this.prisma.solicitacao.findMany({
+          where,
+          include: {
+            eventos: {
+              include: {
+                tipo_evento: true,
+                cidade: {
+                  include: { estado: true },
+                },
+                pais: true,
+                evento_participantes: {
+                  include: {
+                    participante: {
+                      select: { id: true, nome: true, cpf: true, cargo: true },
+                    },
+                  },
+                },
+              },
+              orderBy: { inicio: 'asc' },
+            },
+          },
+          orderBy: { id: 'desc' },
+          skip: (pagina - 1) * limite,
+          take: limite,
+        }),
+        this.prisma.solicitacao.count({ where }),
+      ]);
+
+      return {
+        data,
+        total,
+        pagina,
+        limite,
+        paginas: Math.ceil(total / limite),
+      };
+    } catch (error) {
+      this.logger.error(
+        `Erro ao pesquisar solicitações finalizadas: ${error.message}`,
+        error.stack,
+      );
+      throw new InternalServerErrorException(
+        'Erro ao pesquisar solicitações finalizadas',
+      );
+    }
+  }
 
 
 
