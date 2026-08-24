@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Put, ParseIntPipe } 
 import { ValorViagemService } from './valor_viagem.service';
 import { CreateValorViagemDto } from './dto/create-valor_viagem.dto';
 import { UpdateValorViagemDto } from './dto/update-valor_viagem.dto';
+import { SalvarPassagensViagemDto } from './dto/salvar-passagens-viagem.dto';
 
 //valor-viagem/solicitacao/:id/participantes-diarias
 @Controller('valor-viagem')
@@ -16,6 +17,24 @@ export class ValorViagemController {
   @Get()
   findAll() {
     return this.valorViagemService.findAll();
+  }
+
+  @Get('/viagem/:id/passagens')
+  findPassagensDaViagem(@Param('id') id: string) {
+    return this.valorViagemService.findValoresPassagemDaViagem(+id);
+  }
+
+  @Put('/viagem/:id/passagens')
+  substituirPassagensDaViagem(
+    @Param('id') id: string,
+    @Body() dto: SalvarPassagensViagemDto,
+  ) {
+    return this.valorViagemService.substituirPassagensDaViagem(+id, dto);
+  }
+
+  @Get('/passagens/solicitacao/:id')
+  findPassagensDaSolicitacao(@Param('id') id: string) {
+    return this.valorViagemService.findPassagensDaSolicitacao(+id);
   }
 
   @Get('/viagem/:id')

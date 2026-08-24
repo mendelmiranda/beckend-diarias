@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { CreateValorViagemDto } from './dto/create-valor_viagem.dto';
 import { UpdateValorViagemDto } from './dto/update-valor_viagem.dto';
+import { SalvarPassagensViagemDto } from './dto/salvar-passagens-viagem.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { ParticipanteDiariaDto } from './dto/participantes-diarias.dto';
 
@@ -28,6 +29,82 @@ export class ValorViagemService {
         viagem_id: id,
         tipo: 'PASSAGEM'
       }
+    });
+  }
+
+  findValoresPassagemDaViagem(viagemId: number) {
+    return this.prisma.valor_viagem.findMany({
+      where: {
+        viagem_id: viagemId,
+        tipo: 'PASSAGEM',
+      },
+      orderBy: { id: 'asc' },
+    });
+  }
+
+  findPassagensDaSolicitacao(solicitacaoId: number) {
+    return this.prisma.valor_viagem.findMany({
+      where: {
+        tipo: 'PASSAGEM',
+        viagem: { solicitacao_id: solicitacaoId },
+      },
+      orderBy: { id: 'asc' },
+    });
+  }
+
+  async substituirPassagensDaViagem(viagemId: number, dto: SalvarPassagensViagemDto) {
+    const destino = dto.destino || 'NACIONAL';
+    const justificativa = dto.justificativa?.trim() || null;
+    const itens = (dto.valores ?? []).filter((item) => Number(item.valor_individual) > 0);
+
+    return this.prisma.$transaction(async (tx) => {
+      await tx.valor_viagem.deleteMany({
+        where: {
+          viagem_id: viagemId,
+          tipo: 'PASSAGEM',
+        },
+      });
+
+      if (itens.length === 0) {
+        return [];
+      }
+
+      if (dto.modo === 'T') {
+        const valor = Number(itens[0].valor_individual);
+        await tx.valor_viagem.create({
+          data: {
+            viagem_id: viagemId,
+            tipo: 'PASSAGEM',
+            destino,
+            justificativa,
+            valor_individual: valor,
+            valor_grupo: valor,
+            participante_id: null,
+          },
+        });
+      } else {
+        await tx.valor_viagem.createMany({
+          data: itens
+            .filter((item) => item.participante_id != null)
+            .map((item) => ({
+              viagem_id: viagemId,
+              tipo: 'PASSAGEM',
+              destino,
+              justificativa,
+              valor_individual: Number(item.valor_individual),
+              valor_grupo: null,
+              participante_id: item.participante_id as number,
+            })),
+        });
+      }
+
+      return tx.valor_viagem.findMany({
+        where: {
+          viagem_id: viagemId,
+          tipo: 'PASSAGEM',
+        },
+        orderBy: { id: 'asc' },
+      });
     });
   }
 
