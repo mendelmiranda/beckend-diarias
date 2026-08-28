@@ -178,32 +178,26 @@ export class EventosBuilder {
       const agencia = this.getAgenciaConta(conta, ep?.participante);
       const numeroConta = this.getNumeroConta(conta, ep?.participante);
 
-      // Calcula valor total de diárias para o participante
+      // Calcula valor total de diárias para o participante.
+      // Os valores ficam em viagem.valor_viagem (tipo DIARIA). participante_id
+      // costuma vir null — a diária é da viagem do vínculo, não do campo antigo
+      // evento_participantes.valor_diaria.
       let valorDiaria = 0;
       let diariasDesc = "";
 
-      // Verificamos todas as viagens do participante para calcular o valor total das diárias
-      if (ep.viagem_participantes && ep.viagem_participantes.length > 0) {
-        ep.viagem_participantes.forEach(vp => {
-          if (vp.viagem.valor_viagem) {
-            vp.viagem.valor_viagem
-              .filter(v => v.participante_id === ep.participante.id && v.tipo === "DIARIA")
-              .forEach(diaria => {
-                valorDiaria += diaria.valor_individual ?? 0;
+      this.coletarDiariasDoParticipante(ep).forEach(diaria => {
+        valorDiaria += diaria.valor_individual ?? 0;
 
-                const valorFmt = Util.formataValorDiaria(
-                  diaria.valor_individual ?? 0,
-                  'NACIONAL',
-                );
-                if (diaria.justificativa?.length > 0) {
-                  diariasDesc += `${valorFmt} (${diaria.justificativa})\n`;
-                } else {
-                  diariasDesc += `${valorFmt}\n`;
-                }
-              });
-          }
-        });
-      }
+        const valorFmt = Util.formataValorDiaria(
+          diaria.valor_individual ?? 0,
+          'NACIONAL',
+        );
+        if (diaria.justificativa?.length > 0) {
+          diariasDesc += `${valorFmt} (${diaria.justificativa})\n`;
+        } else {
+          diariasDesc += `${valorFmt}\n`;
+        }
+      });
 
       // Adicionamos os dados às respectivas tabelas
       tableBodyPessoal.push([
@@ -429,6 +423,42 @@ export class EventosBuilder {
         : viagem.cidade_origem.descricao;
     }
     return 'Não especificado';
+  }
+
+  /**
+   * Diárias do participante: `viagem.valor_viagem` e, se houver,
+   * `viagem_participantes.valor_viagem`, com tipo DIARIA.
+   * Inclui registro sem participante_id (padrão atual) ou com o id do participante.
+   */
+  private coletarDiariasDoParticipante(ep: any): any[] {
+    const participanteId = ep?.participante?.id;
+    const vistos = new Set<number | string>();
+    const diarias: any[] = [];
+
+    for (const vp of ep?.viagem_participantes ?? []) {
+      const listas = [
+        ...(Array.isArray(vp?.valor_viagem) ? vp.valor_viagem : []),
+        ...(Array.isArray(vp?.viagem?.valor_viagem) ? vp.viagem.valor_viagem : []),
+      ];
+
+      for (const item of listas) {
+        if ((item?.tipo ?? '').trim().toUpperCase() !== 'DIARIA') continue;
+
+        const dono = item.participante_id;
+        const doParticipante =
+          dono == null ||
+          participanteId == null ||
+          Number(dono) === Number(participanteId);
+        if (!doParticipante) continue;
+
+        const chave = item.id ?? `${item.viagem_id}-${item.valor_individual}`;
+        if (vistos.has(chave)) continue;
+        vistos.add(chave);
+        diarias.push(item);
+      }
+    }
+
+    return diarias;
   }
 
   private getChaveViagem(viagem: any, evento?: any): ViagemKey {
