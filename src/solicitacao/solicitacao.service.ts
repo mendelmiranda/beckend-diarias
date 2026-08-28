@@ -737,7 +737,7 @@ export class SolicitacaoService {
     return this.prisma.solicitacao.findMany({
       where: {
         status: 'NAO',
-        tramite: {
+        /* tramite: {
           some: {
             log_tramite: {
               some: {
@@ -747,7 +747,7 @@ export class SolicitacaoService {
               }
             }
           }
-        }
+        } */
       },
       include: {
         tramite: {

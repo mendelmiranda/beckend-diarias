@@ -1,4 +1,5 @@
 import {
+  BadGatewayException,
   BadRequestException,
   ConflictException,
   HttpException,
@@ -116,14 +117,41 @@ export class ProtocolosService {
           `tamanhoSolic=${this.tamanhoEmBytes(dtoProtocolo.pdfBase64!)} tamanhoMemo=${this.tamanhoEmBytes(memorandoPdfBase64)}`,
       );
 
-      const etceResponse = await this.etceClient.gerarProtocolo(payloadCompleto);
-      if (!etceResponse?.Cod_TCE) {
-        throw new Error('Resposta do e-TCE não contém o campo Cod_TCE');
+      try {
+        const etceResponse = await this.etceClient.gerarProtocolo(payloadCompleto);
+        if (!etceResponse?.Cod_TCE) {
+          throw new Error('Resposta do e-TCE não contém o campo Cod_TCE');
+        }
+        Cod_TCE = etceResponse.Cod_TCE;
+        this.logger.log(
+          `e-TCE retornou codTce=${Cod_TCE} (geração única com solicitação + memorando).`,
+        );
+      } catch (erroGerar: unknown) {
+        if (!(erroGerar instanceof BadGatewayException)) {
+          throw erroGerar;
+        }
+        this.logger.warn(
+          `e-TCE /gerar com 2 PDFs falhou (502). Tentando 1 PDF (solicitação) e anexar o memorando.`,
+        );
+        const payloadPrincipal = this.montarPayload(dtoProtocolo, null);
+        const etceResponse =
+          await this.etceClient.gerarProtocolo(payloadPrincipal);
+        if (!etceResponse?.Cod_TCE) {
+          throw new Error('Resposta do e-TCE não contém o campo Cod_TCE');
+        }
+        Cod_TCE = etceResponse.Cod_TCE;
+        this.logger.log(
+          `e-TCE retornou codTce=${Cod_TCE} no fallback de 1 PDF — anexando memorando`,
+        );
+        await this.anexarDocumentosAoProtocoloEtce(
+          Cod_TCE,
+          dtoProtocolo,
+          memorandoPdfBase64,
+        );
+        this.logger.log(
+          `Fallback 1 PDF + anexar OK para solicitação ${solicitacaoId}: ${Cod_TCE}`,
+        );
       }
-      Cod_TCE = etceResponse.Cod_TCE;
-      this.logger.log(
-        `e-TCE retornou codTce=${Cod_TCE} (geração única com solicitação + memorando).`,
-      );
     } else {
       const payloadPrincipal = this.montarPayload(dtoProtocolo, null);
       this.logger.log(
@@ -226,8 +254,9 @@ export class ProtocolosService {
     };
 
     this.logger.error(
-      `❌ ERRO CRÍTICO ao protocolar solicitação ${solicitacaoId}`,
-      errorInfo,
+      `❌ ERRO CRÍTICO ao protocolar solicitação ${solicitacaoId}: ${errorInfo.message} ` +
+        `(cpf=${errorInfo.cpf ?? 'n/d'} payloadSize=${errorInfo.payloadSize ?? 'n/d'})`,
+      errorInfo.stack,
     );
 
     // Se já for uma exceção HTTP do NestJS (NotFound, Conflict, BadGateway, etc.)

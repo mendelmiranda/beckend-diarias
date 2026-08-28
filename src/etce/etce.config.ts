@@ -24,7 +24,7 @@ export default registerAs('etce', () => ({
   protocoloGerarComDoisPdfsNumOficioNoCi:
     process.env.ETCE_PROTOCOLO_GERAR_COM_DOIS_PDFS_CI_NUM_OFICIO?.trim() !==
     'false',
-  /** JSON camelCase para binding ASP.NET Core (lista `arquivos`, …). */
+  /** JSON camelCase só se ETCE_HTTP_JSON_CAMEL_GERAR=true (ASP.NET Core). O padrão envia PascalCase. */
   httpJsonCamelGerar: process.env.ETCE_HTTP_JSON_CAMEL_GERAR === 'true',
   /** Rotas extras (vírgula) tentadas ao anexar após 404 na rota principal. */
   anexarArquivosPathCandidatesList: (process.env.ETCE_PROTOCOLO_ANEXAR_PATH_CANDIDATES ?? '')

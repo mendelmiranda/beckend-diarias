@@ -30,13 +30,12 @@ export class ETceProtocoloClient {
   async gerarProtocolo(
     payload: GerarProtocoloRequest,
   ): Promise<GerarProtocoloResponse> {
-    const camelGerarExplicit =
-      this.config.get<boolean>('etce.httpJsonCamelGerar') === true;
     const useCamelGerar =
-      camelGerarExplicit || payload.Arquivos.length > 1;
+      this.config.get<boolean>('etce.httpJsonCamelGerar') === true;
     const body = useCamelGerar
       ? this.corpoGerarProtocoloCamelCase(payload)
       : payload;
+    this.logMetadadosGerar(payload, useCamelGerar);
 
     const { data } = await firstValueFrom(
       this.http
@@ -206,31 +205,157 @@ export class ETceProtocoloClient {
       );
     }
 
-    // 5xx do e-TCE = problema do lado deles
+    // 5xx do e-TCE = problema do lado deles (ASP.NET muitas vezes só devolve
+    // "An error has occurred." sem ExceptionMessage)
+    const generica = /an error has occurred\.?/i.test(mensagemETce);
+    if (generica) {
+      return new BadGatewayException(this.mensagemErroInternoGenerico());
+    }
     return new BadGatewayException(
       `O e-TCE retornou erro interno: ${mensagemETce}`,
     );
   }
 
+  private logMetadadosGerar(
+    payload: GerarProtocoloRequest,
+    useCamelGerar: boolean,
+  ): void {
+    const jwt = this.inspecionarBearer();
+    if (!jwt.presente) {
+      this.logger.warn(
+        'ETCE_BEARER_TOKEN ausente. Configure um token válido no .env.',
+      );
+    } else if (jwt.expired) {
+      this.logger.warn(
+        `ETCE_BEARER_TOKEN vencido em ${jwt.expIso}. Atualize o token no .env (não logamos o valor).`,
+      );
+    } else if (jwt.expIso) {
+      this.logger.log(`ETCE_BEARER_TOKEN com exp em ${jwt.expIso}`);
+    } else {
+      this.logger.warn(
+        'ETCE_BEARER_TOKEN presente, mas sem campo exp (não foi possível validar validade).',
+      );
+    }
+
+    const tamanhos = payload.Arquivos.map((a) =>
+      this.tamanhoEmBytesBase64(a.Arquivo),
+    );
+    const tiposDoc = payload.Arquivos.map((a) => a.CodTipoDocumento).join(',');
+    this.logger.log(
+      `e-TCE POST /gerar JSON=${useCamelGerar ? 'camelCase' : 'PascalCase'} ` +
+        `arquivos=${payload.Arquivos.length} tamanhosBytes=[${tamanhos.join(',')}] ` +
+        `AnoPR=${payload.AnoPR} CodArea=${payload.CodArea} ` +
+        `CodTipoProcesso=${payload.CodTipoProcesso} CodTipoDocumento=${payload.CodTipoDocumento} ` +
+        `CodTipoGrupoProtocolo=${payload.CodTipoGrupoProtocolo} ` +
+        `cod_ug=${payload.Protocolo.cod_ug} cod_tipo_entrada=${payload.Protocolo.cod_tipo_entrada} ` +
+        `tiposDoc=[${tiposDoc}]`,
+    );
+  }
+
+  private inspecionarBearer(): {
+    presente: boolean;
+    expired: boolean;
+    expIso: string | null;
+  } {
+    const raw = this.config.get<string>('etce.bearerToken')?.trim() ?? '';
+    if (!raw) {
+      return { presente: false, expired: false, expIso: null };
+    }
+    const token = raw.replace(/^Bearer\s+/i, '');
+    const partes = token.split('.');
+    if (partes.length < 2) {
+      return { presente: true, expired: false, expIso: null };
+    }
+    try {
+      const json = Buffer.from(
+        partes[1].replace(/-/g, '+').replace(/_/g, '/'),
+        'base64',
+      ).toString('utf8');
+      const payload = JSON.parse(json) as { exp?: unknown };
+      if (typeof payload.exp !== 'number') {
+        return { presente: true, expired: false, expIso: null };
+      }
+      const expMs = payload.exp * 1000;
+      return {
+        presente: true,
+        expired: expMs < Date.now(),
+        expIso: new Date(expMs).toISOString(),
+      };
+    } catch {
+      return { presente: true, expired: false, expIso: null };
+    }
+  }
+
+  private mensagemErroInternoGenerico(): string {
+    const jwt = this.inspecionarBearer();
+    if (!jwt.presente) {
+      return (
+        'O e-TCE falhou internamente ao gerar o protocolo. ' +
+        'O token de acesso (ETCE_BEARER_TOKEN) não está configurado. ' +
+        'Peça um token válido ao suporte do e-TCE e atualize o ambiente.'
+      );
+    }
+    if (jwt.expired) {
+      return (
+        'O e-TCE falhou internamente ao gerar o protocolo. ' +
+        `O token de acesso (ETCE_BEARER_TOKEN) está vencido` +
+        (jwt.expIso ? ` desde ${jwt.expIso}` : '') +
+        '. Atualize o token no ambiente e tente novamente. ' +
+        'Se persistir, acione o suporte do e-TCE.'
+      );
+    }
+    return (
+      'O e-TCE falhou internamente ao gerar o protocolo e não informou o detalhe do erro. ' +
+      'Os PDFs foram gerados neste sistema; o problema está no serviço e-TCE. ' +
+      'Tente novamente em alguns minutos. Se persistir, acione o suporte do e-TCE.'
+    );
+  }
+
+  private tamanhoEmBytesBase64(b64: string): number {
+    const t = b64.trim();
+    const padding = (t.match(/=+$/) || [''])[0].length;
+    return Math.floor((t.length * 3) / 4) - padding;
+  }
+
   private extrairMensagemETce(body: unknown): string {
-    if (typeof body === 'string') return body;
+    if (typeof body === 'string') {
+      const semHtml = body.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      return semHtml || body;
+    }
     if (body && typeof body === 'object') {
       const b = body as Record<string, unknown>;
-      // Conforme a doc, erro 500 do e-TCE: { Exception, InnerException }
-      if (typeof b.Exception === 'string') return b.Exception;
-      if (typeof b.Mensagem === 'string') return b.Mensagem;
-      if (typeof b.message === 'string') return b.message;
-      // ASP.NET Web API 400: { Message, ModelState }
+      const inner = this.textoExcecaoAspNet(b.InnerException);
+      const detalhes = [
+        this.textoExcecaoAspNet(b.ExceptionMessage),
+        this.textoExcecaoAspNet(b.Exception),
+        inner,
+        typeof b.Mensagem === 'string' ? b.Mensagem : null,
+        typeof b.message === 'string' ? b.message : null,
+      ].filter((s): s is string => !!s && !/an error has occurred\.?/i.test(s));
+
       if (typeof b.Message === 'string' && b.ModelState && typeof b.ModelState === 'object') {
         const msgs = this.flattenModelState(b.ModelState as Record<string, unknown>);
         if (msgs.length > 0) {
           return `${b.Message}: ${msgs.join(' | ')}`;
         }
-        return b.Message;
       }
-      if (typeof b.Message === 'string') return b.Message;
+
+      if (detalhes.length > 0) return detalhes.join(' — ');
+      if (typeof b.Message === 'string' && b.Message.trim()) return b.Message;
     }
     return 'erro não detalhado';
+  }
+
+  private textoExcecaoAspNet(value: unknown): string | null {
+    if (typeof value === 'string' && value.trim()) return value.trim();
+    if (value && typeof value === 'object') {
+      const o = value as Record<string, unknown>;
+      if (typeof o.ExceptionMessage === 'string' && o.ExceptionMessage.trim()) {
+        return o.ExceptionMessage.trim();
+      }
+      if (typeof o.Message === 'string' && o.Message.trim()) return o.Message.trim();
+    }
+    return null;
   }
 
   private flattenModelState(modelState: Record<string, unknown>): string[] {
