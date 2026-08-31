@@ -18,29 +18,29 @@ export class TramiteService {
     private logTramiteService: LogTramiteService,
     private emailService: EmailService,
     private readonly httpService: HttpService,
-  ) { }
+  ) {}
 
   async create(dto: CreateTramiteDto, nome: string) {
-  const { solicitacao, log_tramite, ...dtoSemSolicitacao } = dto;
+    const { solicitacao, log_tramite, ...dtoSemSolicitacao } = dto;
 
-  const tramiteCriado = await this.prisma.tramite.create({
-    data: dtoSemSolicitacao,
-  });
-
-  if (dto.status === 'SOLICITADO') {
-    await this.prisma.solicitacao.update({
-      where: { id: dto.solicitacao_id },
-      data: { arquivar: false },
+    const tramiteCriado = await this.prisma.tramite.create({
+      data: dtoSemSolicitacao,
     });
+
+    if (dto.status === 'SOLICITADO') {
+      await this.prisma.solicitacao.update({
+        where: { id: dto.solicitacao_id },
+        data: { arquivar: false },
+      });
+    }
+
+    await Promise.all([
+      this.salvarLogTramite(dto, nome, tramiteCriado.id),
+      this.enviarNotificacaoDoStatus(dto.status, dto.solicitacao_id, dto.cod_lotacao_destino),
+    ]);
+
+    return tramiteCriado;
   }
-
-  await Promise.all([
-    this.salvarLogTramite(dto, nome, tramiteCriado.id),
-    this.enviarNotificacaoDoStatus(dto.status, dto.solicitacao_id, dto.cod_lotacao_destino),
-  ]);
-
-  return tramiteCriado;
-}
 
   async enviarNotificacaoDoStatus(status: string, solicitacaoId: number, destino?: number) {
     if (process.env['ENV'] === 'DEV') return;
@@ -101,8 +101,8 @@ export class TramiteService {
   async enviaDARAD(status: string, solicitacaoId: number, mensagem?: string) {
     //this.emailService.enviarEmail(solicitacaoId, status, 'wendell.sacramento', mensagem);
 
-    this.emailService.enviarEmail(solicitacaoId, status, 'darad', mensagem)
-    this.emailService.enviarEmail(solicitacaoId, status, 'ana.coutinho', mensagem)
+    this.emailService.enviarEmail(solicitacaoId, status, 'darad', mensagem);
+    this.emailService.enviarEmail(solicitacaoId, status, 'ana.coutinho', mensagem);
 
     /* this.emailService.enviarEmail(solicitacaoId, status, 'betania.silva', mensagem);
     this.emailService.enviarEmail(solicitacaoId, status, 'clarisse.dias'), mensagem;
@@ -110,7 +110,7 @@ export class TramiteService {
   }
 
   async enviaDA(status: string, solicitacaoId: number, mensagem?: string) {
-    this.emailService.enviarEmail(solicitacaoId, status, 'pilar.furtado', mensagem)
+    this.emailService.enviarEmail(solicitacaoId, status, 'pilar.furtado', mensagem);
   }
 
   async enviaDAOF(status: string, solicitacaoId: number, mensagem?: string) {
@@ -119,7 +119,7 @@ export class TramiteService {
     this.emailService.enviarEmail(solicitacaoId, status, 'alessandra.rodrigues', mensagem);
     this.emailService.enviarEmail(solicitacaoId, status, 'cristiane.barbosa', mensagem);
     this.emailService.enviarEmail(solicitacaoId, status, 'neuma.almeida', mensagem);
-//    this.emailService.enviarEmail(solicitacaoId, status, 'ademir.santos', mensagem);
+    //    this.emailService.enviarEmail(solicitacaoId, status, 'ademir.santos', mensagem);
   }
 
   async enviaESCOLA(status: string, solicitacaoId: number, mensagem?: string) {
@@ -196,7 +196,7 @@ export class TramiteService {
 
   async salvarLogTramite(dto: CreateTramiteDto, nome: string, tramiteId: number) {
     if (!dto.cod_lotacao_origem || !dto.lotacao_origem) {
-      throw new Error("Dados de lotação de origem estão incompletos.");
+      throw new Error('Dados de lotação de origem estão incompletos.');
     }
 
     const dados: CreateLogTramiteDto = {
@@ -207,7 +207,7 @@ export class TramiteService {
       lotacao_destino: dto.lotacao_destino,
       lotacao_origem: dto.lotacao_origem,
       status: dto.status,
-      tramite_id: tramiteId // Assumindo que você está connecting a tramite_id
+      tramite_id: tramiteId, // Assumindo que você está connecting a tramite_id
     };
 
     try {
@@ -217,8 +217,6 @@ export class TramiteService {
       throw error;
     }
   }
-
-
 
   findAll() {
     return this.prisma.tramite.findMany({
@@ -463,65 +461,30 @@ export class TramiteService {
   }
 
   findEmpenhados() {
-    return this.prisma.tramite.findMany({
+    return this.prisma.solicitacao.findMany({
       where: {
-        status: 'EMPENHADO',
-      },
-      include: {
-        solicitacao: {
-          include: {
-            empenho_daofi: true,
-            tramite: true,
-            eventos: {
-              include: {
-                evento_participantes: {
-                  include: {
-                    participante: {
-                      include: {
-                        conta_diaria: {
-                          include: {
-                            banco: true,
-                          },
-                        },
-                      },
-                    },
-                    viagem_participantes: {
-                      include: {
-                        viagem: {
-                          include: {
-                            origem: true,
-                            destino: true,
-                            pais: true,
-                            valor_viagem: true,
-                            cidade_origem: {
-                              include: {
-                                estado: true,
-                              },
-                            },
-                            cidade_destino: {
-                              include: {
-                                estado: true,
-                              },
-                            },
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-                tipo_evento: true,
-                cidade: {
-                  include: {
-                    estado: true,
-                  },
-                },
-                pais: true,
-              },
-            },
+        tramite: {
+          some: {
+            log_tramite: { some: { status: 'EMPENHADO' } },
           },
         },
       },
-      orderBy: [{ id: 'desc' }, { datareg: 'desc' }],
+      include: {
+        eventos: {
+          include: {
+            evento_participantes: {
+              include: {
+                participante: true
+              }
+            },
+            tipo_evento: true,
+            cidade: { include: { estado: true } },
+            pais: true,
+          },
+        },
+      },
+      orderBy: { id: 'desc' },
+      take: 50,
     });
   }
 
@@ -605,10 +568,9 @@ export class TramiteService {
   }
 
   async listarContador(status: string, cod_lotacao_destino: number) {
-
     // Dividir a string de status em um array, considerando que os valores estão separados por vírgula
-    const statusQuery = status.split(',').map(s => s.trim());
-  
+    const statusQuery = status.split(',').map((s) => s.trim());
+
     const tramites = await this.prisma.tramite.findMany({
       where: {
         AND: [
@@ -632,32 +594,32 @@ export class TramiteService {
                     estado: true,
                   },
                 },
-                
+
                 evento_participantes: {
                   include: {
                     participante: {
                       include: {
                         conta_diaria: true,
-                      }
-                    }
-                  }
-                }
-              }
+                      },
+                    },
+                  },
+                },
+              },
             },
-          }
+          },
         },
       },
     });
-  
-    const tramitesFormatados = tramites.map(tramite => {
+
+    const tramitesFormatados = tramites.map((tramite) => {
       return {
         ...tramite,
         datareg: tramite.solicitacao.datareg ? DateTime.fromJSDate(tramite.solicitacao.datareg).toFormat('dd/MM/yyyy') : null,
       };
     });
-  
+
     const contador = tramitesFormatados.length;
-  
+
     return { tramites: tramitesFormatados, contador };
   }
 
@@ -694,7 +656,7 @@ export class TramiteService {
         data: {
           status: 'PDF_GERADO',
         },
-      });      
+      });
     }
 
     return this.prisma.tramite.update({
@@ -718,9 +680,8 @@ export class TramiteService {
     };
 
     return await this.prisma.aprovacao_definitiva.create({
-      data: data
+      data: data,
     });
-
   }
 
   async updateDAOFLido(id: number) {
@@ -762,9 +723,7 @@ export class TramiteService {
     });
   }
 
-
   updateStatusAoReverterTramite(id: number, dto: UpdateTramiteDto) {
-
     const { solicitacao, log_tramite, ...dtoSemSolicitacao } = dto;
 
     return this.prisma.tramite.update({
@@ -776,12 +735,12 @@ export class TramiteService {
   async remove(id: number) {
     return await this.prisma.tramite.delete({
       where: {
-        id: id
-      }
-    })
+        id: id,
+      },
+    });
   }
 
-  //novo código para o andamento do tramite <===================================================================== 
+  //novo código para o andamento do tramite <=====================================================================
 
   /* async voltaSolicitacaoParaDeterminadoSetor(logTramiteId: number, solicitacao_id: number, novosDados: CreateLogTramiteDto) {
     
@@ -894,7 +853,6 @@ export class TramiteService {
 
   } */
 
-
   async voltaSolicitacaoParaDeterminadoSetor(logTramiteId: number, solicitacao_id: number, novosDados: CreateLogTramiteDto) {
     const prisma = this.prisma;
 
@@ -907,7 +865,6 @@ export class TramiteService {
           await this.removerDemaisTramites(transaction, logTramiteId, novosDados.tramite_id);
         }
       });
-
     } catch (error) {
       console.error('Erro ao processar a transação:', error);
       throw error;
@@ -918,13 +875,9 @@ export class TramiteService {
     try {
       await transaction.log_tramite.deleteMany({
         where: {
-          AND: [
-            { tramite_id: tramiteId },
-            { id: { gt: +logTramiteId } },
-          ]
-        }
+          AND: [{ tramite_id: tramiteId }, { id: { gt: +logTramiteId } }],
+        },
       });
-
     } catch (error) {
       console.error('Erro ao remover registros:', error);
       throw error;
@@ -943,7 +896,7 @@ export class TramiteService {
           status: logTramite.status,
           cod_lotacao_origem: logTramite.cod_lotacao_origem,
           lotacao_origem: logTramite.lotacao_origem,
-        }
+        },
       });
 
       return atualizar ? true : false;
@@ -954,14 +907,13 @@ export class TramiteService {
   }
 
   async voltaSolicitacaoParaOrigem(logTramiteId: number, tramiteId: number): Promise<boolean> {
-
     const primeiroLog = await this.prisma.log_tramite.findFirst({
       where: {
-        tramite_id: tramiteId
+        tramite_id: tramiteId,
       },
       orderBy: {
-        id: 'asc'
-      }
+        id: 'asc',
+      },
     });
 
     return primeiroLog ? primeiroLog.id === +logTramiteId : false;
@@ -974,21 +926,19 @@ export class TramiteService {
       try {
         await transaction.log_tramite.deleteMany({
           where: {
-            tramite_id: tramiteId
-          }
+            tramite_id: tramiteId,
+          },
         });
 
         await transaction.tramite.delete({
           where: {
-            id: tramiteId
-          }
+            id: tramiteId,
+          },
         });
-
       } catch (error) {
         console.error('Erro ao remover registros:', error);
         throw error;
       }
     }
   }
-
 }
