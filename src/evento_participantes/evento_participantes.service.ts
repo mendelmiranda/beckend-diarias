@@ -16,6 +16,16 @@ export class EventoParticipantesService {
     delete dto[prop];
 
     try {
+      const existente = await this.prisma.evento_participantes.findFirst({
+        where: {
+          evento_id: dto.evento_id,
+          participante_id: dto.participante_id,
+        },
+      });
+      if (existente) {
+        return existente;
+      }
+
       return this.prisma.evento_participantes.create({
         data: {
           evento_id: dto.evento_id,

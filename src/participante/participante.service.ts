@@ -44,10 +44,7 @@ export class ParticipanteService {
     if (data.tipo === 'C' || data.tipo === 'T') {
       participanteId = await this.persistirParticipanteColaborador(data);
     } else {
-      const participante = await this.prisma.participante.create({
-        data: this.toParticipanteCreateData(data),
-      });
-      participanteId = participante.id;
+      participanteId = await this.persistirParticipanteServidor(data);
     }
 
     if (contaPayload) {
@@ -93,6 +90,29 @@ export class ParticipanteService {
         ) as Prisma.participanteUpdateInput,
       });
       return participanteExistente.id;
+    }
+
+    const participante = await this.prisma.participante.create({
+      data: this.toParticipanteCreateData(dto),
+    });
+    return participante.id;
+  }
+
+  private async persistirParticipanteServidor(
+    dto: CreateParticipanteDto,
+  ): Promise<number> {
+    if (dto.cpf) {
+      const cpfVariants = variantesCpf(dto.cpf);
+      const existente = await this.prisma.participante.findFirst({
+        where:
+          cpfVariants.length > 0
+            ? { cpf: { in: cpfVariants } }
+            : { cpf: dto.cpf },
+        orderBy: { id: 'desc' },
+      });
+      if (existente) {
+        return existente.id;
+      }
     }
 
     const participante = await this.prisma.participante.create({
