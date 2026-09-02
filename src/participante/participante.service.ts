@@ -39,6 +39,20 @@ export class ParticipanteService {
       data.data_nascimento = new Date(data.data_nascimento);
     }
 
+    const nascimento =
+      data.data_nascimento instanceof Date
+        ? data.data_nascimento
+        : data.data_nascimento
+          ? new Date(data.data_nascimento as unknown as string)
+          : undefined;
+    if (!nascimento || Number.isNaN(nascimento.getTime())) {
+      throw new HttpException(
+        'Data de nascimento é obrigatória e deve estar em formato válido (yyyy-MM-dd).',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    data.data_nascimento = nascimento;
+
     let participanteId: number;
 
     if (data.tipo === 'C' || data.tipo === 'T') {

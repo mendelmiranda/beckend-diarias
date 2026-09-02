@@ -1,19 +1,18 @@
-import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    Param,
-    ParseIntPipe,
-    Post,
-    Put
-} from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
 import { AnexoSolicitacaoService } from 'src/anexo_solicitacao/anexo_solicitacao.service';
 import { Util } from 'src/util/Util';
 import { EventoParticipantesService } from '../evento_participantes/evento_participantes.service';
 import { CreateParticipanteDto } from './dto/create-participante.dto';
 import { UpdateParticipanteDto } from './dto/update-participante.dto';
 import { ParticipanteService } from './participante.service';
+
+function parseDataNascimento(tipo: string | undefined, dateString: unknown): Date | undefined {
+  if (dateString == null || dateString === '') return undefined;
+  const parsed =
+    tipo === 'S' ? new Date(dateString as string) : Util.convertToDate(dateString as string);
+  if (!parsed || Number.isNaN(parsed.getTime())) return undefined;
+  return parsed;
+}
 
 @Controller('participante')
 export class ParticipanteController {
@@ -28,24 +27,43 @@ export class ParticipanteController {
     @Param('id') idEvento: number,
     @Body() createParticipanteDto: CreateParticipanteDto,
   ) {
-    const dateString = createParticipanteDto.data_nascimento as any;
+    try {
+      const dataNascimento = parseDataNascimento(
+        createParticipanteDto.tipo,
+        createParticipanteDto.data_nascimento,
+      );
+      if (!dataNascimento) {
+        throw new BadRequestException(
+          'Data de nascimento é obrigatória e deve estar em formato válido (yyyy-MM-dd).',
+        );
+      }
 
-    const data: CreateParticipanteDto = {
-      ...createParticipanteDto,
-      data_nascimento:
-        createParticipanteDto.tipo === 'S'
-          ? new Date(dateString)
-          : Util.convertToDate(dateString),
-    };
+      const data: CreateParticipanteDto = {
+        ...createParticipanteDto,
+        data_nascimento: dataNascimento,
+      };
 
-    const participanteId = await this.participanteService.create(data);
+      const participanteId = await this.participanteService.create(data);
 
-    await this.eventoParticipanteService.create({
-      evento_id: parseInt(String(idEvento), 10),
-      participante_id: participanteId,
-    });
+      await this.eventoParticipanteService.create({
+        evento_id: parseInt(String(idEvento), 10),
+        participante_id: participanteId,
+      });
 
-    return participanteId;
+      return participanteId;
+    } catch (error) {
+      console.error('[POST /participante/evento/:id] Falha ao adicionar participante', {
+        eventoId: idEvento,
+        payload: createParticipanteDto,
+        dataNascimento: createParticipanteDto.data_nascimento,
+        dataNascimentoParsed:
+          createParticipanteDto.tipo === 'S'
+            ? new Date(createParticipanteDto.data_nascimento as any)
+            : createParticipanteDto.data_nascimento,
+        error,
+      });
+      throw error;
+    }
   }
 
   @Get()
