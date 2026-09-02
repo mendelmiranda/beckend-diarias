@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { CreateLogTramiteDto } from 'src/log_tramite/dto/create-log_tramite.dto';
 import { ViagemService } from 'src/viagem/viagem.service';
+import { ResultadoCalculoDiariasDto } from 'src/viagem/dto/resultado-calculo-diarias.dto';
 import { CreateTramiteDto } from './dto/create-tramite.dto';
 import { UpdateTramiteDto } from './dto/update-tramite.dto';
 import { TramiteService } from './tramite.service';
@@ -25,12 +26,36 @@ export enum TramiteStatus {
   RECUSADO = 'RECUSADO',
 }
 
+export type UpsertTramiteResponse = {
+  success: boolean;
+  calculou: boolean;
+  total?: number;
+  elegiveis?: number;
+  falhas?: ResultadoCalculoDiariasDto['falhas'];
+};
+
 @Controller('tramite')
 export class TramiteController {
   constructor(
     private readonly tramiteService: TramiteService,
     private readonly viagemService: ViagemService,
   ) { }
+
+  /**
+   * POST /tramite/recalcular-diarias/:solicitacaoId
+   * Recalcula e persiste diárias sem criar trâmite.
+   */
+  @Post('recalcular-diarias/:solicitacaoId')
+  @HttpCode(200)
+  async recalcularDiarias(
+    @Param('solicitacaoId', ParseIntPipe) solicitacaoId: number,
+  ): Promise<ResultadoCalculoDiariasDto> {
+    try {
+      return await this.viagemService.calcularEPersistirDiarias(solicitacaoId);
+    } catch (error: any) {
+      throw new InternalServerErrorException(error?.message ?? error);
+    }
+  }
 
   /**
    * POST /tramite/:id/:nome
@@ -42,7 +67,7 @@ export class TramiteController {
     @Param('id', ParseIntPipe) id: number,
     @Param('nome') nome: string,
     @Body() dto: CreateTramiteDto,
-  ): Promise<{ success: boolean; calculou: boolean; total?: number }> {
+  ): Promise<UpsertTramiteResponse> {
     try {
       if (id > 0) {
         await this.tramiteService.update(id, dto, nome);
@@ -51,35 +76,22 @@ export class TramiteController {
 
       const created = await this.tramiteService.create(dto, nome);
 
-      // Inclui colaboradores (tipo C ou T): o cálculo segue o mesmo fluxo dos demais participantes.
       const deveCalcular = dto.status === TramiteStatus.SOLICITADO;
 
       if (!deveCalcular) {
         return { success: true, calculou: false };
       }
 
-      const viagens = await this.viagemService.calculaDiasParaDiaria(
+      const resultado = await this.viagemService.calcularEPersistirDiarias(
         created.solicitacao_id,
       );
 
-      const resultados = await Promise.all(
-        viagens.map((v) =>
-          this.viagemService.calculaDiaria(
-            v.viagem,
-            v.participante.id,
-            v.evento.id,
-            v.totalDias,
-            created.solicitacao_id,
-          ),
-        ),
-      );
-
-      const salvas = resultados.filter((r) => r != null).length;
-
       return {
-        success: salvas > 0,
-        calculou: salvas > 0,
-        total: salvas,
+        success: true,
+        calculou: resultado.calculou,
+        total: resultado.total,
+        elegiveis: resultado.elegiveis,
+        falhas: resultado.falhas.length > 0 ? resultado.falhas : undefined,
       };
     } catch (error: any) {
       throw new InternalServerErrorException(error?.message ?? error);

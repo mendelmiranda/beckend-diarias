@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { evento, participante } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
 import { Municipios } from 'src/calculo_diarias/diarias-enum';
@@ -18,11 +18,17 @@ import { UpdateViagemDto } from './dto/update-viagem.dto';
 import { CreateViagemEventoDto } from 'src/viagem_evento/dto/create-viagem_evento.dto';
 import { SolicitacaoService } from 'src/solicitacao/solicitacao.service';
 import { ValorDiariasService } from 'src/valor_diarias/valor_diarias.service';
+import {
+  FalhaDiariaDto,
+  ResultadoCalculoDiariasDto,
+} from './dto/resultado-calculo-diarias.dto';
 
 
 
 @Injectable()
 export class ViagemService {
+  private readonly logger = new Logger(ViagemService.name);
+
   constructor(
     private prisma: PrismaService,
     private cidadeService: CidadeService,
@@ -95,13 +101,24 @@ async calculaDiaria(
   total: number,
   solicitacaoId: number,
 ) {
-  const pesquisaValores = await this.solicitacaoService.getEventosParticipante(
-    solicitacaoId,
-    participanteId,
-  );
+  if (!idViagem || idViagem <= 0) {
+    throw new BadRequestException('Viagem inválida para cálculo de diária');
+  }
 
-  if (!pesquisaValores?.analise?.eventos) {
-    return null;
+  let pesquisaValores;
+  try {
+    pesquisaValores = await this.solicitacaoService.getEventosParticipante(
+      solicitacaoId,
+      participanteId,
+    );
+  } catch (error: any) {
+    throw new BadRequestException(
+      error?.message ?? 'Participante sem eventos nesta solicitação',
+    );
+  }
+
+  if (!pesquisaValores?.analise?.eventos?.length) {
+    throw new BadRequestException('Nenhum evento encontrado para o participante');
   }
 
   const eventoAtual = pesquisaValores.analise.eventos.find(
@@ -117,13 +134,20 @@ async calculaDiaria(
       total,
     );
 
-    return resultado != null ? resultado : null;
+    if (resultado == null) {
+      throw new BadRequestException(
+        'Não foi possível calcular diária internacional (cargo ou regra indisponível)',
+      );
+    }
+    return resultado;
   }
 
   const valorDiaria = pesquisaValores.valor_diaria;
 
   if (valorDiaria == null || valorDiaria <= 0) {
-    return null;
+    throw new BadRequestException(
+      'Valor de diária não encontrado para o cargo do participante',
+    );
   }
 
   const valorViagem: CreateValorViagemDto = {
@@ -134,14 +158,129 @@ async calculaDiaria(
     participante_id: participanteId ?? 0,
   };
 
-  const salvo = await this.valorViagemService.create(valorViagem);
-  return salvo ?? null;
+  const salvo = await this.valorViagemService.upsertDiaria(valorViagem);
+  return salvo?.valor_individual ?? valorDiaria;
 }
+
+  async calcularEPersistirDiarias(
+    solicitacaoId: number,
+  ): Promise<ResultadoCalculoDiariasDto> {
+    const participantes = await this.calculaDiasParaDiaria(solicitacaoId);
+    const falhas: FalhaDiariaDto[] = [];
+    let total = 0;
+
+    if (participantes.length === 0) {
+      this.logger.warn(
+        `Nenhum participante elegível para diária na solicitação ${solicitacaoId}`,
+      );
+      return { total: 0, elegiveis: 0, calculou: false, falhas: [] };
+    }
+
+    const resultados = await Promise.allSettled(
+      participantes.map(async (item) => {
+        let viagemId = item.viagem;
+        if (!viagemId || viagemId <= 0) {
+          viagemId = await this.ensureViagemMinima(
+            item.eventoParticipanteId,
+            item.evento,
+            solicitacaoId,
+          );
+        }
+
+        return this.calculaDiaria(
+          viagemId,
+          item.participante.id,
+          item.evento.id,
+          item.totalDias,
+          solicitacaoId,
+        );
+      }),
+    );
+
+    resultados.forEach((resultado, index) => {
+      const item = participantes[index];
+      if (resultado.status === 'fulfilled' && resultado.value != null) {
+        total++;
+        return;
+      }
+
+      const motivo =
+        resultado.status === 'rejected'
+          ? (resultado.reason?.message ??
+            String(resultado.reason ?? 'Erro desconhecido'))
+          : 'Valor da diária não calculado';
+
+      this.logger.warn(
+        `Falha ao calcular diária: solicitacao=${solicitacaoId} participante=${item.participante.id} — ${motivo}`,
+      );
+
+      falhas.push({
+        participanteId: item.participante.id,
+        nome: item.participante.nome,
+        motivo,
+      });
+    });
+
+    return {
+      total,
+      elegiveis: participantes.length,
+      calculou: falhas.length === 0 && total > 0,
+      falhas,
+    };
+  }
+
+  async ensureViagemMinima(
+    eventoParticipanteId: number,
+    eventoRef: evento,
+    solicitacaoId: number,
+  ): Promise<number> {
+    const ep = await this.prisma.evento_participantes.findFirst({
+      where: { id: eventoParticipanteId },
+      include: { viagem_participantes: true },
+    });
+
+    const viagemExistente = ep?.viagem_participantes?.[0]?.viagem_id;
+    if (viagemExistente && viagemExistente > 0) {
+      return viagemExistente;
+    }
+
+    const viagem = await this.prisma.viagem.create({
+      data: {
+        pais_id: eventoRef.pais_id,
+        data_ida: eventoRef.inicio,
+        data_volta: eventoRef.fim,
+        exterior: eventoRef.exterior,
+        local_exterior: eventoRef.local_exterior,
+        solicitacao_id: solicitacaoId,
+        cidade_destino_id: eventoRef.cidade_id,
+        custos: [],
+      },
+    });
+
+    await this.prisma.viagem_participantes.create({
+      data: {
+        evento_participantes_id: eventoParticipanteId,
+        viagem_id: viagem.id,
+        datareg: new Date(),
+        custos: [],
+      },
+    });
+
+    return viagem.id;
+  }
   
 
   async calculaInternacional(idViagem: number, participanteId: number, eventoId: number, total: number) {
     const localizaEvento = await this.eventoService.findOne(eventoId);
     const localizaViagem = await this.findOne(idViagem);
+
+    if (!localizaEvento) {
+      throw new BadRequestException(`Evento ${eventoId} não encontrado`);
+    }
+    if (!localizaViagem) {
+      throw new BadRequestException(`Viagem ${idViagem} não encontrada`);
+    }
+
     const cargo = await this.consultaCargo(participanteId);
 
     const parametros: any = {
@@ -247,7 +386,9 @@ async calculaDiaria(
 
     const calculo = await this.cargoDiariaService.findDiariasPorCargo(parametros.cargo);
     if (!calculo?.valor_diarias) {
-      return null;
+      throw new BadRequestException(
+        `Valores de diária não cadastrados para o cargo "${parametros.cargo}"`,
+      );
     }
 
     const internacional = new CalculoInternacional();
@@ -290,7 +431,7 @@ async calculaDiaria(
       justificativa: `USD ${valorUsd.toFixed(2)} × cotação ${cotacao.toFixed(4)}`,
       participante_id: parametros.participanteId ?? 0,
     };
-    await this.valorViagemService.create(valorViagemInternacional);
+    await this.valorViagemService.upsertDiaria(valorViagemInternacional);
     return valorBrl;
   }
 
@@ -302,7 +443,7 @@ async calculaDiaria(
       valor_individual: inteira,
       participante_id: parametros.participanteId ?? 0,
     };
-    await this.valorViagemService.create(valorViagem);
+    await this.valorViagemService.upsertDiaria(valorViagem);
   }
 
   async destinoMacapa(parametros: any) {
@@ -346,10 +487,6 @@ async calculaDiaria(
         .map((vp) => vp.viagem?.data_ida)
         .filter((d): d is Date => d instanceof Date);
 
-      // Sem viagem: participante não gera diária de viagem. Pula silenciosamente
-      // (ou inclua com totalDias = 0 se você quer listá-lo mesmo assim).
-      if (viagens.length === 0) continue;
-
       const chave = ep.participante.cpf;
       if (!porParticipante.has(chave)) {
         porParticipante.set(chave, { participante: ep.participante, buckets: [] });
@@ -374,7 +511,10 @@ async calculaDiaria(
     let grupoFim: Date | null = null;
 
     for (const b of buckets) {
-      const menorIda = new Date(Math.min(...b.viagens.map((d) => d.getTime())));
+      const menorIda =
+        b.viagens.length > 0
+          ? new Date(Math.min(...b.viagens.map((d) => d.getTime())))
+          : new Date(b.evento.inicio.getTime());
       const fimEvento = b.evento.fim;
 
       if (grupoInicio === null) {
@@ -406,6 +546,7 @@ async calculaDiaria(
       totalDias,
       evento: buckets[0].evento,
       viagem: buckets[0].viagemId,
+      eventoParticipanteId: buckets[0].epId,
     });
   }
 
@@ -430,15 +571,30 @@ async calculaDiaria(
 }
 
   async consultaCargo(participanteId: number): Promise<string> {
-    const localizaEventoParticipante = await this.eventoParticipanteService.findOneParticipante(+participanteId);
-    const funcao = localizaEventoParticipante.funcao;
-    let cargo = localizaEventoParticipante.cargo;
-    const efetivo = localizaEventoParticipante.efetivo;
+    const localizaEventoParticipante =
+      await this.eventoParticipanteService.findOneParticipante(+participanteId);
 
-    if (efetivo.trim() === 'SERVIDORES EFETIVOS' && funcao !== '') {
+    if (!localizaEventoParticipante) {
+      throw new BadRequestException(
+        `Participante ${participanteId} não encontrado`,
+      );
+    }
+
+    const funcao = localizaEventoParticipante.funcao ?? '';
+    let cargo = localizaEventoParticipante.cargo ?? '';
+    const efetivo = (localizaEventoParticipante.efetivo ?? '').trim();
+
+    if (efetivo === 'SERVIDORES EFETIVOS' && funcao !== '') {
       cargo = funcao;
     }
-    return cargo;
+
+    if (!cargo.trim()) {
+      throw new BadRequestException(
+        `Participante ${participanteId} sem cargo definido`,
+      );
+    }
+
+    return cargo.trim();
   }
 
   findAll() {
@@ -1049,6 +1205,7 @@ type ParticipanteTotalDias = {
   totalDias: number;
   evento: evento;
   viagem: number;
+  eventoParticipanteId: number;
 };
 
 

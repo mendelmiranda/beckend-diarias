@@ -19,6 +19,44 @@ export class ValorViagemService {
     });
   }
 
+  /** Cria ou atualiza diária existente (viagem + participante + destino). */
+  async upsertDiaria(dto: CreateValorViagemDto) {
+    const where: {
+      viagem_id: number;
+      tipo: string;
+      destino?: string;
+      participante_id?: number;
+    } = {
+      viagem_id: dto.viagem_id,
+      tipo: 'DIARIA',
+    };
+
+    if (dto.destino) {
+      where.destino = dto.destino;
+    }
+    if (dto.participante_id != null && dto.participante_id > 0) {
+      where.participante_id = dto.participante_id;
+    }
+
+    const existente = await this.prisma.valor_viagem.findFirst({
+      where,
+      orderBy: { id: 'desc' },
+    });
+
+    if (existente) {
+      return this.prisma.valor_viagem.update({
+        where: { id: existente.id },
+        data: {
+          valor_individual: dto.valor_individual,
+          cotacao_dolar: dto.cotacao_dolar,
+          justificativa: dto.justificativa,
+        },
+      });
+    }
+
+    return this.create(dto);
+  }
+
   findAll() {
     return `This action returns all valorViagem`;
   }
