@@ -1504,11 +1504,13 @@ export class SolicitacaoService {
 
     try {
       if (id) {
+        const parsedId = parseInt(id, 10);
+        if (!Number.isFinite(parsedId) || parsedId <= 0) {
+          return [];
+        }
+
         const solicitacao = await this.prisma.solicitacao.findFirst({
-          where: {
-            status: 'PDF_GERADO',
-            id: parseInt(id, 20),
-          },
+          where: { id: parsedId },
         });
         return solicitacao ? [solicitacao] : [];
       }
