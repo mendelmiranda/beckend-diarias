@@ -9,11 +9,13 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { CreateLogTramiteDto } from 'src/log_tramite/dto/create-log_tramite.dto';
 import { ViagemService } from 'src/viagem/viagem.service';
 import { ResultadoCalculoDiariasDto } from 'src/viagem/dto/resultado-calculo-diarias.dto';
 import { CreateTramiteDto } from './dto/create-tramite.dto';
+import { PesquisaSolicitacoesEmpenhadasDto } from './dto/pesquisa-solicitacoes-empenhadas.dto';
 import { UpdateTramiteDto } from './dto/update-tramite.dto';
 import { TramiteService } from './tramite.service';
 
@@ -138,8 +140,20 @@ export class TramiteController {
   }
 
   @Get('solicitacoes/empenhados')
-  findEmpenhados() {
-    return this.tramiteService.findEmpenhados();
+  findEmpenhados(
+    @Query('pagina') pagina?: string,
+    @Query('limite') limite?: string,
+    @Query('numero') numero?: string,
+    @Query('solicitante') solicitante?: string,
+  ) {
+    const filtro: PesquisaSolicitacoesEmpenhadasDto = {
+      pagina: pagina ? Number(pagina) : undefined,
+      limite: limite ? Number(limite) : undefined,
+      numero,
+      solicitante,
+    };
+
+    return this.tramiteService.findEmpenhados(filtro);
   }
 
   @Get('solicitacoes/concluidas')

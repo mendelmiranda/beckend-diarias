@@ -1,12 +1,13 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { participante } from '@prisma/client';
+import { Prisma, participante } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PrismaService } from 'prisma/prisma.service';
 import { EmailService } from 'src/email/email.service';
 import { CreateLogTramiteDto } from 'src/log_tramite/dto/create-log_tramite.dto';
 import { LogTramiteService } from 'src/log_tramite/log_tramite.service';
 import { CreateTramiteDto } from './dto/create-tramite.dto';
+import { PesquisaSolicitacoesEmpenhadasDto } from './dto/pesquisa-solicitacoes-empenhadas.dto';
 import { UpdateTramiteDto } from './dto/update-tramite.dto';
 import { Util } from 'src/util/Util';
 
@@ -460,32 +461,100 @@ export class TramiteService {
     });
   }
 
-  findEmpenhados() {
-    return this.prisma.solicitacao.findMany({
-      where: {
-        tramite: {
-          some: {
-            log_tramite: { some: { status: 'EMPENHADO' } },
-          },
+  async findEmpenhados(filtro: PesquisaSolicitacoesEmpenhadasDto = {}) {
+    const pagina = Math.max(1, Number(filtro.pagina) || 1);
+    const limite = Math.min(100, Math.max(1, Number(filtro.limite) || 10));
+    const numero = (filtro.numero ?? '').replace(/\D/g, '');
+    const solicitante = filtro.solicitante?.trim() ?? '';
+
+    const empenhado: Prisma.solicitacaoWhereInput = {
+      tramite: {
+        some: {
+          log_tramite: { some: { status: 'EMPENHADO' } },
         },
       },
-      include: {
-        eventos: {
-          include: {
-            evento_participantes: {
-              include: {
-                participante: true
-              }
+    };
+
+    const condicoes: Prisma.solicitacaoWhereInput[] = [empenhado];
+
+    if (numero) {
+      const ids = await this.prisma.$queryRaw<Array<{ id: number }>>`
+        SELECT s.id
+        FROM solicitacao s
+        WHERE CAST(s.id AS TEXT) LIKE ${`%${numero}%`}
+          AND EXISTS (
+            SELECT 1
+            FROM tramite t
+            INNER JOIN log_tramite lt ON lt.tramite_id = t.id
+            WHERE t.solicitacao_id = s.id
+              AND lt.status = 'EMPENHADO'
+          )
+      `;
+
+      if (ids.length === 0) {
+        return {
+          data: [],
+          total: 0,
+          pagina,
+          limite,
+          paginas: 0,
+          solicitantes: [],
+        };
+      }
+
+      condicoes.push({ id: { in: ids.map((item) => item.id) } });
+    }
+
+    if (solicitante) {
+      condicoes.push({
+        nome_responsavel: { contains: solicitante, mode: 'insensitive' },
+      });
+    }
+
+    const where: Prisma.solicitacaoWhereInput = { AND: condicoes };
+
+    const include = {
+      eventos: {
+        include: {
+          evento_participantes: {
+            include: {
+              participante: true,
             },
-            tipo_evento: true,
-            cidade: { include: { estado: true } },
-            pais: true,
           },
+          tipo_evento: true,
+          cidade: { include: { estado: true } },
+          pais: true,
         },
       },
-      orderBy: { id: 'desc' },
-      //take: 50,
-    });
+    };
+
+    const [data, total, nomes] = await this.prisma.$transaction([
+      this.prisma.solicitacao.findMany({
+        where,
+        include,
+        orderBy: { id: 'desc' },
+        skip: (pagina - 1) * limite,
+        take: limite,
+      }),
+      this.prisma.solicitacao.count({ where }),
+      this.prisma.solicitacao.findMany({
+        where: empenhado,
+        distinct: ['nome_responsavel'],
+        select: { nome_responsavel: true },
+        orderBy: { nome_responsavel: 'asc' },
+      }),
+    ]);
+
+    return {
+      data,
+      total,
+      pagina,
+      limite,
+      paginas: Math.ceil(total / limite),
+      solicitantes: nomes
+        .map((item) => item.nome_responsavel?.trim())
+        .filter((nome): nome is string => Boolean(nome)),
+    };
   }
 
   findConcluidas() {
