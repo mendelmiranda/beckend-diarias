@@ -484,7 +484,7 @@ export class TramiteService {
         },
       },
       orderBy: { id: 'desc' },
-      take: 50,
+      //take: 50,
     });
   }
 
