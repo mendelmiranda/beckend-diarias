@@ -170,6 +170,7 @@ export class EventosBuilder {
     ];
 
     const tableBodyFinanceiro = [headerRowFinanceiro];
+    let totalDiariasEvento = 0;
 
     // Preenchemos ambas as tabelas com os dados dos participantes
     participantes.forEach(ep => {
@@ -198,6 +199,8 @@ export class EventosBuilder {
           diariasDesc += `${valorFmt}\n`;
         }
       });
+
+      totalDiariasEvento += valorDiaria;
 
       // Adicionamos os dados às respectivas tabelas
       tableBodyPessoal.push([
@@ -246,7 +249,15 @@ export class EventosBuilder {
         },
         layout: 'lightHorizontalLines',
         style: 'textoNormal',
-      }
+      },
+      {
+        text:
+          'Total das diárias: ' +
+          Util.formataValorDiaria(totalDiariasEvento, 'NACIONAL'),
+        style: 'texto',
+        bold: true,
+        margin: [0, 8, 0, 5],
+      },
     ];
   }
 
