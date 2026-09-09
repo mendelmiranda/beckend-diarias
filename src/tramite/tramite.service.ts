@@ -927,7 +927,17 @@ export class TramiteService {
 
     try {
       await prisma.$transaction(async (transaction) => {
-        await this.removerTudoParaIniciarTramites(transaction, logTramiteId, novosDados.tramite_id);
+        const voltouParaOrigem = await this.removerTudoParaIniciarTramites(
+          transaction,
+          logTramiteId,
+          novosDados.tramite_id,
+        );
+
+        // Se o log escolhido é o primeiro (SOLICITADO), o trâmite já foi removido.
+        // Não atualizar com origem/destino invertidos — isso escondia a solicitação da Presidência.
+        if (voltouParaOrigem) {
+          return;
+        }
 
         const atualiza = await this.atualizarTramiteParaStatusSelecionado(transaction, novosDados);
         if (atualiza) {
@@ -975,8 +985,12 @@ export class TramiteService {
     }
   }
 
-  async voltaSolicitacaoParaOrigem(logTramiteId: number, tramiteId: number): Promise<boolean> {
-    const primeiroLog = await this.prisma.log_tramite.findFirst({
+  async voltaSolicitacaoParaOrigem(
+    transaction: any,
+    logTramiteId: number,
+    tramiteId: number,
+  ): Promise<boolean> {
+    const primeiroLog = await transaction.log_tramite.findFirst({
       where: {
         tramite_id: tramiteId,
       },
@@ -988,8 +1002,12 @@ export class TramiteService {
     return primeiroLog ? primeiroLog.id === +logTramiteId : false;
   }
 
-  async removerTudoParaIniciarTramites(transaction: any, logTramiteId: number, tramiteId: number) {
-    const isFirst = await this.voltaSolicitacaoParaOrigem(transaction, tramiteId);
+  async removerTudoParaIniciarTramites(
+    transaction: any,
+    logTramiteId: number,
+    tramiteId: number,
+  ): Promise<boolean> {
+    const isFirst = await this.voltaSolicitacaoParaOrigem(transaction, logTramiteId, tramiteId);
 
     if (isFirst) {
       try {
@@ -1009,5 +1027,7 @@ export class TramiteService {
         throw error;
       }
     }
+
+    return isFirst;
   }
 }
