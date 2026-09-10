@@ -17,14 +17,14 @@ export class CorrecaoSolicitacaoController {
     return this.correcaoSolicitacaoService.findAll();
   }
 
+  @Get('solicitacao/:id')
+  corrigirSolicitacao(@Param('id') id: string) {
+    return this.correcaoSolicitacaoService.carregarSolicitacaoParaCorrecao(+id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.correcaoSolicitacaoService.findOne(+id);
-  }
-
-  @Get('/solicitacao/:id')
-  corrigirSolicitacao(@Param('id') id: string) {
-    return this.correcaoSolicitacaoService.carregarSolicitacaoParaCorrecao(+id);
   }
 
   @Put(':id')

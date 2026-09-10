@@ -39,11 +39,9 @@ export class CorrecaoSolicitacaoService {
   }
 
   async enviaPresidencia(status: string, solicitacaoId: number, mensagem?: string) {
-    this.emailService.enviarEmail(solicitacaoId, status, 'wendell.sacramento', mensagem);
-    /* this.emailService.enviarEmail(solicitacaoId, status,'cons.michelhouat');
-      this.emailService.enviarEmail(solicitacaoId, status,'antonio.correa');
-      this.emailService.enviarEmail(solicitacaoId, status,'luzia.coelho');
-      this.emailService.enviarEmail(solicitacaoId, status,'alana.castro'); */
+    this.emailService.enviarEmail(solicitacaoId, status, 'cons.reginaldoennes', mensagem);
+    this.emailService.enviarEmail(solicitacaoId, status, 'marines.dalla', mensagem);
+    this.emailService.enviarEmail(solicitacaoId, status, 'michelle.mello', mensagem);
   }
 
 

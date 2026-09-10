@@ -656,6 +656,7 @@ export class TramiteService {
       include: {
         solicitacao: {
           include: {
+            correcao_solicitacao: true,
             eventos: {
               include: {
                 cidade: {
