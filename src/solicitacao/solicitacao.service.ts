@@ -581,7 +581,10 @@ export class SolicitacaoService {
         where: { id },
         data: {
           status: 'PDF_GERADO',
-          protocolo: updateSolicitacaoDto.protocolo
+          // Nunca grava string vazia: protocolo só deve ser preenchido com um
+          // Cod_TCE real (ver ProtocolosService.protocolar). '' quebra a checagem
+          // de idempotência/race condition, que depende de protocolo === NULL.
+          protocolo: updateSolicitacaoDto.protocolo || undefined,
         },
       });
     }

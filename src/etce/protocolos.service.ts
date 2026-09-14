@@ -209,8 +209,13 @@ export class ProtocolosService {
     }
 
     // 6. Update condicional (proteção race condition)
+    // OR aqui é necessário porque registros legados podem ter protocolo=''
+    // (string vazia) em vez de NULL — ambos significam "ainda não protocolado".
     const { count } = await this.prisma.solicitacao.updateMany({
-      where: { id: solicitacaoId, protocolo: null },
+      where: {
+        id: solicitacaoId,
+        OR: [{ protocolo: null }, { protocolo: '' }],
+      },
       data: { protocolo: Cod_TCE },
     });
 
