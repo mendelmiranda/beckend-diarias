@@ -227,7 +227,10 @@ export class ETceProtocoloClient {
       );
     } else if (jwt.expired) {
       this.logger.warn(
-        `ETCE_BEARER_TOKEN vencido em ${jwt.expIso}. Atualize o token no .env (não logamos o valor).`,
+        `ETCE_BEARER_TOKEN com campo "exp" indicando vencimento em ${jwt.expIso} ` +
+          '(checagem local do JWT — o e-TCE não valida esse campo, apenas compara o ' +
+          'token com o valor cadastrado no sistema deles; isso pode não refletir se ' +
+          'o token ainda é aceito).',
       );
     } else if (jwt.expIso) {
       this.logger.log(`ETCE_BEARER_TOKEN com exp em ${jwt.expIso}`);
@@ -295,18 +298,14 @@ export class ETceProtocoloClient {
         'Peça um token válido ao suporte do e-TCE e atualize o ambiente.'
       );
     }
-    if (jwt.expired) {
-      return (
-        'O e-TCE falhou internamente ao gerar o protocolo. ' +
-        `O token de acesso (ETCE_BEARER_TOKEN) está vencido` +
-        (jwt.expIso ? ` desde ${jwt.expIso}` : '') +
-        '. Atualize o token no ambiente e tente novamente. ' +
-        'Se persistir, acione o suporte do e-TCE.'
-      );
-    }
     return (
       'O e-TCE falhou internamente ao gerar o protocolo e não informou o detalhe do erro. ' +
       'Os PDFs foram gerados neste sistema; o problema está no serviço e-TCE. ' +
+      (jwt.expired
+        ? `Observação: o campo "exp" do token local indica vencimento em ${jwt.expIso}, ` +
+          'mas o e-TCE não valida esse campo — ele apenas compara o token com o valor ' +
+          'cadastrado no sistema deles, então isso não é necessariamente a causa da falha. '
+        : '') +
       'Tente novamente em alguns minutos. Se persistir, acione o suporte do e-TCE.'
     );
   }
