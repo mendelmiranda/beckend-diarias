@@ -54,13 +54,14 @@ model conta_diaria {
 }
 
 model pais {
-  id      Int      @id @default(autoincrement())
-  nome    String?  @db.VarChar(60)
-  nome_pt String?  @db.VarChar(60)
-  sigla   String?  @db.VarChar(2)
-  bacen   Int?
-  evento  evento[]
-  viagem  viagem[]
+  id             Int      @id @default(autoincrement())
+  nome           String?  @db.VarChar(60)
+  nome_pt        String?  @db.VarChar(60)
+  sigla          String?  @db.VarChar(2)
+  bacen          Int?
+  evento         evento[]
+  viagem         viagem[]
+  viagem_destino viagem[] @relation("paisdestino")
 }
 
 model tipo_evento {
@@ -114,14 +115,13 @@ model solicitacao {
   encaminhar_solicitacao     encaminhar_solicitacao[]
   aprovacao_definitiva_darad aprovacao_definitiva_daof[]
   viagem_evento              viagem_evento[]
-  arquivar                   Boolean? @default(false)
+  arquivar                   Boolean?                    @default(false)
 
+  @@id([id])
   @@index([status])
   @@index([login])
   @@index([protocolo])
   @@index([cod_lotacao])
-
-  @@id([id])
 }
 
 model empenho_daofi {
@@ -155,9 +155,8 @@ model tramite {
 
   flag_daof String? @db.Char(3)
 
-  @@index([cod_lotacao_destino, status]) 
-
   @@id([id, solicitacao_id])
+  @@index([cod_lotacao_destino, status])
 }
 
 model log_tramite {
@@ -223,12 +222,12 @@ model evento {
   eventos_juntos       eventos_juntos[]
   viagem_evento        viagem_evento[]
 
+  @@id([id])
   @@index([solicitacao_id])
   @@index([tipo_evento_id])
   @@index([cidade_id])
   @@index([pais_id])
   @@index([inicio, fim]) // faixas de data
-  @@id([id])
 }
 
 model eventos_juntos {
@@ -310,6 +309,10 @@ model viagem {
   pais_id        Int
   pais           pais    @relation(fields: [pais_id], references: [id])
 
+  local_exterior_destino String?
+  pais_destino_id        Int?
+  pais_destino           pais?   @relation("paisdestino", fields: [pais_destino_id], references: [id])
+
   data_ida      DateTime
   data_volta    DateTime?
   justificativa String?
@@ -346,6 +349,7 @@ model viagem {
   @@index([cidade_origem_id])
   @@index([cidade_destino_id])
   @@index([pais_id])
+  @@index([pais_destino_id])
 }
 
 model viagem_evento {
@@ -402,8 +406,8 @@ model viagem_participantes {
   custos                  String[]
   justificativa_custos    String?
 
-  viagem_superior String?   @db.Char(3)
-  viagem_pernoite String?   @db.Char(3)
+  viagem_superior          String? @db.Char(3)
+  viagem_pernoite          String? @db.Char(3)
   justificativa_municipios String?
 
   @@id([id, evento_participantes_id, viagem_id])
