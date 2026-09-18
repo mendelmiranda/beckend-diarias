@@ -79,6 +79,7 @@ export class SolicitacaoService {
                         origem: true,
                         destino: true,
                         pais: true,
+                        pais_destino: true,
                         valor_viagem: true,
                         cidade_origem: {
                           include: {
@@ -144,6 +145,7 @@ export class SolicitacaoService {
                         origem: true,
                         destino: true,
                         pais: true,
+                        pais_destino: true,
                         valor_viagem: true,
                         cidade_origem: {
                           include: {
@@ -257,6 +259,7 @@ export class SolicitacaoService {
                         origem: true,
                         destino: true,
                         pais: true,
+                        pais_destino: true,
                         valor_viagem: true,
                         cidade_origem: {
                           include: {
@@ -322,6 +325,7 @@ export class SolicitacaoService {
                         origem: true,
                         destino: true,
                         pais: true,
+                        pais_destino: true,
                         valor_viagem: true,
                         cidade_origem: {
                           include: {
@@ -383,6 +387,7 @@ export class SolicitacaoService {
                         origem: true,
                         destino: true,
                         pais: true,
+                        pais_destino: true,
                         valor_viagem: true,
                         cidade_origem: {
                           include: {
@@ -447,6 +452,7 @@ export class SolicitacaoService {
                         origem: true,
                         destino: true,
                         pais: true,
+                        pais_destino: true,
                         valor_viagem: true,
                         cidade_origem: {
                           include: {
@@ -536,6 +542,7 @@ export class SolicitacaoService {
                         origem: true,
                         destino: true,
                         pais: true,
+                        pais_destino: true,
                         valor_viagem: true,
                         cidade_origem: {
                           include: {
@@ -1467,6 +1474,7 @@ export class SolicitacaoService {
                           origem: true,
                           destino: true,
                           pais: true,
+                          pais_destino: true,
                           valor_viagem: true,
                           cidade_origem: {
                             include: { estado: true },

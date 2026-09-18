@@ -382,58 +382,74 @@ export class EventosBuilder {
     return evento?.exterior === 'SIM' || viagem?.exterior === 'SIM';
   }
 
+  private textoLocal(valor?: string | null): string {
+    return valor?.trim() ?? '';
+  }
+
   private formatDestinoViagem(viagem: any, evento?: any): string {
-    if (this.isViagemExterior(viagem, evento)) {
-      const paisNome = evento?.pais?.nome_pt ?? viagem?.pais?.nome_pt ?? '';
-      const localExterior = evento?.local_exterior ?? viagem?.local_exterior ?? '';
-      if (paisNome && localExterior) {
-        return `${paisNome} - ${localExterior}`;
-      }
-      return paisNome || localExterior || 'Exterior';
+    const cidade =
+      this.textoLocal(viagem?.destino?.cidade) ||
+      this.textoLocal(viagem?.cidade_destino?.descricao);
+    const uf =
+      this.textoLocal(viagem?.destino?.uf) ||
+      this.textoLocal(viagem?.cidade_destino?.estado?.uf);
+    const pais =
+      this.textoLocal(viagem?.pais_destino?.nome_pt) ||
+      (viagem?.pais_destino_id ? '' : this.textoLocal(viagem?.pais?.nome_pt)) ||
+      this.textoLocal(evento?.pais?.nome_pt);
+    const local =
+      this.textoLocal(viagem?.local_exterior_destino) ||
+      (viagem?.pais_destino_id ? '' : this.textoLocal(viagem?.local_exterior)) ||
+      this.textoLocal(evento?.local_exterior);
+
+    const partes: string[] = [];
+    if (cidade) {
+      partes.push(uf ? `${cidade} - ${uf}` : cidade);
+    }
+    if (pais && !partes.some((parte) => parte.toLowerCase() === pais.toLowerCase())) {
+      partes.push(pais);
+    }
+    if (
+      local &&
+      local.toLowerCase() !== pais.toLowerCase() &&
+      !partes.some((parte) => parte.toLowerCase() === local.toLowerCase())
+    ) {
+      partes.push(local);
     }
 
-    if (viagem?.destino?.cidade) {
-      const uf = viagem.destino.uf ?? '';
-      return uf ? `${viagem.destino.cidade} - ${uf}` : viagem.destino.cidade;
+    if (partes.length > 0) {
+      return partes.join(' - ');
     }
-    if (viagem?.cidade_destino?.descricao) {
-      const uf = viagem.cidade_destino?.estado?.uf ?? '';
-      return uf
-        ? `${viagem.cidade_destino.descricao} - ${uf}`
-        : viagem.cidade_destino.descricao;
-    }
-    return 'Não especificado';
+    return this.isViagemExterior(viagem, evento) ? 'Exterior' : 'Não especificado';
   }
 
   private formatOrigemViagem(viagem: any, evento?: any): string {
-    if (this.isViagemExterior(viagem, evento)) {
-      if (viagem.cidade_origem?.descricao) {
-        const uf = viagem.cidade_origem?.estado?.uf ?? '';
-        return uf
-          ? `${viagem.cidade_origem.descricao} - ${uf}`
-          : viagem.cidade_origem.descricao;
+    const cidade =
+      this.textoLocal(viagem?.origem?.cidade) ||
+      this.textoLocal(viagem?.cidade_origem?.descricao);
+    const uf =
+      this.textoLocal(viagem?.origem?.uf) ||
+      this.textoLocal(viagem?.cidade_origem?.estado?.uf);
+    const pais = this.textoLocal(viagem?.pais?.nome_pt);
+    const local = this.textoLocal(viagem?.local_exterior);
+
+    const partes: string[] = [];
+    if (cidade) {
+      partes.push(uf ? `${cidade} - ${uf}` : cidade);
+    }
+    if (pais && !partes.some((parte) => parte.toLowerCase() === pais.toLowerCase())) {
+      const soPais = partes.length === 0;
+      if (soPais || pais.toLowerCase() !== 'brasil') {
+        partes.push(pais);
       }
-      return 'Brasil';
+    } else if (partes.length === 0 && local) {
+      partes.push(local);
     }
 
-    const temPassagem = evento?.tem_passagem ?? 'SIM';
-    if (temPassagem === 'NAO' && viagem.cidade_origem?.descricao) {
-      const uf = viagem.cidade_origem?.estado?.uf ?? '';
-      return uf
-        ? `${viagem.cidade_origem.descricao} - ${uf}`
-        : viagem.cidade_origem.descricao;
+    if (partes.length > 0) {
+      return partes.join(' - ');
     }
-    if (viagem.origem?.cidade) {
-      const uf = viagem.origem.uf ?? '';
-      return uf ? `${viagem.origem.cidade} - ${uf}` : viagem.origem.cidade;
-    }
-    if (viagem.cidade_origem?.descricao) {
-      const uf = viagem.cidade_origem?.estado?.uf ?? '';
-      return uf
-        ? `${viagem.cidade_origem.descricao} - ${uf}`
-        : viagem.cidade_origem.descricao;
-    }
-    return 'Não especificado';
+    return this.isViagemExterior(viagem, evento) ? 'Brasil' : 'Não especificado';
   }
 
   /**

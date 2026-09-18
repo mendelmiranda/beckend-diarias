@@ -872,6 +872,7 @@ async calculaDiaria(
                     },
                   },
                   pais: true,
+                  pais_destino: true,
                 },
               });
               
@@ -879,11 +880,25 @@ async calculaDiaria(
               let origem = 'Não especificado';
               let destino = 'Não especificado';
     
-              if (viagemCompleta.exterior === 'SIM' && viagemCompleta.local_exterior) {
-                origem = viagemCompleta.cidade_origem 
-                  ? `${viagemCompleta.cidade_origem.descricao}/${viagemCompleta.cidade_origem.estado.uf}, Brasil` 
-                  : 'Brasil';
-                destino = `${viagemCompleta.local_exterior}, ${viagemCompleta.pais.nome_pt}`;
+              if (viagemCompleta.exterior === 'SIM') {
+                origem = viagemCompleta.origem
+                  ? `${viagemCompleta.origem.cidade}/${viagemCompleta.origem.uf}`
+                  : viagemCompleta.cidade_origem
+                    ? `${viagemCompleta.cidade_origem.descricao}/${viagemCompleta.cidade_origem.estado.uf}`
+                    : (viagemCompleta.pais?.nome_pt ?? 'Não especificado');
+                const destLocal = viagemCompleta.local_exterior_destino
+                  || (viagemCompleta.pais_destino_id ? '' : viagemCompleta.local_exterior);
+                const destPais = viagemCompleta.pais_destino?.nome_pt
+                  || (viagemCompleta.pais_destino_id ? '' : viagemCompleta.pais?.nome_pt);
+                if (viagemCompleta.destino) {
+                  destino = `${viagemCompleta.destino.cidade}/${viagemCompleta.destino.uf}`;
+                } else if (viagemCompleta.cidade_destino) {
+                  destino = `${viagemCompleta.cidade_destino.descricao}/${viagemCompleta.cidade_destino.estado.uf}`;
+                } else if (destLocal && destPais && destLocal !== destPais) {
+                  destino = `${destLocal}, ${destPais}`;
+                } else {
+                  destino = destLocal || destPais || 'Não especificado';
+                }
               } else {
                 if (viagemCompleta.origem) {
                   origem = `Aeroporto: ${viagemCompleta.origem.cidade}/${viagemCompleta.origem.uf}`;
@@ -977,6 +992,7 @@ async calculaDiaria(
                         },
                       },
                       pais: true,
+                      pais_destino: true,
                     },
                   },
                 },
@@ -1008,11 +1024,25 @@ async calculaDiaria(
             let origem = 'Não especificado';
             let destino = 'Não especificado';
     
-            if (viagem.exterior === 'SIM' && viagem.local_exterior) {
-              origem = viagem.cidade_origem 
-                ? `${viagem.cidade_origem.descricao}/${viagem.cidade_origem.estado.uf}, Brasil` 
-                : 'Brasil';
-              destino = `${viagem.local_exterior}, ${viagem.pais.nome_pt}`;
+            if (viagem.exterior === 'SIM') {
+              origem = viagem.origem
+                ? `${viagem.origem.cidade}/${viagem.origem.uf}`
+                : viagem.cidade_origem
+                  ? `${viagem.cidade_origem.descricao}/${viagem.cidade_origem.estado.uf}`
+                  : (viagem.pais?.nome_pt ?? 'Não especificado');
+              const destLocal = viagem.local_exterior_destino
+                || (viagem.pais_destino_id ? '' : viagem.local_exterior);
+              const destPais = viagem.pais_destino?.nome_pt
+                || (viagem.pais_destino_id ? '' : viagem.pais?.nome_pt);
+              if (viagem.destino) {
+                destino = `${viagem.destino.cidade}/${viagem.destino.uf}`;
+              } else if (viagem.cidade_destino) {
+                destino = `${viagem.cidade_destino.descricao}/${viagem.cidade_destino.estado.uf}`;
+              } else if (destLocal && destPais && destLocal !== destPais) {
+                destino = `${destLocal}, ${destPais}`;
+              } else {
+                destino = destLocal || destPais || 'Não especificado';
+              }
             } else {
               if (viagem.origem) {
                 origem = `${viagem.origem.cidade}/${viagem.origem.uf}`;

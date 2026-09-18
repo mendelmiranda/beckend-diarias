@@ -19,6 +19,9 @@ export class CreateViagemDto {
   local_exterior: string;
   pais_id: number;
 
+  local_exterior_destino?: string;
+  pais_destino_id?: number;
+
   data_ida: Date;
   data_volta: Date;
   justificativa?: string;

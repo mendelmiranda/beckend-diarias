@@ -34,6 +34,7 @@ export class ViagemEventoService {
             origem: true,
             destino: true,
             pais: true,
+            pais_destino: true,
           }
         }
       },

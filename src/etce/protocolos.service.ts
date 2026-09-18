@@ -598,6 +598,8 @@ export class ProtocolosService {
                         destino: true,
                         cidade_origem: { include: { estado: true } },
                         origem: true,
+                        pais: true,
+                        pais_destino: true,
                       },
                     },
                   },
