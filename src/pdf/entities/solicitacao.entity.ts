@@ -11,7 +11,7 @@ export class Solicitacao {
   
     getTotalValoresEventos(): number {
       return this.eventos.reduce((total, evento) => {
-        return total + (evento.valor_evento || 0) + (evento.valor_total_inscricao || 0);
+        return total + (evento.valor_total_inscricao || 0);
       }, 0);
     }
   }

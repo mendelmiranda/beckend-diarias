@@ -77,7 +77,7 @@ export class EventosBuilder {
       // Valores do evento
       eventos.filter((a) => a.id === evento.id).forEach((data) => {
         if (data.valor_evento || data.valor_total_inscricao) {
-          totalValoresEventos += (data.valor_total_inscricao!) + (data.valor_evento!);
+          totalValoresEventos += data.valor_total_inscricao ?? 0;
 
           content.push({ text: "\n" });
 
@@ -93,8 +93,7 @@ export class EventosBuilder {
                     style: 'justificativa',
                   }
                 ],
-                ['Valor unitário: ' + Util.formataValorDiaria(data.valor_evento!, "NACIONAL") +
-                  '\n' + 'Valor total: ' + Util.formataValorDiaria(data.valor_total_inscricao!, "NACIONAL") +
+                ['Valor total: ' + Util.formataValorDiaria(data.valor_total_inscricao ?? 0, "NACIONAL") +
                   '\n' + "Observação: " + data.observacao_valor]
               ]
             }
