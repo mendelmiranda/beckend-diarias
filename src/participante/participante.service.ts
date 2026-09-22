@@ -125,6 +125,10 @@ export class ParticipanteService {
         orderBy: { id: 'desc' },
       });
       if (existente) {
+        await this.prisma.participante.update({
+          where: { id: existente.id },
+          data: this.dadosFuncionaisDoGovBr(dto),
+        });
         return existente.id;
       }
     }
@@ -163,6 +167,36 @@ export class ParticipanteService {
       conta,
       defaults,
     );
+  }
+
+  private textoInformado(valor?: string | null): string | undefined {
+    if (valor == null) return undefined;
+    return valor.trim();
+  }
+
+  /** Cargo, classe e lotação atuais do GovBR, sem alterar conta, endereço ou nascimento. */
+  private dadosFuncionaisDoGovBr(
+    dto: CreateParticipanteDto,
+  ): Prisma.participanteUpdateInput {
+    const data: Prisma.participanteUpdateInput = {};
+    const cargo = this.textoInformado(dto.cargo);
+    const classe = this.textoInformado(dto.classe);
+    const lotacao = this.textoInformado(dto.lotacao);
+    const funcao = this.textoInformado(dto.funcao);
+    const efetivo = this.textoInformado(dto.efetivo);
+    const nome = this.textoInformado(dto.nome);
+
+    if (cargo !== undefined) data.cargo = cargo;
+    if (classe !== undefined) data.classe = classe;
+    if (lotacao !== undefined) data.lotacao = lotacao;
+    if (funcao !== undefined) data.funcao = funcao;
+    if (efetivo !== undefined) data.efetivo = efetivo;
+    if (nome) data.nome = nome;
+    if (typeof dto.matricula === 'number' && dto.matricula > 0) {
+      data.matricula = dto.matricula;
+    }
+
+    return data;
   }
 
   private toParticipanteCreateData(
