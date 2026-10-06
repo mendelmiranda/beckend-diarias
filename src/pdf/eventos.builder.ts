@@ -170,6 +170,7 @@ export class EventosBuilder {
 
     const tableBodyFinanceiro = [headerRowFinanceiro];
     let totalDiariasEvento = 0;
+    const diariasPorParticipante = this.mapearDiariasPorParticipante(participantes);
 
     // Preenchemos ambas as tabelas com os dados dos participantes
     participantes.forEach(ep => {
@@ -185,7 +186,10 @@ export class EventosBuilder {
       let valorDiaria = 0;
       let diariasDesc = "";
 
-      this.coletarDiariasDoParticipante(ep).forEach(diaria => {
+      const participanteId = Number(ep?.participante?.id);
+      const diariasParticipante = diariasPorParticipante.get(participanteId) ?? [];
+
+      diariasParticipante.forEach(diaria => {
         valorDiaria += diaria.valor_individual ?? 0;
 
         const valorFmt = Util.formataValorDiaria(
@@ -452,39 +456,109 @@ export class EventosBuilder {
   }
 
   /**
-   * Diárias do participante: `viagem.valor_viagem` e, se houver,
-   * `viagem_participantes.valor_viagem`, com tipo DIARIA.
-   * Inclui registro sem participante_id (padrão atual) ou com o id do participante.
+   * Associa diárias (tipo DIARIA) de cada viagem aos participantes do evento.
+   * Registro sem participante_id vale para todos da viagem.
+   * Registro com o id do participante fica só com ele.
+   * Registro com id que não está no evento (vínculo antigo) vai para quem
+   * ainda não tem diária própria naquela viagem — senão o PDF mostra "Sem diárias"
+   * mesmo com valor gravado.
    */
-  private coletarDiariasDoParticipante(ep: any): any[] {
-    const participanteId = ep?.participante?.id;
-    const vistos = new Set<number | string>();
-    const diarias: any[] = [];
+  private mapearDiariasPorParticipante(participantes: any[]): Map<number, any[]> {
+    const resultado = new Map<number, any[]>();
 
-    for (const vp of ep?.viagem_participantes ?? []) {
-      const listas = [
-        ...(Array.isArray(vp?.valor_viagem) ? vp.valor_viagem : []),
-        ...(Array.isArray(vp?.viagem?.valor_viagem) ? vp.viagem.valor_viagem : []),
-      ];
+    for (const ep of participantes ?? []) {
+      const id = Number(ep?.participante?.id);
+      if (Number.isFinite(id)) resultado.set(id, []);
+    }
 
-      for (const item of listas) {
-        if ((item?.tipo ?? '').trim().toUpperCase() !== 'DIARIA') continue;
+    const viagens = new Map<number, { participantes: number[]; itens: any[] }>();
 
-        const dono = item.participante_id;
-        const doParticipante =
-          dono == null ||
-          participanteId == null ||
-          Number(dono) === Number(participanteId);
-        if (!doParticipante) continue;
+    for (const ep of participantes ?? []) {
+      const participanteId = Number(ep?.participante?.id);
+      if (!Number.isFinite(participanteId)) continue;
 
-        const chave = item.id ?? `${item.viagem_id}-${item.valor_individual}`;
-        if (vistos.has(chave)) continue;
-        vistos.add(chave);
-        diarias.push(item);
+      for (const vp of ep?.viagem_participantes ?? []) {
+        const viagemId = Number(vp?.viagem?.id ?? vp?.viagem_id);
+        if (!Number.isFinite(viagemId)) continue;
+
+        if (!viagens.has(viagemId)) {
+          viagens.set(viagemId, { participantes: [], itens: [] });
+        }
+        const grupo = viagens.get(viagemId);
+        if (!grupo.participantes.includes(participanteId)) {
+          grupo.participantes.push(participanteId);
+        }
+
+        const listas = [
+          ...(Array.isArray(vp?.valor_viagem) ? vp.valor_viagem : []),
+          ...(Array.isArray(vp?.viagem?.valor_viagem) ? vp.viagem.valor_viagem : []),
+        ];
+
+        for (const item of listas) {
+          if ((item?.tipo ?? '').trim().toUpperCase() !== 'DIARIA') continue;
+          const chave = this.chaveDiaria(item);
+          if (grupo.itens.some((existente) => this.chaveDiaria(existente) === chave)) {
+            continue;
+          }
+          grupo.itens.push(item);
+        }
       }
     }
 
-    return diarias;
+    for (const grupo of viagens.values()) {
+      const proprias = new Map<number, any[]>();
+      const semDono: any[] = [];
+      const orfas: any[] = [];
+
+      for (const item of grupo.itens) {
+        const dono = item?.participante_id;
+        if (dono == null) {
+          semDono.push(item);
+          continue;
+        }
+        const donoId = Number(dono);
+        if (grupo.participantes.includes(donoId)) {
+          if (!proprias.has(donoId)) proprias.set(donoId, []);
+          proprias.get(donoId).push(item);
+        } else {
+          orfas.push(item);
+        }
+      }
+
+      for (const participanteId of grupo.participantes) {
+        const lista = resultado.get(participanteId);
+        if (!lista) continue;
+        lista.push(...semDono, ...(proprias.get(participanteId) ?? []));
+      }
+
+      const semValorProprio = grupo.participantes.filter(
+        (participanteId) => !(proprias.get(participanteId)?.length),
+      );
+      if (orfas.length === 0 || semValorProprio.length === 0 || semDono.length > 0) {
+        continue;
+      }
+
+      const ordenadas = [...orfas].sort((a, b) => (a?.id ?? 0) - (b?.id ?? 0));
+      if (semValorProprio.length === 1) {
+        resultado.get(semValorProprio[0])?.push(...ordenadas);
+        continue;
+      }
+
+      semValorProprio.forEach((participanteId, index) => {
+        const item = ordenadas[index];
+        if (item) resultado.get(participanteId)?.push(item);
+      });
+      if (ordenadas.length > semValorProprio.length) {
+        const ultimo = semValorProprio[semValorProprio.length - 1];
+        resultado.get(ultimo)?.push(...ordenadas.slice(semValorProprio.length));
+      }
+    }
+
+    return resultado;
+  }
+
+  private chaveDiaria(item: any): number | string {
+    return item?.id ?? `${item?.viagem_id}-${item?.participante_id}-${item?.valor_individual}`;
   }
 
   private getChaveViagem(viagem: any, evento?: any): ViagemKey {
