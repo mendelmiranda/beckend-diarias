@@ -325,10 +325,11 @@ export class EventoParticipantesService {
         const porParticipante = new Map<number, (typeof valoresDiaria)[number]>();
         const porViagem = new Map<number, (typeof valoresDiaria)[number]>();
         for (const v of valoresDiaria) {
-          if (v.participante_id != null && !porParticipante.has(v.participante_id)) {
+          if (v.participante_id != null && v.participante_id > 0 && !porParticipante.has(v.participante_id)) {
             porParticipante.set(v.participante_id, v);
           }
-          if (v.viagem_id != null && !porViagem.has(v.viagem_id)) {
+          // Fallback da viagem: só registros legados (sem participante), nunca o de outro participante
+          if ((v.participante_id == null || v.participante_id === 0) && v.viagem_id != null && !porViagem.has(v.viagem_id)) {
             porViagem.set(v.viagem_id, v);
           }
         }
@@ -354,7 +355,9 @@ export class EventoParticipantesService {
               const valorDiaria = valorViagem?.valor_individual ?? "";
               const tipoDiaria = valorViagem?.tipo ?? "";
               const destino = valorViagem?.destino ?? "";
-              const valorViagemId = valorViagem?.id ?? 0;
+              // Registro legado compartilhado não pode ser editado (alteraria todos): id 0 força criação própria
+              const valorViagemId =
+                valorViagem?.participante_id === ep.participante.id ? valorViagem.id : 0;
     
               return {
                 id: ep.participante.id,
