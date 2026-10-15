@@ -1,4 +1,3 @@
-import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { Prisma, participante } from '@prisma/client';
 import { DateTime } from 'luxon';
@@ -9,6 +8,7 @@ import { LogTramiteService } from 'src/log_tramite/log_tramite.service';
 import { CreateTramiteDto } from './dto/create-tramite.dto';
 import { PesquisaSolicitacoesEmpenhadasDto } from './dto/pesquisa-solicitacoes-empenhadas.dto';
 import { UpdateTramiteDto } from './dto/update-tramite.dto';
+import { TceApiClient } from 'src/tce-api/tce-api.client';
 import { Util } from 'src/util/Util';
 
 
@@ -18,7 +18,7 @@ export class TramiteService {
     private prisma: PrismaService,
     private logTramiteService: LogTramiteService,
     private emailService: EmailService,
-    private readonly httpService: HttpService,
+    private readonly tceApiClient: TceApiClient,
   ) {}
 
   async create(dto: CreateTramiteDto, nome: string) {
@@ -175,6 +175,7 @@ export class TramiteService {
       sol.eventos.map((evento) => {
         evento.evento_participantes.map(async (participante) => {
           await this.pesquisaServidorGOVBR(participante.participante.cpf).then((result) => {
+            if (!result?.login) return;
             this.avisaParticipantesDoEvento(solicitadaoId, result.login);
           });
         });
@@ -185,14 +186,13 @@ export class TramiteService {
   }
 
   async pesquisaServidorGOVBR(cpf: string) {
-    return await this.httpService.axiosRef
-      .get('https://arquivos.tce.ap.gov.br:3000/consultas/servidor-cpf?cpf=' + cpf, {
-        headers: {
-          Accept: '/',
-          'X-API-KEY': 'PeJ22414DQr4zMR64PqQQvtKIu0yzxQi9uwh+G2E7v8=',
-        },
-      })
-      .then((result) => result.data);
+    const pessoa = await this.tceApiClient.consultarServidorPorCpf(cpf);
+    if (!pessoa) return null;
+
+    return {
+      ...pessoa,
+      login: pessoa.usuario,
+    };
   }
 
   async salvarLogTramite(dto: CreateTramiteDto, nome: string, tramiteId: number) {

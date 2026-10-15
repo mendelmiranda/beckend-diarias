@@ -8,11 +8,12 @@ import { EmailService } from 'src/email/email.service';
 import { HttpModule } from '@nestjs/axios';
 import { TramiteContadorController } from './tramite.contator.controller';
 import { SolicitacaoModule } from 'src/solicitacao/solicitacao.module';
+import { TceApiModule } from 'src/tce-api/tce-api.module';
 import { ViagemModule } from 'src/viagem/viagem.module';
 
 @Module({
   controllers: [TramiteController, TramiteContadorController],
   providers: [TramiteService, PrismaService, LogTramiteService, EmailService],
-  imports: [EmailModule, HttpModule, SolicitacaoModule, ViagemModule],
+  imports: [EmailModule, HttpModule, SolicitacaoModule, TceApiModule, ViagemModule],
 })
 export class TramiteModule {}

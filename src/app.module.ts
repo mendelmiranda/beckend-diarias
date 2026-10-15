@@ -43,6 +43,7 @@ import { CrachaModule } from './cracha/cracha.module';
 
 import { ConfigModule } from '@nestjs/config';
 import etceConfig from './etce/etce.config';
+import tceApiConfig from './tce-api/tce-api.config';
 import { ProtocolosModule } from './etce/protocolos.module';
 
 
@@ -52,7 +53,7 @@ import { ProtocolosModule } from './etce/protocolos.module';
 
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [etceConfig],
+      load: [etceConfig, tceApiConfig],
     }),
 
     ProtocolosModule,
