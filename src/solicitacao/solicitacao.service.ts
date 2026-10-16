@@ -642,13 +642,27 @@ export class SolicitacaoService {
 
   async removerDadosPorSolicitacao(solicitacaoId: number) {
     try {
-      const result = await this.prisma.$executeRaw`SELECT remover_geral_darad(${solicitacaoId}::INTEGER)`;
-      //console.log(result);
+      await this.removerDependenciasRestritas(solicitacaoId);
+      await this.prisma.$executeRaw`SELECT remover_geral_darad(${solicitacaoId}::INTEGER)`;
     } catch (error) {
       console.error('Erro ao executar a função:', error);
+      throw error;
     } finally {
       await this.prisma.$disconnect();
     }
+  }
+
+  /**
+   * A função SQL apaga a solicitação, mas estas FKs estão como RESTRICT
+   * e não entram nela. Sem isso, solicitação já corrigida não pode ser excluída.
+   */
+  private async removerDependenciasRestritas(solicitacaoId: number) {
+    await this.prisma.correcao_solicitacao.deleteMany({
+      where: { solicitacao_id: solicitacaoId },
+    });
+    await this.prisma.eventos_juntos.deleteMany({
+      where: { solicitacao_id: solicitacaoId },
+    });
   }
 
   async removeDARAD(id: number, usuario: InfoUsuario) {
@@ -663,9 +677,11 @@ export class SolicitacaoService {
 
   async removerDadosPorSolicitacaoDARAD(solicitacaoId: number) {
     try {
-      const result = await this.prisma.$executeRaw`SELECT remover_geral_darad(${solicitacaoId}::INTEGER)`;
+      await this.removerDependenciasRestritas(solicitacaoId);
+      await this.prisma.$executeRaw`SELECT remover_geral_darad(${solicitacaoId}::INTEGER)`;
     } catch (error) {
       console.error('Erro ao executar a função:', error);
+      throw error;
     } finally {
       await this.prisma.$disconnect();
     }
