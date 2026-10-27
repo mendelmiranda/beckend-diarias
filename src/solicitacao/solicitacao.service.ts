@@ -228,7 +228,10 @@ export class SolicitacaoService {
   findAllByLogin(login: string) {
     return this.prisma.solicitacao.findMany({
       where: {
-        login: login,
+        login: {
+          equals: login.trim(),
+          mode: 'insensitive',
+        },
       },
       include: {
         tramite: {
