@@ -77,7 +77,15 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   await app.listen(4000);
-  console.log('🚀 Server running on http://localhost:4000');
+
+  const databaseHost = process.env.DATABASE_URL?.match(/@([^:/?#]+)/)?.[1];
+  const isProduction = Boolean(databaseHost && databaseHost !== 'localhost');
+
+  console.log(
+    isProduction
+      ? '🚀 Server running in production'
+      : '🚀 Server running on http://localhost:4000',
+  );
 }
 
 bootstrap().catch(console.error);

@@ -809,15 +809,35 @@ async calculaDiaria(
     return `This action removes a #${id} viagem`;
   }
 
-  //REFAZER PARA A NOVA TABELA
-  atualizarDiariaColaborador(id: number, updateViagemDto: UpdateViagemDto) {
-    return `This action removes a #${id} viagem`;
-    /* return this.prisma.viagem.update({
+  async atualizarDiariaColaborador(id: number, updateViagemDto: UpdateViagemDto) {
+    const data: { data_ida?: Date; data_volta?: Date | null } = {};
+
+    if (updateViagemDto.data_ida) {
+      const ida = new Date(updateViagemDto.data_ida);
+      if (Number.isNaN(ida.getTime())) {
+        throw new BadRequestException('Data de ida inválida.');
+      }
+      data.data_ida = ida;
+    }
+
+    if (updateViagemDto.data_volta === null) {
+      data.data_volta = null;
+    } else if (updateViagemDto.data_volta) {
+      const volta = new Date(updateViagemDto.data_volta);
+      if (Number.isNaN(volta.getTime())) {
+        throw new BadRequestException('Data de volta inválida.');
+      }
+      data.data_volta = volta;
+    }
+
+    if (!data.data_ida && data.data_volta === undefined) {
+      throw new BadRequestException('Informe a data da viagem.');
+    }
+
+    return this.prisma.viagem.update({
       where: { id },
-      data: {
-        valor_diaria: updateViagemDto.valor_diaria
-      },
-    }); */
+      data,
+    });
   }
 
   async getParticipantesByEvento(eventoId: number) {
