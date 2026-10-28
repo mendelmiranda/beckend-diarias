@@ -16,6 +16,8 @@ import { EventoParticipantesService } from '../evento_participantes/evento_parti
 import { CreateViagemDto } from './dto/create-viagem.dto';
 import { UpdateViagemDto } from './dto/update-viagem.dto';
 import { CreateViagemEventoDto } from 'src/viagem_evento/dto/create-viagem_evento.dto';
+import { InfoUsuario, LogSistemaService } from 'src/log_sistema/log_sistema.service';
+import { Operacao } from 'src/log_sistema/log_enum';
 import { SolicitacaoService } from 'src/solicitacao/solicitacao.service';
 import { ValorDiariasService } from 'src/valor_diarias/valor_diarias.service';
 import {
@@ -39,6 +41,7 @@ export class ViagemService {
     private eventoService: EventoService,
     private solicitacaoService: SolicitacaoService,
     private valorDiariasService: ValorDiariasService,
+    private logSistemaService: LogSistemaService,
   ) { }
 
   async create(dto: CreateViagemDto) {
@@ -809,7 +812,16 @@ async calculaDiaria(
     return `This action removes a #${id} viagem`;
   }
 
-  async atualizarDiariaColaborador(id: number, updateViagemDto: UpdateViagemDto) {
+  async atualizarDiariaColaborador(
+    id: number,
+    updateViagemDto: UpdateViagemDto,
+    usuario: InfoUsuario,
+  ) {
+    const atual = await this.prisma.viagem.findUnique({ where: { id } });
+    if (!atual) {
+      throw new BadRequestException('Viagem não encontrada.');
+    }
+
     const data: { data_ida?: Date; data_volta?: Date | null } = {};
 
     if (updateViagemDto.data_ida) {
@@ -834,10 +846,27 @@ async calculaDiaria(
       throw new BadRequestException('Informe a data da viagem.');
     }
 
-    return this.prisma.viagem.update({
+    const atualizada = await this.prisma.viagem.update({
       where: { id },
       data,
     });
+
+    await this.logSistemaService.createLog(
+      {
+        entidade: 'viagem',
+        acao: 'ALTERAR_DATA_VIAGEM',
+        viagem_id: id,
+        solicitacao_id: atual.solicitacao_id,
+        data_ida_anterior: atual.data_ida,
+        data_volta_anterior: atual.data_volta,
+        data_ida: atualizada.data_ida,
+        data_volta: atualizada.data_volta,
+      },
+      usuario,
+      Operacao.UPDATE,
+    );
+
+    return atualizada;
   }
 
   async getParticipantesByEvento(eventoId: number) {

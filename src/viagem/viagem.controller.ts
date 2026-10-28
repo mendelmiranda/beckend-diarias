@@ -1,4 +1,6 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put, ParseIntPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Req } from '@nestjs/common';
+import { Request } from 'express';
+import { InfoUsuario } from 'src/log_sistema/log_sistema.service';
 import { ViagemService } from './viagem.service';
 import { CreateViagemDto } from './dto/create-viagem.dto';
 import { UpdateViagemDto } from './dto/update-viagem.dto';
@@ -69,8 +71,26 @@ export class ViagemController {
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateViagemDto: UpdateViagemDto) {
-    return this.viagemService.atualizarDiariaColaborador(+id, updateViagemDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateViagemDto: UpdateViagemDto,
+    @Req() request: Request,
+  ) {
+    const dadosClient = request.headers['dados_client'];
+    if (!dadosClient) {
+      throw new BadRequestException('Header dados_client não encontrado');
+    }
+
+    const dadosClientStr = Array.isArray(dadosClient) ? dadosClient[0] : dadosClient;
+
+    let usuario: InfoUsuario;
+    try {
+      usuario = JSON.parse(dadosClientStr) as InfoUsuario;
+    } catch {
+      throw new BadRequestException('Header dados_client inválido');
+    }
+
+    return this.viagemService.atualizarDiariaColaborador(+id, updateViagemDto, usuario);
   }
 
   @Delete(':id')
