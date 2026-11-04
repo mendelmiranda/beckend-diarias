@@ -321,19 +321,6 @@ export class EventoParticipantesService {
           orderBy: { id: 'desc' }, // mais recente primeiro
         });
     
-        // Indexar para lookup O(1) (mantém o primeiro = mais recente por causa do orderBy)
-        const porParticipante = new Map<number, (typeof valoresDiaria)[number]>();
-        const porViagem = new Map<number, (typeof valoresDiaria)[number]>();
-        for (const v of valoresDiaria) {
-          if (v.participante_id != null && v.participante_id > 0 && !porParticipante.has(v.participante_id)) {
-            porParticipante.set(v.participante_id, v);
-          }
-          // Fallback da viagem: só registros legados (sem participante), nunca o de outro participante
-          if ((v.participante_id == null || v.participante_id === 0) && v.viagem_id != null && !porViagem.has(v.viagem_id)) {
-            porViagem.set(v.viagem_id, v);
-          }
-        }
-    
         const resultado = eventos.map((evento) => {
           const totalDias =
             differenceInDays(new Date(evento.fim), new Date(evento.inicio)) + 1;
@@ -346,18 +333,53 @@ export class EventoParticipantesService {
             observacao: evento.observacao_valor,
             tem_passagem: evento.tem_passagem,
             participantes: evento.evento_participantes.map((ep) => {
-              // Resolve a diária: primeiro pelo participante, senão pela viagem
-              const viagemId = ep.viagem_participantes?.[0]?.viagem_id;
-              const valorViagem =
-                porParticipante.get(ep.participante.id) ??
-                (viagemId != null ? porViagem.get(viagemId) : undefined);
-    
-              const valorDiaria = valorViagem?.valor_individual ?? "";
-              const tipoDiaria = valorViagem?.tipo ?? "";
-              const destino = valorViagem?.destino ?? "";
+              const viagensEp = new Set(
+                (ep.viagem_participantes ?? [])
+                  .map((vp) => vp.viagem_id)
+                  .filter((id): id is number => id != null),
+              );
+
+              const vistos = new Set<number>();
+              const registros = valoresDiaria.filter((v) => {
+                if (vistos.has(v.id)) return false;
+                const participanteInformado = v.participante_id != null && v.participante_id > 0;
+                const mesmoParticipante = v.participante_id === ep.participante.id;
+                const viagemDoEp = v.viagem_id != null && viagensEp.has(v.viagem_id);
+                const viagemDaSolicitacao = v.viagem_id != null && viagemIds.has(v.viagem_id);
+
+                let inclui = false;
+                if (participanteInformado && mesmoParticipante) {
+                  inclui = v.viagem_id == null || viagemDaSolicitacao;
+                  if (viagensEp.size > 0 && v.viagem_id != null && !viagemDoEp) inclui = false;
+                } else if (!participanteInformado && viagemDoEp) {
+                  inclui = true;
+                }
+                if (!inclui) return false;
+                vistos.add(v.id);
+                return true;
+              });
+
+              const naViagem = registros.filter(
+                (v) => v.viagem_id != null && viagensEp.has(v.viagem_id),
+              );
+              const usados = naViagem.length > 0 ? naViagem : registros;
+              const soma = usados.reduce(
+                (total, v) => total + Number(v.valor_individual ?? 0),
+                0,
+              );
+              const maisRecente = usados[0];
+              const internacional = usados.find(
+                (v) => (v.destino ?? "").trim().toUpperCase() === "INTERNACIONAL",
+              );
+
+              const tipoDiaria = maisRecente?.tipo ?? "";
+              const destino = internacional ? "INTERNACIONAL" : (maisRecente?.destino ?? "");
+              const cotacaoDolar = internacional?.cotacao_dolar != null
+                ? Number(internacional.cotacao_dolar)
+                : null;
               // Registro legado compartilhado não pode ser editado (alteraria todos): id 0 força criação própria
               const valorViagemId =
-                valorViagem?.participante_id === ep.participante.id ? valorViagem.id : 0;
+                maisRecente?.participante_id === ep.participante.id ? maisRecente.id : 0;
     
               return {
                 id: ep.participante.id,
@@ -366,11 +388,12 @@ export class EventoParticipantesService {
                 cpf: Util.formataMascaraCpf(ep.participante.cpf),
                 cargo: ep.participante.cargo,
                 matricula: ep.participante.matricula,
-                valorDiaria: valorDiaria
-                  ? `DIÁRIA R$ ${valorDiaria.toFixed(2).replace(".", ",")}`
+                valorDiaria: soma > 0
+                  ? `DIÁRIA R$ ${soma.toFixed(2).replace(".", ",")}`
                   : "",
                 tipo_diaria: tipoDiaria,
                 destino,
+                cotacao_dolar: cotacaoDolar,
                 valor_viagem_id: valorViagemId,
                 viagem_participantes: ep.viagem_participantes,
                 source: "valor_diarias",
