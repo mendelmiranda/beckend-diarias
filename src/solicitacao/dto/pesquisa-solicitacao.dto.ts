@@ -8,6 +8,7 @@ export default interface PesquisaSolicitacaoDTO {
     numero?: string;
     participante_cpf?: string;
     participante_matricula?: number;
+    condutor_cpf?: string;
     pagina?: number;
     limite?: number;
 

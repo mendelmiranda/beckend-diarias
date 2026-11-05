@@ -504,6 +504,7 @@ export class SolicitacaoService {
     const numero = Number(dto.numero);
     const buscaPorNumero = Number.isFinite(numero) && numero > 0;
     const cpfParticipante = variantesCpf(dto.participante_cpf);
+    const cpfCondutor = variantesCpf(dto.condutor_cpf);
     const matriculaParticipante = Number(dto.participante_matricula);
     const filtroParticipante = [
       ...(cpfParticipante.length > 0 ? [{ cpf: { in: cpfParticipante } }] : []),
@@ -567,6 +568,19 @@ export class SolicitacaoService {
                               ? filtroParticipante[0]
                               : { AND: filtroParticipante },
                         },
+                      },
+                    },
+                  },
+                },
+              ]
+            : []),
+          ...(cpfCondutor.length > 0
+            ? [
+                {
+                  solicitacao_condutores: {
+                    some: {
+                      condutores: {
+                        cpf: { in: cpfCondutor },
                       },
                     },
                   },
