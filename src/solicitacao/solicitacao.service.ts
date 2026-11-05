@@ -486,28 +486,49 @@ export class SolicitacaoService {
     });
   }
 
-  pesquisarSolicitacoes(dto: PesquisaSolicitacaoDTO) {
-    return this.prisma.solicitacao.findMany({
-      where: {
-        AND: [
-          {
-            cpf_responsavel: dto?.cpf_responsavel,
-            cod_lotacao: dto?.cod_lotacao,
-          },
+  async pesquisarSolicitacoes(dto: PesquisaSolicitacaoDTO) {
+    const dataInicio = dto.dataInicio ? new Date(dto.dataInicio) : null;
+    const dataFim = dto.dataFim ? new Date(dto.dataFim) : null;
+    const periodoInformado =
+      dataInicio !== null &&
+      dataFim !== null &&
+      !Number.isNaN(dataInicio.getTime()) &&
+      !Number.isNaN(dataFim.getTime());
+    const numero = Number(dto.numero);
+    const buscaPorNumero = Number.isFinite(numero) && numero > 0;
 
-          {
-            datareg: {
-              gte: new Date(dto.dataInicio),
-              lte: new Date(dto.dataFim),
-            },
-          },
-          {
-            tramite: {
-              some: {
-                status: dto.status,
+    const where = {
+      AND: [
+        {
+          cpf_responsavel: dto?.cpf_responsavel,
+          cod_lotacao: dto?.cod_lotacao,
+        },
+
+        ...(buscaPorNumero ? [{ id: numero }] : []),
+
+        ...(periodoInformado
+          ? [
+              {
+                datareg: {
+                  gte: dataInicio,
+                  lte: dataFim,
+                },
               },
-            },
-          },
+            ]
+          : []),
+        // A busca por número não exige trâmite. Nos demais casos o filtro
+        // permanece como estava: só entra solicitação que tenha trâmite.
+        ...(!buscaPorNumero
+          ? [
+              {
+                tramite: {
+                  some: {
+                    status: dto.status,
+                  },
+                },
+              },
+            ]
+          : []),
           ...(dto.tipo_evento_id
             ? [
                 {
@@ -519,19 +540,10 @@ export class SolicitacaoService {
                 },
               ]
             : []),
-        ],
+      ],
+    };
 
-        /* OR: [
-          {
-            tramite: {
-              every: {
-                status: dto.status
-              }
-            }
-          }
-        ] */
-      },
-      include: {
+    const include = {
         tramite: true,
         correcao_solicitacao: true,
         empenho_daofi: true,
@@ -583,8 +595,34 @@ export class SolicitacaoService {
             pais: true,
           },
         },
-      },
-    });
+    };
+
+    const paginado = dto.pagina !== undefined || dto.limite !== undefined;
+    if (!paginado) {
+      return this.prisma.solicitacao.findMany({ where, include });
+    }
+
+    const pagina = Math.max(1, Number(dto.pagina) || 1);
+    const limite = Math.min(100, Math.max(1, Number(dto.limite) || 20));
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.solicitacao.findMany({
+        where,
+        include,
+        orderBy: { id: 'desc' },
+        skip: (pagina - 1) * limite,
+        take: limite,
+      }),
+      this.prisma.solicitacao.count({ where }),
+    ]);
+
+    return {
+      data,
+      total,
+      pagina,
+      limite,
+      paginas: Math.ceil(total / limite) || 0,
+    };
   }
 
   pesquisarResponsaveis() {

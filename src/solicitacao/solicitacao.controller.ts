@@ -131,8 +131,9 @@ update(
 
   @Post('/pesquisar')
   pesquisarSolicitacoes(@Body() dto: PesquisaSolicitacaoDTO) {
+    const paginado = dto?.pagina !== undefined || dto?.limite !== undefined;
 
-    if (parseInt(dto.numero) > 0 && dto.dataInicio === undefined) {
+    if (!paginado && parseInt(dto.numero) > 0 && dto.dataInicio === undefined) {
       return this.solicitacaoService.pesquisarSolicitacaoPorNumero(+dto.numero);
     }
     return this.solicitacaoService.pesquisarSolicitacoes(dto);

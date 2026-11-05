@@ -6,6 +6,8 @@ export default interface PesquisaSolicitacaoDTO {
     tipo_evento_id?: number;
     status?: string;
     numero?: string;
+    pagina?: number;
+    limite?: number;
 
     id?: number;
 }
