@@ -508,6 +508,17 @@ export class SolicitacaoService {
               },
             },
           },
+          ...(dto.tipo_evento_id
+            ? [
+                {
+                  eventos: {
+                    some: {
+                      tipo_evento_id: Number(dto.tipo_evento_id),
+                    },
+                  },
+                },
+              ]
+            : []),
         ],
 
         /* OR: [
