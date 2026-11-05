@@ -12,6 +12,7 @@ import { ValorDiariasDto } from './dto/valor-diarias.dto';
 import { EventoParticipanteDto } from './dto/evento-participante.dto';
 import { DiariasResponseDto } from './dto/response.dto';
 import { ParticipanteIdDto } from './dto/participante-id.dto';
+import { variantesCpf } from 'src/conta_diaria/conta-diaria.helpers';
 
 @Injectable()
 export class SolicitacaoService {
@@ -496,6 +497,14 @@ export class SolicitacaoService {
       !Number.isNaN(dataFim.getTime());
     const numero = Number(dto.numero);
     const buscaPorNumero = Number.isFinite(numero) && numero > 0;
+    const cpfParticipante = variantesCpf(dto.participante_cpf);
+    const matriculaParticipante = Number(dto.participante_matricula);
+    const filtroParticipante = [
+      ...(cpfParticipante.length > 0 ? [{ cpf: { in: cpfParticipante } }] : []),
+      ...(Number.isFinite(matriculaParticipante) && matriculaParticipante > 0
+        ? [{ matricula: matriculaParticipante }]
+        : []),
+    ];
 
     const where = {
       AND: [
@@ -535,6 +544,24 @@ export class SolicitacaoService {
                   eventos: {
                     some: {
                       tipo_evento_id: Number(dto.tipo_evento_id),
+                    },
+                  },
+                },
+              ]
+            : []),
+          ...(filtroParticipante.length > 0
+            ? [
+                {
+                  eventos: {
+                    some: {
+                      evento_participantes: {
+                        some: {
+                          participante:
+                            filtroParticipante.length === 1
+                              ? filtroParticipante[0]
+                              : { AND: filtroParticipante },
+                        },
+                      },
                     },
                   },
                 },
