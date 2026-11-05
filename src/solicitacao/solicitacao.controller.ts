@@ -16,6 +16,7 @@ import { ConsultaSetoresDto } from './dto/consulta-setores.dto';
 import { CreateSolicitacaoDto } from './dto/create-solicitacao.dto';
 import { PathParamsDto } from './dto/path-params.dto';
 import PesquisaSolicitacaoDTO from './dto/pesquisa-solicitacao.dto';
+import { TempoSetorConsultaDto } from './dto/tempo-setor.dto';
 import PesquisaSolicitacoesFinalizadasDto from './dto/pesquisa-solicitacoes-finalizadas.dto';
 import { DiariasResponseDto } from './dto/response.dto';
 import { SolicitacaoIdDto } from './dto/solicitacao-id.dto';
@@ -128,6 +129,11 @@ update(
     return this.solicitacaoService.removeDARAD(+id, usuario);
   }
 
+
+  @Post('/tempo-setor')
+  tempoPorSetor(@Body() dto: TempoSetorConsultaDto) {
+    return this.solicitacaoService.tempoPorSetor(dto?.numeros);
+  }
 
   @Post('/pesquisar')
   pesquisarSolicitacoes(@Body() dto: PesquisaSolicitacaoDTO) {

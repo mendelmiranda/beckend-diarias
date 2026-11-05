@@ -1,4 +1,5 @@
-import { HttpException, HttpStatus, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
 import { Operacao } from 'src/log_sistema/log_enum';
 import { InfoUsuario, LogSistemaService } from 'src/log_sistema/log_sistema.service';
@@ -13,6 +14,11 @@ import { EventoParticipanteDto } from './dto/evento-participante.dto';
 import { DiariasResponseDto } from './dto/response.dto';
 import { ParticipanteIdDto } from './dto/participante-id.dto';
 import { variantesCpf } from 'src/conta_diaria/conta-diaria.helpers';
+import {
+  TempoSetorAusente,
+  TempoSetorLinha,
+  TempoSetorResultado,
+} from './dto/tempo-setor.dto';
 
 @Injectable()
 export class SolicitacaoService {
@@ -1795,6 +1801,173 @@ export class SolicitacaoService {
         'Erro ao pesquisar solicitações finalizadas',
       );
     }
+  }
+
+  async tempoPorSetor(entrada?: number[] | string): Promise<TempoSetorResultado> {
+    const ids = this.normalizarNumerosSolicitacao(entrada);
+    const lista = Prisma.join(ids);
+
+    try {
+      const [linhasBrutas, existentes] = await Promise.all([
+        this.prisma.$queryRaw<Array<TempoSetorLinha & { segundos?: number }>>`
+          WITH movs AS (
+            SELECT t.solicitacao_id,
+                   lt.id AS log_id,
+                   lt.cod_lotacao_origem,
+                   lt.lotacao_origem,
+                   lt.cod_lotacao_destino AS cod_lotacao,
+                   lt.lotacao_destino AS lotacao,
+                   lt.status,
+                   lt.datareg
+            FROM log_tramite lt
+            JOIN tramite t ON t.id = lt.tramite_id
+            WHERE t.solicitacao_id IN (${lista})
+
+            UNION ALL
+
+            SELECT t.solicitacao_id,
+                   NULL::int,
+                   t.cod_lotacao_origem,
+                   t.lotacao_origem,
+                   t.cod_lotacao_destino,
+                   t.lotacao_destino,
+                   t.status,
+                   t.datareg
+            FROM tramite t
+            WHERE t.solicitacao_id IN (${lista})
+              AND NOT EXISTS (
+                SELECT 1 FROM log_tramite lt WHERE lt.tramite_id = t.id
+              )
+          ),
+          encerrada AS (
+            SELECT DISTINCT solicitacao_id
+            FROM movs
+            WHERE status IN ('PDF_GERADO', 'RECUSADO', 'NEGADO', 'FINALIZADO')
+          ),
+          seq AS (
+            SELECT m.solicitacao_id,
+                   m.lotacao_origem,
+                   m.cod_lotacao,
+                   m.lotacao,
+                   m.status,
+                   m.datareg AS entrada,
+                   LEAD(m.datareg) OVER w AS proxima,
+                   ROW_NUMBER() OVER w AS ordem,
+                   (e.solicitacao_id IS NOT NULL) AS encerrada
+            FROM movs m
+            LEFT JOIN encerrada e ON e.solicitacao_id = m.solicitacao_id
+            WINDOW w AS (
+              PARTITION BY m.solicitacao_id
+              ORDER BY m.datareg, m.log_id NULLS FIRST
+            )
+          )
+          SELECT solicitacao_id::int AS solicitacao_id,
+                 ordem::int AS ordem,
+                 lotacao_origem,
+                 cod_lotacao::int AS cod_lotacao,
+                 lotacao,
+                 status,
+                 to_char(entrada AT TIME ZONE 'America/Belem', 'DD/MM/YYYY HH24:MI') AS entrada,
+                 EXTRACT(EPOCH FROM (
+                   CASE
+                     WHEN proxima IS NOT NULL THEN proxima
+                     WHEN encerrada THEN entrada
+                     ELSE now()
+                   END - entrada
+                 ))::float8 AS segundos,
+                 ROUND((EXTRACT(EPOCH FROM (
+                   CASE
+                     WHEN proxima IS NOT NULL THEN proxima
+                     WHEN encerrada THEN entrada
+                     ELSE now()
+                   END - entrada
+                 )) / 86400.0)::numeric, 2)::float8 AS dias,
+                 (proxima IS NULL AND NOT encerrada) AS em_andamento
+          FROM seq
+          ORDER BY solicitacao_id, ordem
+        `,
+        this.prisma.solicitacao.findMany({
+          where: { id: { in: ids } },
+          select: { id: true },
+        }),
+      ]);
+
+      const itens = linhasBrutas.map((linha) => this.mapearTempoSetor(linha));
+      const comTramite = new Set(itens.map((linha) => linha.solicitacao_id));
+      const existentesIds = new Set(existentes.map((item) => item.id));
+      const sem_tramite: TempoSetorAusente[] = ids
+        .filter((id) => !comTramite.has(id))
+        .map((solicitacao_id) => ({
+          solicitacao_id,
+          existe_solicitacao: existentesIds.has(solicitacao_id),
+        }));
+
+      return { itens, sem_tramite };
+    } catch (error) {
+      this.logger.error(
+        `Erro ao consultar tempo por setor: ${error.message}`,
+        error.stack,
+      );
+      throw new InternalServerErrorException(
+        'Erro ao consultar o tempo da solicitação por setor',
+      );
+    }
+  }
+
+  private normalizarNumerosSolicitacao(entrada?: number[] | string): number[] {
+    const brutos = Array.isArray(entrada)
+      ? entrada.flatMap((valor) => String(valor).split(/[^\d]+/))
+      : String(entrada ?? '').split(/[^\d]+/);
+    const ids = [...new Set(
+      brutos
+        .map((valor) => Number(valor))
+        .filter((valor) => Number.isInteger(valor) && valor > 0),
+    )];
+
+    if (ids.length === 0) {
+      throw new BadRequestException('Informe ao menos um número de solicitação.');
+    }
+    if (ids.length > 100) {
+      throw new BadRequestException('Informe no máximo 100 solicitações por consulta.');
+    }
+
+    return ids;
+  }
+
+  private formatarDuracao(segundos: number): string {
+    const total = Math.max(0, Math.round(segundos));
+    if (total < 60) return 'menos de 1 min';
+
+    const dias = Math.floor(total / 86400);
+    const horas = Math.floor((total % 86400) / 3600);
+    const minutos = Math.floor((total % 3600) / 60);
+    const partes: string[] = [];
+
+    if (dias) partes.push(`${dias} ${dias === 1 ? 'dia' : 'dias'}`);
+    if (horas) partes.push(`${horas}h`);
+    if (minutos && dias < 30) partes.push(`${minutos}min`);
+
+    return partes.join(' ') || 'menos de 1 min';
+  }
+
+  private mapearTempoSetor(linha: TempoSetorLinha & { segundos?: number }): TempoSetorLinha {
+    const segundos = Number(linha.segundos) || 0;
+    const encerrado = segundos < 60
+      && !linha.em_andamento
+      && ['PDF_GERADO', 'RECUSADO', 'NEGADO', 'FINALIZADO'].includes(linha.status ?? '');
+
+    return {
+      solicitacao_id: Number(linha.solicitacao_id),
+      ordem: Number(linha.ordem),
+      lotacao_origem: linha.lotacao_origem,
+      cod_lotacao: Number(linha.cod_lotacao),
+      lotacao: linha.lotacao,
+      status: linha.status,
+      entrada: linha.entrada,
+      tempo: encerrado ? 'Encerrado' : this.formatarDuracao(segundos),
+      dias: Number(linha.dias) || 0,
+      em_andamento: Boolean(linha.em_andamento),
+    };
   }
 
 
