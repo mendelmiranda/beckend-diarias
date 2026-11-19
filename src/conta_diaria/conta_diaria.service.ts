@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { conta_diaria } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
+import { Operacao } from 'src/log_sistema/log_enum';
+import { InfoUsuario, LogSistemaService } from 'src/log_sistema/log_sistema.service';
 import {
   ContaDiariaInput,
   variantesCpf,
@@ -10,7 +12,10 @@ import { UpdateContaDiariaDto } from './dto/update-conta_diaria.dto';
 
 @Injectable()
 export class ContaDiariaService {
-  constructor(private prisma: PrismaService) { }
+  constructor(
+    private prisma: PrismaService,
+    private logSistemaService: LogSistemaService,
+  ) { }
 
   /**
    * Cria ou atualiza conta vinculada ao participante (payload: `conta_diaria[]` ou `contaDiariaModel`).
@@ -19,6 +24,7 @@ export class ContaDiariaService {
     participanteId: number,
     input: ContaDiariaInput,
     defaults?: { nome?: string; cpf?: string; tipo?: string },
+    usuario?: InfoUsuario,
   ): Promise<conta_diaria | null> {
     if (!participanteId || participanteId <= 0) {
       return null;
@@ -62,18 +68,22 @@ export class ContaDiariaService {
     };
 
     if (existente) {
-      return this.prisma.conta_diaria.update({
+      const atualizada = await this.prisma.conta_diaria.update({
         where: { id: existente.id },
         data,
       });
+      await this.registrarLog(existente, atualizada, usuario, Operacao.UPDATE);
+      return atualizada;
     }
 
-    return this.prisma.conta_diaria.create({ data });
+    const criada = await this.prisma.conta_diaria.create({ data });
+    await this.registrarLog(null, criada, usuario, Operacao.INSERT);
+    return criada;
   }
 
-  async create(dto: CreateContaDiariaDto) {
+  async create(dto: CreateContaDiariaDto, usuario?: InfoUsuario) {
     if (dto.participante_id != null && dto.participante_id > 0) {
-      return this.upsertForParticipante(dto.participante_id, dto);
+      return this.upsertForParticipante(dto.participante_id, dto, undefined, usuario);
     }
 
     const cpfVariants = variantesCpf(dto.cpf);
@@ -110,13 +120,20 @@ export class ContaDiariaService {
     };
 
     if (idContaBancaria === 0) {
-      return this.prisma.conta_diaria.create({ data });
+      const criada = await this.prisma.conta_diaria.create({ data });
+      await this.registrarLog(null, criada, usuario, Operacao.INSERT);
+      return criada;
     }
 
-    return this.prisma.conta_diaria.update({
+    const anterior = await this.prisma.conta_diaria.findUnique({
+      where: { id: idContaBancaria },
+    });
+    const atualizada = await this.prisma.conta_diaria.update({
       where: { id: idContaBancaria },
       data,
     });
+    await this.registrarLog(anterior, atualizada, usuario, Operacao.UPDATE);
+    return atualizada;
   }
 
   findAll() {
@@ -182,11 +199,44 @@ export class ContaDiariaService {
     });
   }
 
-  update(id: number, updateContaDiariaDto: UpdateContaDiariaDto) {
-    return this.prisma.conta_diaria.update({
+  async update(id: number, updateContaDiariaDto: UpdateContaDiariaDto, usuario: InfoUsuario) {
+    const anterior = await this.prisma.conta_diaria.findUnique({ where: { id } });
+    const data = { ...updateContaDiariaDto };
+    delete data.id;
+    const atualizada = await this.prisma.conta_diaria.update({
       where: { id },
-      data: updateContaDiariaDto,
+      data,
     });
+    await this.registrarLog(anterior, atualizada, usuario, Operacao.UPDATE);
+    return atualizada;
+  }
+
+  private async registrarLog(
+    anterior: conta_diaria | null,
+    atual: conta_diaria,
+    usuario: InfoUsuario | undefined,
+    operacao: Operacao,
+  ) {
+    if (!usuario) return;
+
+    await this.logSistemaService.createLog(
+      {
+        entidade: 'conta_diaria',
+        operacao,
+        conta_id: atual.id,
+        participante_id: atual.participante_id,
+        cpf: atual.cpf,
+        nome: atual.nome,
+        banco_id_anterior: anterior?.banco_id ?? '',
+        agencia_anterior: anterior?.agencia ?? '',
+        conta_anterior: anterior?.conta ?? '',
+        banco_id: atual.banco_id,
+        agencia: atual.agencia,
+        conta: atual.conta,
+      },
+      usuario,
+      operacao,
+    );
   }
 
   remove(id: number) {
