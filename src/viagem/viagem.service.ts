@@ -167,8 +167,12 @@ async calculaDiaria(
 
   async calcularEPersistirDiarias(
     solicitacaoId: number,
+    somenteVinculadosAViagem = false,
   ): Promise<ResultadoCalculoDiariasDto> {
-    const participantes = await this.calculaDiasParaDiaria(solicitacaoId);
+    const encontrados = await this.calculaDiasParaDiaria(solicitacaoId);
+    const participantes = somenteVinculadosAViagem
+      ? encontrados.filter((item) => item.viagens.length > 0)
+      : encontrados;
     const falhas: FalhaDiariaDto[] = [];
     let total = 0;
 
@@ -181,22 +185,28 @@ async calculaDiaria(
 
     const resultados = await Promise.allSettled(
       participantes.map(async (item) => {
-        let viagemId = item.viagem;
-        if (!viagemId || viagemId <= 0) {
-          viagemId = await this.ensureViagemMinima(
-            item.eventoParticipanteId,
-            item.evento,
+        const alvos = item.viagens.length > 0
+          ? item.viagens
+          : [{
+              viagemId: await this.ensureViagemMinima(
+                item.eventoParticipanteId,
+                item.evento,
+                solicitacaoId,
+              ),
+              eventoId: item.evento.id,
+            }];
+
+        let ultimo: number | null = null;
+        for (const alvo of alvos) {
+          ultimo = await this.calculaDiaria(
+            alvo.viagemId,
+            item.participante.id,
+            alvo.eventoId,
+            item.totalDias,
             solicitacaoId,
           );
         }
-
-        return this.calculaDiaria(
-          viagemId,
-          item.participante.id,
-          item.evento.id,
-          item.totalDias,
-          solicitacaoId,
-        );
+        return ultimo;
       }),
     );
 
@@ -481,7 +491,12 @@ async calculaDiaria(
   });
 
   // Reorganiza por participante: { cpf -> [{evento, viagens}] }
-  type Bucket = { evento: typeof eventos[number]; viagens: Date[]; epId: number; viagemId: number };
+  type Bucket = {
+    evento: typeof eventos[number];
+    viagens: Date[];
+    epId: number;
+    viagemIds: { viagemId: number; eventoId: number }[];
+  };
   const porParticipante = new Map<string, { participante: participante; buckets: Bucket[] }>();
 
   for (const evento of eventos) {
@@ -489,6 +504,10 @@ async calculaDiaria(
       const viagens = ep.viagem_participantes
         .map((vp) => vp.viagem?.data_ida)
         .filter((d): d is Date => d instanceof Date);
+      const viagemIds = ep.viagem_participantes
+        .map((vp) => vp.viagem_id)
+        .filter((id) => id > 0)
+        .map((viagemId) => ({ viagemId, eventoId: evento.id }));
 
       const chave = ep.participante.cpf;
       if (!porParticipante.has(chave)) {
@@ -498,7 +517,7 @@ async calculaDiaria(
         evento,
         viagens,
         epId: ep.id,
-        viagemId: ep.viagem_participantes[0]?.viagem_id ?? 0,
+        viagemIds,
       });
     }
   }
@@ -544,12 +563,21 @@ async calculaDiaria(
       totalDias += Util.totalDeDias(grupoInicio, grupoFim);
     }
 
+    const viagens = buckets.flatMap((bucket) => bucket.viagemIds);
+    const unicas = [...new Map(viagens.map((item) => [item.viagemId, item])).values()];
+    const vinculo = unicas[0];
+
     resultado.push({
       participante,
       totalDias,
-      evento: buckets[0].evento,
-      viagem: buckets[0].viagemId,
-      eventoParticipanteId: buckets[0].epId,
+      evento: vinculo
+        ? buckets.find((bucket) => bucket.evento.id === vinculo.eventoId)?.evento ?? buckets[0].evento
+        : buckets[0].evento,
+      viagem: vinculo?.viagemId ?? 0,
+      viagens: unicas,
+      eventoParticipanteId: vinculo
+        ? buckets.find((bucket) => bucket.viagemIds.some((item) => item.viagemId === vinculo.viagemId))?.epId ?? buckets[0].epId
+        : buckets[0].epId,
     });
   }
 
@@ -1284,6 +1312,7 @@ type ParticipanteTotalDias = {
   totalDias: number;
   evento: evento;
   viagem: number;
+  viagens: { viagemId: number; eventoId: number }[];
   eventoParticipanteId: number;
 };
 
